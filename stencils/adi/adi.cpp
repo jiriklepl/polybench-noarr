@@ -1,5 +1,11 @@
+#include <chrono>
+#include <iostream>
+
+#include "noarr/structures/extra/shortcuts.hpp"
 #include "noarr/structures_extended.hpp"
 #include "noarr/structures/extra/traverser.hpp"
+#include "noarr/structures/interop/bag.hpp"
+#include "noarr/structures/interop/serialize_data.hpp"
 
 using num_t = float;
 
@@ -102,4 +108,34 @@ void kernel_adi(auto steps, auto u, auto v, auto p, auto q) {
 
 } // namespace
 
-int main() { /* placeholder */}
+int main(int argc, char *argv[]) {
+    using namespace std::string_literals;
+
+    // problem size
+    std::size_t n = N;
+    std::size_t t = T;
+
+    // data
+    auto u = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'j'>(n, n));
+    auto v = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'j', 'i'>(n, n));
+    auto p = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'j'>(n, n));
+    auto q = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'j'>(n, n));
+
+    // initialize data
+    init_array(u.get_ref());
+
+    auto start = std::chrono::high_resolution_clock::now();
+
+    // run kernel
+    kernel_adi(t, u.get_ref(), v.get_ref(), p.get_ref(), q.get_ref());
+
+    auto end = std::chrono::high_resolution_clock::now();
+
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+
+    // print results
+    if (argv[0] != ""s)
+        noarr::serialize_data(std::cout, u);
+
+    std::cout << duration.count() << std::endl;
+}

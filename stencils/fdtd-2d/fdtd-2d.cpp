@@ -1,5 +1,11 @@
+#include <chrono>
+#include <iostream>
+
+#include "noarr/structures/extra/shortcuts.hpp"
 #include "noarr/structures_extended.hpp"
 #include "noarr/structures/extra/traverser.hpp"
+#include "noarr/structures/interop/bag.hpp"
+#include "noarr/structures/interop/serialize_data.hpp"
 
 using num_t = float;
 
@@ -70,4 +76,38 @@ void kernel_fdtd_2d(auto ex, auto ey, auto hz, auto _fict_) {
 
 } // namespace
 
-int main() { /* placeholder */}
+int main(int argc, char *argv[]) {
+    using namespace std::string_literals;
+
+    // problem size
+    std::size_t t = T;
+    std::size_t ni = NI;
+    std::size_t nj = NJ;
+
+    // data
+    auto ex = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'j'>(ni, nj));
+    auto ey = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'j'>(ni, nj));
+    auto hz = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'j'>(ni, nj));
+    auto _fict_ = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'t'>(t));
+
+    // initialize data
+    init_array(ex.get_ref(), ey.get_ref(), hz.get_ref(), _fict_.get_ref());
+
+    auto start = std::chrono::high_resolution_clock::now();
+
+    // run kernel
+    kernel_fdtd_2d(ex.get_ref(), ey.get_ref(), hz.get_ref(), _fict_.get_ref());
+
+    auto end = std::chrono::high_resolution_clock::now();
+
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+
+    // print results
+    if (argv[0] != ""s) {
+        noarr::serialize_data(std::cout, ex);
+        noarr::serialize_data(std::cout, ey);
+        noarr::serialize_data(std::cout, hz);
+    }
+
+    std::cout << duration.count() << std::endl;
+}

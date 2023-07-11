@@ -1,5 +1,11 @@
+#include <chrono>
+#include <iostream>
+
+#include "noarr/structures/extra/shortcuts.hpp"
 #include "noarr/structures_extended.hpp"
 #include "noarr/structures/extra/traverser.hpp"
+#include "noarr/structures/interop/bag.hpp"
+#include "noarr/structures/interop/serialize_data.hpp"
 
 using num_t = float;
 
@@ -89,4 +95,42 @@ void kernel_3mm(auto E, auto A, auto B, auto F, auto C, auto D, auto G) {
 
 } // namespace
 
-int main() { /* placeholder */}
+int main(int argc, char *argv[]) {
+    using namespace std::string_literals;
+
+    // problem size
+    std::size_t ni = NI;
+    std::size_t nj = NJ;
+    std::size_t nk = NK;
+    std::size_t nl = NL;
+    std::size_t nm = NM;
+
+    // data
+    auto E = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'j'>(ni, nj));
+    auto A = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'k'>(ni, nk));
+    auto B = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'k', 'j'>(nk, nj));
+
+    auto F = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'j', 'l'>(nj, nl));
+    auto C = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'j', 'm'>(nj, nm));
+    auto D = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'m', 'l'>(nm, nl));
+
+    auto G = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'l'>(ni, nl));
+
+    // initialize data
+    init_array(A.get_ref(), B.get_ref(), C.get_ref(), D.get_ref());
+
+    auto start = std::chrono::high_resolution_clock::now();
+
+    // run kernel
+    kernel_3mm(E.get_ref(), A.get_ref(), B.get_ref(), F.get_ref(), C.get_ref(), D.get_ref(), G.get_ref());
+
+    auto end = std::chrono::high_resolution_clock::now();
+
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+
+    // print results
+    if (argv[0] != ""s)
+        noarr::serialize_data(std::cout, /*...*/);
+
+    std::cout << duration.count() << std::endl;
+}

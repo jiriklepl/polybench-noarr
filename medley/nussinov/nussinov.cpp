@@ -1,7 +1,12 @@
 #include <algorithm>
+#include <chrono>
+#include <iostream>
 
+#include "noarr/structures/extra/shortcuts.hpp"
 #include "noarr/structures_extended.hpp"
 #include "noarr/structures/extra/traverser.hpp"
+#include "noarr/structures/interop/bag.hpp"
+#include "noarr/structures/interop/serialize_data.hpp"
 
 using num_t = float;
 using base_t = char;
@@ -83,4 +88,31 @@ void kernel_nussinov(auto seq, auto table) {
 
 } // namespace
 
-int main() { /* placeholder */}
+int main(int argc, char *argv[]) {
+    using namespace std::string_literals;
+
+    // problem size
+    std::size_t n = N;
+
+    // data
+    auto seq = noarr::make_bag(noarr::scalar<base_t>() ^ noarr::sized_vector<'i'>(n));
+    auto table = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'j'>(n, n));
+
+    // initialize data
+    init_array(seq.get_ref(), table.get_ref());
+
+    auto start = std::chrono::high_resolution_clock::now();
+
+    // run kernel
+    kernel_nussinov(seq.get_ref(), table.get_ref());
+
+    auto end = std::chrono::high_resolution_clock::now();
+
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+
+    // print results
+    if (argv[0] != ""s)
+        noarr::serialize_data(std::cout, /*...*/);
+
+    std::cout << duration.count() << std::endl;
+}

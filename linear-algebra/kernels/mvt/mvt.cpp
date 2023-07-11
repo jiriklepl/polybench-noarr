@@ -1,5 +1,11 @@
+#include <chrono>
+#include <iostream>
+
+#include "noarr/structures/extra/shortcuts.hpp"
 #include "noarr/structures_extended.hpp"
 #include "noarr/structures/extra/traverser.hpp"
+#include "noarr/structures/interop/bag.hpp"
+#include "noarr/structures/interop/serialize_data.hpp"
 
 using num_t = float;
 
@@ -55,4 +61,38 @@ void kernel_mvt(auto x1, auto x2, auto y1, auto y2, auto A) {
 
 } // namespace
 
-int main() { /* placeholder */}
+int main(int argc, char *argv[]) {
+    using namespace std::string_literals;
+
+    // problem size
+    std::size_t n = N;
+
+    // data
+    auto x1 = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'i'>(n));
+    auto x2 = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'i'>(n));
+
+    auto y1 = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'j'>(n));
+    auto y2 = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'j'>(n));
+
+    auto A = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'j'>(n, n));
+
+    // initialize data
+    init_array(x1.get_ref(), x2.get_ref(), y1.get_ref(), y2.get_ref(), A.get_ref());
+
+    auto start = std::chrono::high_resolution_clock::now();
+
+    // run kernel
+    kernel_mvt(x1.get_ref(), x2.get_ref(), y1.get_ref(), y2.get_ref(), A.get_ref());
+
+    auto end = std::chrono::high_resolution_clock::now();
+
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+
+    // print results
+    if (argv[0] != ""s) {
+        noarr::serialize_data(std::cout, x1);
+        noarr::serialize_data(std::cout, x2);
+    }
+
+    std::cout << duration.count() << std::endl;
+}

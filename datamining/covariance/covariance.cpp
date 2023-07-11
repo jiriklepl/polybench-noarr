@@ -1,11 +1,19 @@
+#include <chrono>
+#include <iostream>
+
+#include "noarr/structures/extra/shortcuts.hpp"
 #include "noarr/structures_extended.hpp"
 #include "noarr/structures/extra/traverser.hpp"
+#include "noarr/structures/interop/bag.hpp"
+#include "noarr/structures/interop/serialize_data.hpp"
 
 using num_t = float;
 
 namespace {
 
 void init_array(num_t &float_n, auto data) {
+    // data: k x j
+
     float_n = data | noarr::get_length<'k'>();
 
     noarr::traverser(data)
@@ -17,6 +25,10 @@ void init_array(num_t &float_n, auto data) {
 
 
 void kernel_covariance(num_t float_n, auto data, auto cov, auto mean) {
+    // data: k x j
+    // cov: i x j
+    // mean: j
+
     auto cov_ji = cov ^ noarr::rename<'i', 'j', 'j', 'i'>();
     auto data_ki = data ^ noarr::rename<'j', 'i'>();
 
@@ -59,4 +71,34 @@ void kernel_covariance(num_t float_n, auto data, auto cov, auto mean) {
 
 } // namespace
 
-int main() { /* placeholder */}
+int main(int argc, char *argv[]) {
+    using namespace std::string_literals;
+
+    // problem size
+    std::size_t nk = NK;
+    std::size_t nj = NJ;
+
+    // data
+    num_t float_n;
+    auto data = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'k', 'j'>(nk, nj));
+    auto cov = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'j'>(nj, nj));
+    auto mean = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'j'>(nj));
+
+    // initialize data
+    init_array(float_n, data.get_ref());
+
+    auto start = std::chrono::high_resolution_clock::now();
+
+    // run kernel
+    kernel_covariance(float_n, data.get_ref(), cov.get_ref(), mean.get_ref());
+
+    auto end = std::chrono::high_resolution_clock::now();
+
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+
+    // print results
+    if (argv[0] != ""s)
+        noarr::serialize_data(std::cout, cov.get_ref());
+
+    std::cout << duration.count() << std::endl;
+}

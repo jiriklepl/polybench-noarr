@@ -1,6 +1,11 @@
+#include <chrono>
+#include <iostream>
+
 #include "noarr/structures/extra/shortcuts.hpp"
 #include "noarr/structures_extended.hpp"
 #include "noarr/structures/extra/traverser.hpp"
+#include "noarr/structures/interop/bag.hpp"
+#include "noarr/structures/interop/serialize_data.hpp"
 
 using num_t = float;
 
@@ -8,6 +13,10 @@ namespace {
 
 // initialization function
 void init_array(num_t &alpha, num_t &beta, auto A, auto B, auto x) {
+    // A: i x j
+    // B: i x j
+    // x: j
+
     alpha = 1.5;
     beta = 1.2;
 
@@ -32,6 +41,12 @@ void init_array(num_t &alpha, num_t &beta, auto A, auto B, auto x) {
 
 // computation kernel
 void kernel_gesummv(num_t alpha, num_t beta, auto A, auto B, auto tmp, auto x, auto y) {
+    // A: i x j
+    // B: i x j
+    // tmp: i
+    // x: j
+    // y: i
+
     noarr::traverser(A, B, tmp, x, y)
         .template for_dims<'i'>([=](auto inner) {
             auto state = inner.state();
@@ -50,4 +65,38 @@ void kernel_gesummv(num_t alpha, num_t beta, auto A, auto B, auto tmp, auto x, a
 
 } // namespace
 
-int main() { /* placeholder */}
+int main(int argc, char *argv[]) {
+    using namespace std::string_literals;
+
+    // problem size
+    std::size_t n = N;
+
+    // data
+    num_t alpha;
+    num_t beta;
+
+    auto A = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'j'>(n, n));
+    auto B = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'j'>(n, n));
+    auto tmp = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'i'>(n));
+    auto x = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'j'>(n));
+    auto y = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'i'>(n));
+
+    // initialize data
+    init_array(alpha, beta, A.get_ref(), B.get_ref(), x.get_ref());
+
+
+    auto start = std::chrono::high_resolution_clock::now();
+
+    // run kernel
+    kernel_gesummv(alpha, beta, A.get_ref(), B.get_ref(), tmp.get_ref(), x.get_ref(), y.get_ref());
+
+    auto end = std::chrono::high_resolution_clock::now();
+
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+
+    // print results
+    if (argv[0] != ""s)
+        noarr::serialize_data(std::cout, y);
+
+    std::cout << duration.count() << std::endl;
+}

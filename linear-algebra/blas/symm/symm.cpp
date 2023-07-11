@@ -1,6 +1,11 @@
+#include <chrono>
+#include <iostream>
+
 #include "noarr/structures/extra/shortcuts.hpp"
 #include "noarr/structures_extended.hpp"
 #include "noarr/structures/extra/traverser.hpp"
+#include "noarr/structures/interop/bag.hpp"
+#include "noarr/structures/interop/serialize_data.hpp"
 
 using num_t = float;
 
@@ -8,6 +13,10 @@ namespace {
 
 // initialization function
 void init_array(num_t &alpha, num_t &beta, auto C, auto A, auto B) {
+    // C: i x j
+    // A: i x k
+    // B: i x j
+
     alpha = 1.5;
     beta = 1.2;
 
@@ -42,6 +51,10 @@ void init_array(num_t &alpha, num_t &beta, auto C, auto A, auto B) {
 
 // computation kernel
 void kernel_symm(num_t alpha, num_t beta, auto C, auto A, auto B) {
+    // C: i x j
+    // A: i x k
+    // B: i x j
+
     auto C_renamed = C ^ noarr::rename<'i', 'k'>();
     auto B_renamed = B ^ noarr::rename<'i', 'k'>();
 
@@ -53,8 +66,8 @@ void kernel_symm(num_t alpha, num_t beta, auto C, auto A, auto B) {
             inner
                 .order(noarr::slice<'k'>(0, noarr::get_index<'i'>(state)))
                 . template for_each<'k'>([=, &temp](auto state) {
-                    C_renamed[state] += alpha * A[state] * B[state];
-                    temp += A[state] * B_renamed[state];
+                    C_renamed[state] += alpha * B[state] * A[state];
+                    temp += B_renamed[state] * A[state];
                 });
 
             C[state] = beta * C[state] + alpha * B[state] * A[state] + alpha * temp;
@@ -63,4 +76,36 @@ void kernel_symm(num_t alpha, num_t beta, auto C, auto A, auto B) {
 
 } // namespace
 
-int main() { /* placeholder */}
+int main(int argc, char *argv[]) {
+    using namespace std::string_literals;
+
+    // problem size
+    std::size_t ni = NI;
+    std::size_t nj = NJ;
+
+    // data
+    num_t alpha;
+    num_t beta;
+
+    auto C = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'j'>(ni, nj));
+    auto A = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'k'>(ni, ni));
+    auto B = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'j'>(ni, nj));
+
+    // initialize data
+    init_array(alpha, beta, C.get_ref(), A.get_ref(), B.get_ref());
+
+    auto start = std::chrono::high_resolution_clock::now();
+
+    // run kernel
+    kernel_symm(alpha, beta, C.get_ref(), A.get_ref(), B.get_ref());
+
+    auto end = std::chrono::high_resolution_clock::now();
+
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+
+    // print results
+    if (argv[0] != ""s)
+        noarr::serialize_data(std::cout, C);
+
+    std::cout << duration.count() << std::endl;
+}

@@ -1,7 +1,12 @@
+#include <chrono>
 #include <cmath>
+#include <iostream>
 
+#include "noarr/structures/extra/shortcuts.hpp"
 #include "noarr/structures_extended.hpp"
 #include "noarr/structures/extra/traverser.hpp"
+#include "noarr/structures/interop/bag.hpp"
+#include "noarr/structures/interop/serialize_data.hpp"
 
 using num_t = float;
 
@@ -14,8 +19,6 @@ void init_array(auto A, auto R, auto Q) {
     // Q: i x k
 
     auto ni = A | noarr::get_length<'i'>();
-    auto nk = A | noarr::get_length<'k'>();
-    auto nj = R | noarr::get_length<'j'>();
 
     noarr::traverser(A, Q)
         .for_each([=](auto state) {
@@ -77,4 +80,36 @@ void kernel_gramschmidt(auto A, auto R, auto Q) {
 
 } // namespace
 
-int main() { /* placeholder */}
+int main(int argc, char *argv[]) {
+    using namespace std::string_literals;
+
+    // problem size
+    std::size_t ni = NI;
+    std::size_t nj = NJ;
+
+    // data
+    auto A = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'k'>(ni, nj));
+    auto R = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'k', 'j'>(nj, nj));
+    auto Q = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'k'>(ni, nj));
+
+    // initialize data
+    init_array(A.get_ref(), R.get_ref(), Q.get_ref());
+
+    auto start = std::chrono::high_resolution_clock::now();
+
+    // run kernel
+    kernel_gramschmidt(A.get_ref(), R.get_ref(), Q.get_ref());
+
+    auto end = std::chrono::high_resolution_clock::now();
+
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+
+    // print results
+    if (argv[0] != ""s) {
+        noarr::serialize_data(std::cout, A);
+        noarr::serialize_data(std::cout, R);
+        noarr::serialize_data(std::cout, Q);
+    }
+
+    std::cout << duration.count() << std::endl;
+}

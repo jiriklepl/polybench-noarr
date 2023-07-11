@@ -1,14 +1,19 @@
 #include <cmath>
+#include <chrono>
+#include <iostream>
 
+#include "noarr/structures/extra/shortcuts.hpp"
 #include "noarr/structures_extended.hpp"
 #include "noarr/structures/extra/traverser.hpp"
+#include "noarr/structures/interop/bag.hpp"
+#include "noarr/structures/interop/serialize_data.hpp"
 
 using num_t = float;
 
 namespace {
 
 // initialization function
-void init_array(num_t &alpha, auto imgIn, auto imgOut) {
+void init_array(num_t &alpha, auto imgIn, auto) {
     // imgIn: i x j
     // imgOut: i x j
 
@@ -123,4 +128,36 @@ void kernel_deriche(num_t alpha, auto imgIn, auto imgOut, auto y1, auto y2) {
 
 } // namespace
 
-int main() { /* placeholder */}
+int main(int argc, char *argv[]) {
+    using namespace std::string_literals;
+
+    // problem size
+    std::size_t ni = NI;
+    std::size_t nj = NJ;
+
+    // data
+    num_t alpha;
+    auto imgIn = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'j'>(ni, nj));
+    auto imgOut = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'j'>(ni, nj));
+
+    auto y1 = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'j'>(ni, nj));
+    auto y2 = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'j'>(ni, nj));
+
+    // initialize data
+    init_array(alpha, imgIn.get_ref(), imgOut.get_ref());
+
+    auto start = std::chrono::high_resolution_clock::now();
+
+    // run kernel
+    kernel_deriche(alpha, imgIn.get_ref(), imgOut.get_ref(), y1.get_ref(), y2.get_ref());
+
+    auto end = std::chrono::high_resolution_clock::now();
+
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+
+    // print results
+    if (argv[0] != ""s)
+        noarr::serialize_data(std::cout, imgOut.get_ref());
+
+    std::cout << duration.count() << std::endl;
+}
