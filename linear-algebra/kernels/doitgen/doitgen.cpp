@@ -40,7 +40,7 @@ void kernel_doitgen(auto A, auto C4, auto sum) {
     // C4: s x p
     // sum: p
 
-    auto A_rqs = A | noarr::rename<'p', 's'>();
+    auto A_rqs = A ^ noarr::rename<'p', 's'>();
 
     noarr::traverser(A, C4, sum)
         .template for_dims<'r', 'q'>([=](auto inner) {

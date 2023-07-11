@@ -91,9 +91,8 @@ void kernel_correlation(num_t float_n, auto data, auto corr, auto mean, auto std
                     });
 
                     corr_ji[state] = corr[state];
+                    corr_ji[state] /= float_n;
                 });
-
-            corr_ji[state] /= float_n;
         });
 }
 

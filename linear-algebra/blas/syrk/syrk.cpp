@@ -92,7 +92,7 @@ int main(int argc, char *argv[]) {
 
     // print results
     if (argv[0] != ""s)
-        noarr::serialize_data(std::cout, /*...*/);
+        noarr::serialize_data(std::cout, C.get_ref());
 
     std::cout << duration.count() << std::endl;
 }

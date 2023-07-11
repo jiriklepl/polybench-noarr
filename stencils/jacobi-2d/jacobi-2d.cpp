@@ -7,7 +7,10 @@
 #include <noarr/structures/interop/bag.hpp>
 #include <noarr/structures/interop/serialize_data.hpp>
 
-using num_t = float;
+#include "defines.hpp"
+#include "jacobi-2d.hpp"
+
+using num_t = DATA_TYPE;
 
 namespace {
 
@@ -20,7 +23,7 @@ void init_array(auto A, auto B) {
 
     noarr::traverser(A, B)
         .for_each([=](auto state) {
-            auto [i, j] = state | noarr::get_indices<'i', 'j'>(state);
+            auto [i, j] = noarr::get_indices<'i', 'j'>(state);
 
             A[state] = ((num_t)i * (j + 2) + 2) / n;
             B[state] = ((num_t)i * (j + 3) + 3) / n;
@@ -65,7 +68,7 @@ int main(int argc, char *argv[]) {
 
     // problem size
     std::size_t n = N;
-    std::size_t t = T;
+    std::size_t t = TSTEPS;
 
     // data
     auto A = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'j'>(n, n));

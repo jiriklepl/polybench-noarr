@@ -8,7 +8,10 @@
 #include <noarr/structures/interop/bag.hpp>
 #include <noarr/structures/interop/serialize_data.hpp>
 
-using num_t = float;
+#include "defines.hpp"
+#include "floyd-warshall.hpp"
+
+using num_t = DATA_TYPE;
 
 namespace {
 
@@ -20,7 +23,7 @@ void init_array(auto path) {
 
     noarr::traverser(path)
         .for_each([=](auto state) {
-            auto [i, j] = state | noarr::get_indices<'i', 'j'>(state);
+            auto [i, j] = noarr::get_indices<'i', 'j'>(state);
 
             path[state] = i * j % 7 + 1;
 

@@ -24,15 +24,18 @@ void init_array(auto x1, auto x2, auto y1, auto y2, auto A) {
 
     auto n = A | noarr::get_length<'i'>();
 
-    noarr::traverser(x1, x2, y1, y2, A)
+    auto y1_i = y1 ^ noarr::rename<'j', 'i'>();
+    auto y2_i = y2 ^ noarr::rename<'j', 'i'>();
+
+    noarr::traverser(x1, x2, y1_i, y2_i, A)
         .template for_dims<'i'>([=](auto inner) {
             auto state = inner.state();
             auto i = noarr::get_index<'i'>(state);
             
             x1[state] = (num_t)(i % n) / n;
             x2[state] = (num_t)((i + 1) % n) / n;
-            y1[state] = (num_t)((i + 3) % n) / n;
-            y2[state] = (num_t)((i + 4) % n) / n;
+            y1_i[state] = (num_t)((i + 3) % n) / n;
+            y2_i[state] = (num_t)((i + 4) % n) / n;
 
             inner.template for_each<'j'>([=](auto state) {
                 auto j = noarr::get_index<'j'>(state);
@@ -49,7 +52,7 @@ void kernel_mvt(auto x1, auto x2, auto y1, auto y2, auto A) {
     // y1: j
     // y2: j
     // A: i x j
-    auto A_ji = A | noarr::rename<'i', 'j', 'j', 'i'>();
+    auto A_ji = A ^ noarr::rename<'i', 'j', 'j', 'i'>();
 
     noarr::traverser(x1, A, y1)
         .template for_each<'i', 'j'>([=](auto state) {

@@ -1,5 +1,5 @@
-#ifndef 2MM_HPP
-#define 2MM_HPP
+#ifndef _2MM_HPP
+#define _2MM_HPP
 
 #include "defines.hpp"
 
@@ -30,4 +30,4 @@
 # define NL 2400
 #endif
 
-#endif // 2MM_HPP
+#endif // _2MM_HPP

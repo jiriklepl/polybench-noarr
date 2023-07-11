@@ -1,4 +1,5 @@
 #include <chrono>
+#include <cmath>
 #include <iostream>
 
 #include <noarr/structures/extra/shortcuts.hpp>
@@ -89,7 +90,7 @@ void kernel_cholesky(auto A) {
                     A_ii[state] -= A_ik[state] * A_ik[state];
                 });
 
-            A_ii[state] = sqrt(A_ii[state]);
+            A_ii[state] = std::sqrt(A_ii[state]);
         });
 }
 

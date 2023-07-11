@@ -73,7 +73,7 @@ void kernel_symm(num_t alpha, num_t beta, auto C, auto A, auto B) {
                     temp += B_renamed[state] * A[state];
                 });
 
-            C[state] = beta * C[state] + alpha * B[state] * A[state] + alpha * temp;
+            C[state] = beta * C[state] + alpha * B[state] * A[state & noarr::idx<'k'>(noarr::get_index<'i'>(state))] + alpha * temp; // TODO: A_diag
         });
 }
 

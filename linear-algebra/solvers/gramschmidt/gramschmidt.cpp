@@ -8,7 +8,10 @@
 #include <noarr/structures/interop/bag.hpp>
 #include <noarr/structures/interop/serialize_data.hpp>
 
-using num_t = float;
+#include "defines.hpp"
+#include "gramschmidt.hpp"
+
+using num_t = DATA_TYPE;
 
 namespace {
 
@@ -43,21 +46,21 @@ void kernel_gramschmidt(auto A, auto R, auto Q) {
 
     auto A_ij = A ^ noarr::rename<'k', 'j'>();
 
-    noarr::traverser(A_ij, R, Q)
+    noarr::traverser(/* FIXME: A_ij, */ R, Q)
         .template for_dims<'k'>([=](auto inner) {
             auto state = inner.state();
             num_t norm = 0;
 
-            inner.template for_each<'i'>([=](auto state) {
+            inner.template for_each<'i'>([=, &norm](auto state) {
                 norm += A[state] * A[state];
             });
 
             auto R_diag = R ^ noarr::fix<'j'>(noarr::get_index<'k'>(state));
 
-            R[state] = std::sqrt(norm);
+            R_diag[state] = std::sqrt(norm);
 
             inner.template for_each<'i'>([=](auto state) {
-                Q[state] = A[state] / R[state];
+                Q[state] = A[state] / R_diag[state];
             });
 
             inner
@@ -74,7 +77,7 @@ void kernel_gramschmidt(auto A, auto R, auto Q) {
                     inner.template for_each<'i'>([=](auto state) {
                         A_ij[state] -= Q[state] * R[state];
                     });
-                });                     
+                });
         });
 }
 

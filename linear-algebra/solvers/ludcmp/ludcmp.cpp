@@ -156,7 +156,7 @@ void kernel_ludcmp(auto A, auto b, auto x, auto y) {
                         w -= A[state] * x[noarr::idx<'i'>(noarr::get_index<'j'>(state))];
                     });
                 
-                x[state] = w / A[state ^ noarr::fix<'j'>(noarr::get_index<'i'>(state))];
+                x[state] = w / A[state & noarr::idx<'j'>(noarr::get_index<'i'>(state))]; // TODO: A_diag
             });
 }
 

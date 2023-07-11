@@ -16,10 +16,13 @@ namespace {
 
 // initialization function
 void init_array(num_t &alpha, auto A, auto B) {
+    // A: k x i
+    // B: i x j
+
     alpha = 1.5;
 
     auto ni = A | noarr::get_length<'i'>();
-    auto nj = A | noarr::get_length<'j'>();
+    auto nj = B | noarr::get_length<'j'>();
 
     noarr::traverser(A)
         .template for_dims<'k'>([=](auto inner) {

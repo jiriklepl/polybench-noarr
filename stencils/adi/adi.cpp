@@ -7,7 +7,10 @@
 #include <noarr/structures/interop/bag.hpp>
 #include <noarr/structures/interop/serialize_data.hpp>
 
-using num_t = float;
+#include "defines.hpp"
+#include "adi.hpp"
+
+using num_t = DATA_TYPE;
 
 namespace {
 
@@ -19,7 +22,7 @@ void init_array(auto u) {
 
     noarr::traverser(u)
         .for_each([=](auto state) {
-            auto [i, j] = state | noarr::get_indices<'i', 'j'>(state);
+            auto [i, j] = noarr::get_indices<'i', 'j'>(state);
 
             u[state] = (num_t)(i + n - j) / n;
         });
@@ -36,9 +39,9 @@ void kernel_adi(auto steps, auto u, auto v, auto p, auto q) {
     auto v_trans = v ^ noarr::rename<'i', 'j', 'j', 'i'>();
     auto traverser = noarr::traverser(u, v, p, q).order(noarr::bcast<'t'>(steps));
 
-    num_t DX = (num_t)1.0 / (traverser | noarr::get_length<'i'>());
-    num_t DY = (num_t)1.0 / (traverser | noarr::get_length<'j'>());
-    num_t DT = (num_t)1.0 / (traverser | noarr::get_length<'t'>());
+    num_t DX = (num_t)1.0 / (traverser.top_struct() | noarr::get_length<'i'>());
+    num_t DY = (num_t)1.0 / (traverser.top_struct() | noarr::get_length<'j'>());
+    num_t DT = (num_t)1.0 / (traverser.top_struct() | noarr::get_length<'t'>());
 
     num_t B1 = 2.0;
     num_t B2 = 1.0;
@@ -71,7 +74,7 @@ void kernel_adi(auto steps, auto u, auto v, auto p, auto q) {
                                (b + a * p[noarr::neighbor<'j'>(state, -1)]);
                 });
 
-                v[state & (traverser | noarr::get_length<'j'>()) - 1] = (num_t)1.0;
+                v[state & noarr::idx<'j'>((traverser.top_struct() | noarr::get_length<'j'>()) - 1)] = (num_t)1.0; // TODO: think about this
 
                 inner
                     .order(noarr::reverse<'j'>())
@@ -95,7 +98,7 @@ void kernel_adi(auto steps, auto u, auto v, auto p, auto q) {
                                (e + d * p[noarr::neighbor<'j'>(state, -1)]);
                 });
 
-                u[state & (traverser | noarr::get_length<'j'>()) - 1] = (num_t)1.0;
+                u[state & noarr::idx<'j'>((traverser.top_struct() | noarr::get_length<'j'>()) - 1)] = (num_t)1.0;
 
                 inner
                     .order(noarr::reverse<'j'>())
@@ -113,7 +116,7 @@ int main(int argc, char *argv[]) {
 
     // problem size
     std::size_t n = N;
-    std::size_t t = T;
+    std::size_t t = TSTEPS;
 
     // data
     auto u = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'j'>(n, n));

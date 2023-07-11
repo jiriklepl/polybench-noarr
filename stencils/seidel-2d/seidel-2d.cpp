@@ -7,7 +7,10 @@
 #include <noarr/structures/interop/bag.hpp>
 #include <noarr/structures/interop/serialize_data.hpp>
 
-using num_t = float;
+#include "defines.hpp"
+#include "seidel-2d.hpp"
+
+using num_t = DATA_TYPE;
 
 namespace {
 
@@ -15,11 +18,11 @@ namespace {
 void init_array(auto A) {
     // A: i x j
 
-    auto n = noarr::get_length<'i'>(A);
+    auto n = A | noarr::get_length<'i'>();
 
     noarr::traverser(A)
         .for_each([=](auto state) {
-            auto [i, j] = state | noarr::get_indices<'i', 'j'>(state);
+            auto [i, j] = noarr::get_indices<'i', 'j'>(state);
 
             A[state] = ((num_t)i * (j + 2) + 2) / n;
         });
@@ -34,7 +37,7 @@ void kernel_seidel_2d(std::size_t steps, auto A) {
     traverser
         .order(noarr::symmetric_spans<'i', 'j'>(traverser.top_struct(), 1, 1))
         .order(noarr::hoist<'t'>())
-        .inner.for_each([=](auto state) {
+        .template for_each([=](auto state) {
             A[state] = .2 * (
                 A[neighbor<'i', 'j'>(state, -1, -1)] + // corner
                 A[neighbor<'i'>(state, -1)] +          // edge
@@ -55,7 +58,7 @@ int main(int argc, char *argv[]) {
 
     // problem size
     std::size_t n = N;
-    std::size_t t = T;
+    std::size_t t = TSTEPS;
 
     // data
     auto A = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'j'>(n, n));
@@ -74,7 +77,7 @@ int main(int argc, char *argv[]) {
 
     // print results
     if (argv[0] != ""s)
-        noarr::serialize_data(std::cout, /*...*/);
+        noarr::serialize_data(std::cout, A);
 
     std::cout << duration.count() << std::endl;
 }

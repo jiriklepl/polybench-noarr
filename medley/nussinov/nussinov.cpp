@@ -8,7 +8,10 @@
 #include <noarr/structures/interop/bag.hpp>
 #include <noarr/structures/interop/serialize_data.hpp>
 
-using num_t = float;
+#include "defines.hpp"
+#include "nussinov.hpp"
+
+using num_t = DATA_TYPE;
 using base_t = char;
 
 namespace {
@@ -112,7 +115,7 @@ int main(int argc, char *argv[]) {
 
     // print results
     if (argv[0] != ""s)
-        noarr::serialize_data(std::cout, /*...*/);
+        noarr::serialize_data(std::cout, table);
 
     std::cout << duration.count() << std::endl;
 }

@@ -60,7 +60,7 @@ void kernel_trisolv(auto L, auto x, auto b) {
                     b[state] -= L[state] * x_j[state];
                 });
 
-            x[state] /= L[state ^ noarr::fix<'j'>(noarr::get_index<'i'>(state))];
+            x[state] /= L[state & noarr::idx<'j'>(noarr::get_index<'i'>(state))];
         });
 }
 

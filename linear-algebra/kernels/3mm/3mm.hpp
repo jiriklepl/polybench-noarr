@@ -1,5 +1,5 @@
-#ifndef 3MM_HPP
-#define 3MM_HPP
+#ifndef _3MM_HPP
+#define _3MM_HPP
 
 #include "defines.hpp"
 
@@ -35,4 +35,4 @@
 # define NM 2400
 #endif
 
-#endif // 3MM_HPP
+#endif // _3MM_HPP

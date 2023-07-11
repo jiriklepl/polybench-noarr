@@ -6,7 +6,7 @@
 # define MINI_DATASET
 #endif
 
-#if !defined(DATA_TYPE_IS_INT) || !defined(DATA_TYPE_IS_FLOAT) || !defined(DATA_TYPE_IS_DOUBLE)
+#if !defined(DATA_TYPE_IS_INT) && !defined(DATA_TYPE_IS_FLOAT) && !defined(DATA_TYPE_IS_DOUBLE)
 # error "Please define one of DATA_TYPE_IS_INT, DATA_TYPE_IS_FLOAT, DATA_TYPE_IS_DOUBLE"
 # define DATA_TYPE_IS_FLOAT
 #endif

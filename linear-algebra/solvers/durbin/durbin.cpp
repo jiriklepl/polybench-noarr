@@ -32,7 +32,7 @@ void kernel_durbin(auto r, auto y) {
     // r: i
     // y: i
 
-    auto z = noarr::bag(r.structure());
+    auto z = noarr::make_bag(r.structure());
 
     auto r_k = r ^ noarr::rename<'i', 'k'>();
     auto y_k = y ^ noarr::rename<'i', 'k'>();
@@ -47,7 +47,7 @@ void kernel_durbin(auto r, auto y) {
 
     noarr::traverser(r, y, r_k, y_k)
         .order(noarr::shift<'k'>(1))
-        .template for_dims<'k'>([=, &alpha, &beta, &sum](auto inner) {
+        .template for_dims<'k'>([=, &alpha, &beta, &sum, z = z.get_ref()](auto inner) {
             auto state = inner.state();
 
             beta = (1 - alpha * alpha) * beta;

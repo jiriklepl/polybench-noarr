@@ -7,7 +7,10 @@
 #include <noarr/structures/interop/bag.hpp>
 #include <noarr/structures/interop/serialize_data.hpp>
 
-using num_t = float;
+#include "defines.hpp"
+#include "fdtd-2d.hpp"
+
+using num_t = DATA_TYPE;
 
 namespace {
 
@@ -62,8 +65,8 @@ void kernel_fdtd_2d(auto ex, auto ey, auto hz, auto _fict_) {
                 });
             
             inner
-                .order(noarr::span<'i'>(0, noarr::get_length<'i'>(inner) - 1)
-                     ^ noarr::span<'j'>(0, noarr::get_length<'j'>(inner) - 1))
+                .order(noarr::span<'i'>(0, (inner.top_struct() | noarr::get_length<'i'>()) - 1)
+                     ^ noarr::span<'j'>(0, (inner.top_struct() | noarr::get_length<'j'>()) - 1))
                 .template for_each([=](auto state) {
                     hz[state] = hz[state] - (num_t).7 * (
                         ex[noarr::neighbor<'j'>(state, +1)] -
@@ -80,7 +83,7 @@ int main(int argc, char *argv[]) {
     using namespace std::string_literals;
 
     // problem size
-    std::size_t t = T;
+    std::size_t t = TMAX;
     std::size_t ni = NI;
     std::size_t nj = NJ;
 

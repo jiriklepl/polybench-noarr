@@ -18,7 +18,7 @@ namespace {
 void init_array(auto A) {
     // A: i x j
 
-    auto n = noarr::get_length<'i'>(A);
+    auto n = A | noarr::get_length<'i'>();
 
     noarr::traverser(A)
         .template for_dims<'i'>([=](auto inner) {
@@ -33,7 +33,7 @@ void init_array(auto A) {
                 });
             
             inner
-                .order(noarr::shift<'j'>(0, i + 1))
+                .order(noarr::shift<'j'>(i + 1))
                 .template for_each<'j'>([=](auto state) {
                     A[state] = 0;
                 });
@@ -64,11 +64,11 @@ void kernel_lu(auto A) {
                             A[state] -= A_ik[state] * A_kj[state];
                         });
 
-                    A[state] /= (A ^ fix<'i'>(noarr::get_index<'j'>(state)))[state];
+                    A[state] /= (A ^ noarr::fix<'i'>(noarr::get_index<'j'>(state)))[state];
                 });
 
             inner
-                .order(noarr::shift<'j'>(0, noarr::get_index<'i'>(state)))
+                .order(noarr::shift<'j'>(noarr::get_index<'i'>(state)))
                 .template for_each<'j', 'k'>([=](auto state) {
                     A[state] -= A_ik[state] * A_kj[state];
                 });

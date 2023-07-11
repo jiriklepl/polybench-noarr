@@ -36,12 +36,12 @@ void kernel_covariance(num_t float_n, auto data, auto cov, auto mean) {
     auto data_ki = data ^ noarr::rename<'j', 'i'>();
 
     noarr::traverser(data, mean)
-        .template for_dims<'k'>([=](auto inner) {
+        .template for_dims<'j'>([=](auto inner) {
             auto state = inner.state();
 
             mean[state] = 0;
 
-            inner.template for_each<'j'>([=](auto state) {
+            inner.template for_each<'k'>([=](auto state) {
                 mean[state] += data[state];
             });
 
