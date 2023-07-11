@@ -6,7 +6,24 @@ using num_t = float;
 
 namespace {
 
+// initialization function
+void init_array(auto r) {
+    // r: i
+
+    auto n = r | noarr::get_length<'i'>();
+
+    noarr::traverser(r)
+        .for_each([=](auto state) {
+            auto i = noarr::get_index<'i'>(state);
+            r[state] = n + 1 - i;
+        });
+}
+
+// computation kernel
 void kernel_durbin(auto r, auto y) {
+    // r: i
+    // y: i
+
     auto z = noarr::bag(r.structure());
 
     auto r_k = r ^ noarr::rename<'i', 'k'>();
@@ -43,7 +60,7 @@ void kernel_durbin(auto r, auto y) {
             traverser
                 .template for_each<'i'>([=, &alpha, &beta](auto state) {
                     auto [i, k] = noarr::get_indices<'i', 'k'>(state);
-                    // z[state] = y[state] + alpha * y[noarr::neighbor<'k'>(state, -i - 1)];
+                    // z[state] = y[state] + alpha * y_k[noarr::neighbor<'k'>(state, -i - 1)];
                     z[state] = y[state] + alpha * y[noarr::idx<'i'>(k - i - 1)];
                 });
 
@@ -57,3 +74,5 @@ void kernel_durbin(auto r, auto y) {
 }
 
 } // namespace
+
+int main() { /* placeholder */}

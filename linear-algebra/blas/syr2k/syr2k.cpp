@@ -6,7 +6,38 @@ using num_t = float;
 
 namespace {
 
+// initialization function
+void init_array(num_t &alpha, num_t &beta, auto C, auto A, auto B) {
+    // C: i x j
+    // A: i x k
+    // B: i x k
+
+    alpha = 1.5;
+    beta = 1.2;
+
+    auto ni = C | noarr::get_length<'i'>();
+    auto nk = A | noarr::get_length<'k'>();
+
+    noarr::traverser(A, B)
+        .for_each([=](auto state) {
+            auto [i, k] = noarr::get_indices<'i', 'k'>(state);
+            A[state] = (num_t)((i * k + 1) % ni) / ni;
+            B[state] = (num_t)((k * i + 2) % nk) / nk;
+        });
+
+    noarr::traverser(C)
+        .for_each([=](auto state) {
+            auto [i, j] = noarr::get_indices<'i', 'j'>(state);
+            C[state] = (num_t)((i * j + 3) % ni) / nk;
+        });
+}
+
+// computation kernel
 void kernel_syr2k(num_t alpha, num_t beta, auto C, auto A, auto B) {
+    // C: i x j
+    // A: i x k
+    // B: i x k
+
     auto A_renamed = A ^ noarr::rename<'i', 'j'>();
     auto B_renamed = B ^ noarr::rename<'i', 'j'>();
 
@@ -30,3 +61,5 @@ void kernel_syr2k(num_t alpha, num_t beta, auto C, auto A, auto B) {
 }
 
 } // namespace
+
+int main() { /* placeholder */}

@@ -5,7 +5,40 @@ using num_t = float;
 
 namespace {
 
-void kernel_fdtd_2d(std::size_t max, auto ex, auto ey, auto hz, auto _fict_) {
+// initialization function
+void init_array(auto ex, auto ey, auto hz, auto _fict_) {
+    // ex: i x j
+    // ey: i x j
+    // hz: i x j
+    // _fict_: t
+
+    auto ni = ex | noarr::get_length<'i'>();
+    auto nj = ex | noarr::get_length<'j'>();
+    
+    noarr::traverser(_fict_)
+        .template for_each([=](auto state) {
+            auto t = noarr::get_index<'t'>(state);
+            _fict_[state] = t;
+        });
+
+    noarr::traverser(ex, ey, hz)
+        .template for_each([=](auto state) {
+            auto [i, j] = noarr::get_indices<'i', 'j'>(state);
+
+            ex[state] = ((num_t) i * (j + 1)) / ni;
+            ey[state] = ((num_t) i * (j + 2)) / nj;
+            hz[state] = ((num_t) i * (j + 3)) / ni;
+        });
+}
+
+
+// computation kernel
+void kernel_fdtd_2d(auto ex, auto ey, auto hz, auto _fict_) {
+    // ex: i x j
+    // ey: i x j
+    // hz: i x j
+    // _fict_: t
+
     noarr::traverser(ex, ey, hz, _fict_)
         .template for_dims<'t'>([=](auto inner) {
             auto state = inner.state();
@@ -36,3 +69,5 @@ void kernel_fdtd_2d(std::size_t max, auto ex, auto ey, auto hz, auto _fict_) {
 }
 
 } // namespace
+
+int main() { /* placeholder */}

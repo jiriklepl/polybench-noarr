@@ -79,3 +79,5 @@ void kernel_ludcmp(auto A, auto b, auto x, auto y) {
 }
 
 } // namespace
+
+int main() { /* placeholder */}

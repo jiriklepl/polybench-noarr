@@ -7,7 +7,31 @@ using num_t = float;
 
 namespace {
 
+// initialization function
+void init_array(num_t &alpha, auto imgIn, auto imgOut) {
+    // imgIn: i x j
+    // imgOut: i x j
+
+    alpha = 0.25;
+
+    auto ni = imgIn | noarr::get_length<'i'>();
+    auto nj = imgIn | noarr::get_length<'j'>();
+
+    noarr::traverser(imgIn)
+        .for_each([=](auto state) {
+            auto [i, j] = state | noarr::get_indices<'i', 'j'>(state);
+
+            imgIn[state] = (num_t)((313 * i + 991 * j) % 65536) / 65535.0f;
+        });
+}
+
+// computation kernel
 void kernel_deriche(num_t alpha, auto imgIn, auto imgOut, auto y1, auto y2) {
+    // imgIn: i x j
+    // imgOut: i x j
+    // y1: i x j 
+    // y2: i x j
+
     num_t k;
     num_t a1, a2, a3, a4, a5, a6, a7, a8, b1, b2, c1, c2;
     k = ((num_t)1.0 - std::exp(-alpha)) * ((num_t)1.0 - std::exp(-alpha)) / ((num_t)1.0 + (num_t)2.0 * alpha * std::exp(-alpha) - std::exp(((num_t)2.0 * alpha)));
@@ -98,3 +122,5 @@ void kernel_deriche(num_t alpha, auto imgIn, auto imgOut, auto y1, auto y2) {
 }
 
 } // namespace
+
+int main() { /* placeholder */}

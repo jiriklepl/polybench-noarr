@@ -6,7 +6,39 @@ using num_t = float;
 
 namespace {
 
-void kernel_gemver(num_t alpha, num_t beta, auto A, auto u1, auto u2, auto v1, auto v2, auto w, auto x, auto y, auto z) {
+// initialization function
+void init_array(num_t &alpha, num_t &beta, auto A, auto u1, auto v1, auto u2, auto v2, auto w, auto x, auto y, auto z) {
+    alpha = 1.5;
+    beta = 1.2;
+
+    noarr::traverser(A, u1, u2, v1, v2)
+        .template for_dims<'i'>([=](auto inner) {
+            auto state = inner.state();
+
+
+            auto i = noarr::get_index<'i'>(state);
+
+            num_t fn = A | noarr::get_length<'i'>();
+
+            u1[state] = i;
+            u2[state] = ((i + 1) / fn) / 2.0;
+            v1[state] = ((i + 1) / fn) / 4.0;
+            v2[state] = ((i + 1) / fn) / 6.0;
+            y[state] = ((i + 1) / fn) / 8.0;
+            z[state] = ((i + 1) / fn) / 9.0;
+            x[state] = 0.0;
+            w[state] = 0.0;
+
+            inner.for_each([=](auto state) {
+                auto j = noarr::get_index<'j'>(state);
+
+                A[state] = (num_t)(j * i % (A | noarr::get_length<'i'>())) / (A | noarr::get_length<'i'>());
+            });
+        });
+}
+
+// computation kernel
+void kernel_gemver(num_t alpha, num_t beta, auto A, auto u1, auto v1, auto u2, auto v2, auto w, auto x, auto y, auto z) {
     noarr::traverser(A, u1, u2, v1, v2)
         .for_each([=](auto state) {
             A[state] = A[state] + u1[state] * v1[state] + u2[state] * v2[state];
@@ -29,3 +61,5 @@ void kernel_gemver(num_t alpha, num_t beta, auto A, auto u1, auto u2, auto v1, a
 }
 
 } // namespace
+
+int main() { /* placeholder */}

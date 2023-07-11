@@ -6,7 +6,28 @@ using num_t = float;
 
 namespace {
 
+// initialization function
+void init_array(auto A, auto B) {
+    // A: i x j
+    // B: i x j
+
+    auto n = A | noarr::get_length<'i'>();
+
+    noarr::traverser(A, B)
+        .for_each([=](auto state) {
+            auto [i, j] = state | noarr::get_indices<'i', 'j'>(state);
+
+            A[state] = ((num_t)i * (j + 2) + 2) / n;
+            B[state] = ((num_t)i * (j + 3) + 3) / n;
+        });
+}
+
+
+// computation kernel
 void kernel_jacobi_2d(std::size_t steps, auto A, auto B) {
+    // A: i x j
+    // B: i x j
+
     auto traverser = noarr::traverser(A, B).order(noarr::bcast<'t'>(steps));
 
     traverser
@@ -33,3 +54,5 @@ void kernel_jacobi_2d(std::size_t steps, auto A, auto B) {
 }
 
 } // namespace
+
+int main() { /* placeholder */}

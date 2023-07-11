@@ -6,7 +6,24 @@ using num_t = float;
 
 namespace {
 
+// initialization function
+void init_array(auto A) {
+    // A: i x j
+
+    auto n = noarr::get_length<'i'>(A);
+
+    noarr::traverser(A)
+        .for_each([=](auto state) {
+            auto [i, j] = state | noarr::get_indices<'i', 'j'>(state);
+
+            A[state] = ((num_t)i * (j + 2) + 2) / n;
+        });
+}
+
+// computation kernel
 void kernel_seidel_2d(std::size_t steps, auto A) {
+    // A: i x j
+
     auto traverser = noarr::traverser(A).order(noarr::bcast<'t'>(steps));
 
     traverser
@@ -27,3 +44,5 @@ void kernel_seidel_2d(std::size_t steps, auto A) {
 }
 
 } // namespace
+
+int main() { /* placeholder */}

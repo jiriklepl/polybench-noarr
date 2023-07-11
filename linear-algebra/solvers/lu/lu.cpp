@@ -6,29 +6,35 @@ using num_t = float;
 
 namespace {
 
+// initialization function
 void init_array(auto A) {
+    // A: i x j
+
     auto n = noarr::get_length<'i'>(A);
 
     noarr::traverser(A)
         .template for_dims<'i'>([=](auto inner) {
             auto state = inner.state();
 
+            auto i = noarr::get_index<'i'>(state);
+
             inner
-                .order(noarr::slice<'j'>(0, noarr::get_index<'i'>(state)))
+                .order(noarr::slice<'j'>(0, i))
                 .template for_each<'j'>([=](auto state) {
                     A[state] = (num_t) (-noarr::get_index<'j'>(state) % n) / n + 1;
                 });
             
             inner
-                .order(noarr::shift<'j'>(0, noarr::get_index<'i'>(state) + 1))
+                .order(noarr::shift<'j'>(0, i + 1))
                 .template for_each<'j'>([=](auto state) {
                     A[state] = 0;
                 });
             
-            A[state & noarr::idx<'j'>(noarr::get_index<'i'>(state))] = 1;
+            A[state & noarr::idx<'j'>(i)] = 1;
         });
 }
 
+// computation kernel
 void kernel_lu(auto A) {
     // A: i x j
     auto A_ik = A ^ noarr::rename<'j', 'k'>();
@@ -61,3 +67,5 @@ void kernel_lu(auto A) {
 }
 
 } // namespace
+
+int main() { /* placeholder */}

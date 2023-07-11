@@ -5,7 +5,25 @@ using num_t = float;
 
 namespace {
 
+// initialization function
+void init_array(auto A, auto B) {
+    // A: i x j x k
+    // B: i x j x k
+
+    auto n = A | noarr::get_length<'i'>();
+
+    noarr::traverser(A, B)
+        .for_each([=](auto state) {
+            auto [i, j, k] = state | noarr::get_indices<'i', 'j', 'k'>(state);
+
+            A[state] = B[state] = (num_t) (i + j + (n - k)) * 10 / n;
+        });
+}
+
+// computation kernel
 void kernel_heat_3d(std::size_t steps, auto A, auto B) {
+    // A: i x j x k
+
     auto traverser = noarr::traverser(A, B).order(noarr::bcast<'t'>(steps));
 
     traverser
@@ -42,3 +60,5 @@ void kernel_heat_3d(std::size_t steps, auto A, auto B) {
 }
 
 } // namespace
+
+int main() { /* placeholder */}

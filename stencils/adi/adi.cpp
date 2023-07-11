@@ -5,11 +5,27 @@ using num_t = float;
 
 namespace {
 
+// initialization function
+void init_array(auto u) {
+    // u: i x j
+
+    auto n = u | noarr::get_length<'i'>();
+
+    noarr::traverser(u)
+        .for_each([=](auto state) {
+            auto [i, j] = state | noarr::get_indices<'i', 'j'>(state);
+
+            u[state] = (num_t)(i + n - j) / n;
+        });
+}
+
+// computation kernel
 void kernel_adi(auto steps, auto u, auto v, auto p, auto q) {
     // u: i x j
     // v: j x i
     // p: i x j
     // q: i x j
+
     auto u_trans = u ^ noarr::rename<'i', 'j', 'j', 'i'>();
     auto v_trans = v ^ noarr::rename<'i', 'j', 'j', 'i'>();
     auto traverser = noarr::traverser(u, v, p, q).order(noarr::bcast<'t'>(steps));
@@ -85,3 +101,5 @@ void kernel_adi(auto steps, auto u, auto v, auto p, auto q) {
 }
 
 } // namespace
+
+int main() { /* placeholder */}

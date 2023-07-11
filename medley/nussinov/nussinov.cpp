@@ -8,7 +8,31 @@ using base_t = char;
 
 namespace {
 
+// initialization function
+void init_array(auto seq, auto table) {
+    // seq: i
+    // table: i x j
+
+    auto n = seq | noarr::get_length<'i'>();
+
+    noarr::traverser(seq)
+        .for_each([=](auto state) {
+            auto i = noarr::get_index<'i'>(state);
+
+            seq[state] = (base_t)((i + 1) % 4);
+        });
+    
+    noarr::traverser(table)
+        .for_each([=](auto state) {
+            table[state] = 0;
+        });
+}
+
+// computation kernel
 void kernel_nussinov(auto seq, auto table) {
+    // seq: i
+    // table: i x j
+
     auto seq_j = seq ^ noarr::rename<'i', 'j'>();
     auto table_ik = table ^ noarr::rename<'j', 'k'>();
     auto table_kj = table ^ noarr::rename<'i', 'k'>();
@@ -58,3 +82,5 @@ void kernel_nussinov(auto seq, auto table) {
 }
 
 } // namespace
+
+int main() { /* placeholder */}

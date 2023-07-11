@@ -7,21 +7,37 @@ using num_t = float;
 
 namespace {
 
-template<class V, class U>
-float inner_product(V v, U u) {
-    float result = 0;
+// initialization function
+void init_array(auto A, auto R, auto Q) {
+    // A: i x k
+    // R: k x j
+    // Q: i x k
 
-    noarr::traverser(u, v).for_each([&result, u, v](auto state) {
-        result += u[state] * v[state];
-    });
+    auto ni = A | noarr::get_length<'i'>();
+    auto nk = A | noarr::get_length<'k'>();
+    auto nj = R | noarr::get_length<'j'>();
 
-    return result;
+    noarr::traverser(A, Q)
+        .for_each([=](auto state) {
+            auto i = noarr::get_index<'i'>(state);
+            auto k = noarr::get_index<'k'>(state);
+
+            A[state] = ((num_t)((i * k) % ni) / ni) * 100 + 10;
+            Q[state] = 0.0;
+        });
+
+    noarr::traverser(R)
+        .for_each([=](auto state) {
+            R[state] = 0.0;
+        });
 }
 
+// computation kernel
 void kernel_gramschmidt(auto A, auto R, auto Q) {
     // A: i x k
     // R: k x j
     // Q: i x k
+
     auto A_ij = A ^ noarr::rename<'k', 'j'>();
 
     noarr::traverser(A_ij, R, Q)
@@ -60,3 +76,5 @@ void kernel_gramschmidt(auto A, auto R, auto Q) {
 }
 
 } // namespace
+
+int main() { /* placeholder */}

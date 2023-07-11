@@ -8,6 +8,16 @@ using num_t = float;
 
 namespace {
 
+void init_array(num_t &float_n, auto data) {
+    float_n = data | noarr::get_length<'k'>();
+
+    noarr::traverser(data)
+        .template for_each([=](auto state) {
+            auto [k, j] = noarr::get_indices<'k', 'j'>(state);
+            data[state] = (num_t)(k * j) / (data | noarr::get_length<'j'>()) + k;
+        });
+}
+
 void kernel_correlation(num_t float_n, auto data, auto corr, auto mean, auto stddev) {
     num_t eps = .1;
 
@@ -74,3 +84,5 @@ void kernel_correlation(num_t float_n, auto data, auto corr, auto mean, auto std
 }
 
 } // namespace
+
+int main() { /* placeholder */}
