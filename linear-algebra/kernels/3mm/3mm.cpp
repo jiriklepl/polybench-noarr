@@ -24,7 +24,6 @@ void init_array(auto A, auto B, auto C, auto D) {
     auto ni = A | noarr::get_length<'i'>();
     auto nj = B | noarr::get_length<'j'>();
     auto nk = A | noarr::get_length<'k'>();
-    auto nm = C | noarr::get_length<'m'>();
     auto nl = D | noarr::get_length<'l'>();
 
     noarr::traverser(A)

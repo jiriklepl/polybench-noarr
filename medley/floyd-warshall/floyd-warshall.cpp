@@ -19,8 +19,6 @@ namespace {
 void init_array(auto path) {
     // path: i x j
 
-    auto n = path | noarr::get_length<'i'>();
-
     noarr::traverser(path)
         .for_each([=](auto state) {
             auto [i, j] = noarr::get_indices<'i', 'j'>(state);

@@ -50,8 +50,6 @@ void kernel_fdtd_2d(auto ex, auto ey, auto hz, auto _fict_) {
 
     noarr::traverser(ex, ey, hz, _fict_)
         .template for_dims<'t'>([=](auto inner) {
-            auto state = inner.state();
-
             inner
                 .order(noarr::shift<'i'>(1))
                 .template for_each<'j'>([=](auto state) {
@@ -63,7 +61,7 @@ void kernel_fdtd_2d(auto ex, auto ey, auto hz, auto _fict_) {
                 .template for_each([=](auto state) {
                     ey[state] = ey[state] - (num_t).5 * (hz[state] - hz[noarr::neighbor<'i'>(state, -1)]);
                 });
-            
+
             inner
                 .order(noarr::span<'i'>(0, (inner.top_struct() | noarr::get_length<'i'>()) - 1)
                      ^ noarr::span<'j'>(0, (inner.top_struct() | noarr::get_length<'j'>()) - 1))

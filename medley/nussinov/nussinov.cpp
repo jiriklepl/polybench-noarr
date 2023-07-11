@@ -21,8 +21,6 @@ void init_array(auto seq, auto table) {
     // seq: i
     // table: i x j
 
-    auto n = seq | noarr::get_length<'i'>();
-
     noarr::traverser(seq)
         .for_each([=](auto state) {
             auto i = noarr::get_index<'i'>(state);
@@ -71,7 +69,7 @@ void kernel_nussinov(auto seq, auto table) {
                             table[state] = std::max(
                                 table[state],
                                 table[noarr::neighbor<'i', 'j'>(state, 1, -1)]
-                                + (seq[state] + seq[state] == 3 ? 1 : 0));
+                                + (seq[state] + seq_j[state] == 3 ? 1 : 0));
                         else
                             table[state] = std::max(
                                 table[state],

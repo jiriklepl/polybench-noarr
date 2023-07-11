@@ -22,9 +22,6 @@ void init_array(num_t &alpha, auto imgIn, auto) {
 
     alpha = 0.25;
 
-    auto nw = imgIn | noarr::get_length<'w'>();
-    auto nh = imgIn | noarr::get_length<'h'>();
-
     noarr::traverser(imgIn)
         .for_each([=](auto state) {
             auto [w, h] = noarr::get_indices<'w', 'h'>(state);
