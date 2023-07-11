@@ -17,23 +17,37 @@ namespace {
 
 // initialization function
 void init_array(num_t &alpha, num_t &beta, auto A, auto u1, auto v1, auto u2, auto v2, auto w, auto x, auto y, auto z) {
+    // A: i x j
+    // u1: i
+    // v1: j
+    // u2: i
+    // v2: j
+    // w: i
+    // x: i
+    // y: j
+    // z: i
+
     alpha = 1.5;
     beta = 1.2;
 
-    noarr::traverser(A, u1, u2, v1, v2)
+    auto v1_i = v1 ^ noarr::rename<'j', 'i'>();
+    auto v2_i = v2 ^ noarr::rename<'j', 'i'>();
+    auto y_i = y ^ noarr::rename<'j', 'i'>();
+
+    num_t fn = A | noarr::get_length<'i'>();
+
+    noarr::traverser(A, u1, u2, v1_i, v2_i, y_i, z, x, w)
         .template for_dims<'i'>([=](auto inner) {
             auto state = inner.state();
 
 
             auto i = noarr::get_index<'i'>(state);
 
-            num_t fn = A | noarr::get_length<'i'>();
-
             u1[state] = i;
             u2[state] = ((i + 1) / fn) / 2.0;
-            v1[state] = ((i + 1) / fn) / 4.0;
-            v2[state] = ((i + 1) / fn) / 6.0;
-            y[state] = ((i + 1) / fn) / 8.0;
+            v1_i[state] = ((i + 1) / fn) / 4.0;
+            v2_i[state] = ((i + 1) / fn) / 6.0;
+            y_i[state] = ((i + 1) / fn) / 8.0;
             z[state] = ((i + 1) / fn) / 9.0;
             x[state] = 0.0;
             w[state] = 0.0;
@@ -48,14 +62,27 @@ void init_array(num_t &alpha, num_t &beta, auto A, auto u1, auto v1, auto u2, au
 
 // computation kernel
 void kernel_gemver(num_t alpha, num_t beta, auto A, auto u1, auto v1, auto u2, auto v2, auto w, auto x, auto y, auto z) {
+    // A: i x j
+    // u1: i
+    // v1: j
+    // u2: i
+    // v2: j
+    // w: i
+    // x: i
+    // y: j
+    // z: i
+
+    auto A_ji = A ^ noarr::rename<'i', 'j', 'j', 'i'>();
+    auto x_j = x ^ noarr::rename<'i', 'j'>();
+
     noarr::traverser(A, u1, u2, v1, v2)
         .for_each([=](auto state) {
             A[state] = A[state] + u1[state] * v1[state] + u2[state] * v2[state];
         });
 
-    noarr::traverser(x, A, y)
+    noarr::traverser(x, A_ji, y)
         .for_each([=](auto state) {
-            x[state] = x[state] + beta * A[state] * y[state];
+            x[state] = x[state] + beta * A_ji[state] * y[state];
         });
     
     noarr::traverser(x, z)
@@ -63,9 +90,9 @@ void kernel_gemver(num_t alpha, num_t beta, auto A, auto u1, auto v1, auto u2, a
             x[state] = x[state] + z[state];
         });
 
-    noarr::traverser(A, w, x)
-        .for_each([=](auto state) {
-           w[state] = w[state] + alpha * A[state] * x[state];
+    noarr::traverser(A, w, x_j)
+        .template for_each([=](auto state) {
+           w[state] = w[state] + alpha * A[state] * x_j[state];
         });
 }
 
@@ -83,12 +110,12 @@ int main(int argc, char *argv[]) {
 
     auto A = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'j'>(n, n));
     auto u1 = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'i'>(n));
-    auto v1 = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'i'>(n));
+    auto v1 = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'j'>(n));
     auto u2 = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'i'>(n));
-    auto v2 = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'i'>(n));
+    auto v2 = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'j'>(n));
     auto w = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'i'>(n));
     auto x = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'i'>(n));
-    auto y = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'i'>(n));
+    auto y = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'j'>(n));
     auto z = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'i'>(n));
 
     // initialize data
@@ -107,5 +134,5 @@ int main(int argc, char *argv[]) {
     if (argv[0] != ""s)
         noarr::serialize_data(std::cout, w);
 
-    std::cout << duration.count() << std::endl;
+    std::cerr << duration << std::endl;
 }

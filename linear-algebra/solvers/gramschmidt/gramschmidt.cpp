@@ -114,5 +114,5 @@ int main(int argc, char *argv[]) {
         noarr::serialize_data(std::cout, Q);
     }
 
-    std::cout << duration.count() << std::endl;
+    std::cerr << duration << std::endl;
 }

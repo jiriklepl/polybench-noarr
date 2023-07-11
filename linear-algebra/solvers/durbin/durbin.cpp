@@ -66,14 +66,14 @@ void kernel_durbin(auto r, auto y) {
             alpha = -(r_k[state] + sum) / beta;
 
             traverser
-                .template for_each<'i'>([=, &alpha, &beta](auto state) {
+                .template for_each<'i'>([=, &alpha](auto state) {
                     auto [i, k] = noarr::get_indices<'i', 'k'>(state);
                     // z[state] = y[state] + alpha * y_k[noarr::neighbor<'k'>(state, -i - 1)];
                     z[state] = y[state] + alpha * y[noarr::idx<'i'>(k - i - 1)];
                 });
 
             traverser
-                .template for_each<'i'>([=, &alpha, &beta](auto state) {
+                .template for_each<'i'>([=](auto state) {
                     y[state] = z[state];
                 });
 
@@ -109,5 +109,5 @@ int main(int argc, char *argv[]) {
     if (argv[0] != ""s)
         noarr::serialize_data(std::cout, y);
 
-    std::cout << duration.count() << std::endl;
+    std::cerr << duration << std::endl;
 }

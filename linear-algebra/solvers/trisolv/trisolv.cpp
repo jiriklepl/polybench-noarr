@@ -93,5 +93,5 @@ int main(int argc, char *argv[]) {
     if (argv[0] != ""s)
         noarr::serialize_data(std::cout, x);
 
-    std::cout << duration.count() << std::endl;
+    std::cerr << duration << std::endl;
 }

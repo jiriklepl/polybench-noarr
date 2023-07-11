@@ -25,7 +25,6 @@ void init_array(num_t &alpha, num_t &beta, auto C, auto A, auto B) {
 
     auto ni = C | noarr::get_length<'i'>();
     auto nj = C | noarr::get_length<'j'>();
-    auto nk = A | noarr::get_length<'k'>();
 
     noarr::traverser(C)
         .for_each([=](auto state) {
@@ -46,7 +45,6 @@ void init_array(num_t &alpha, num_t &beta, auto C, auto A, auto B) {
             
             inner.order(noarr::shift<'k'>(noarr::get_index<'i'>(state) + 1))
                 .for_each([=](auto state) {
-                    auto [i, k] = noarr::get_indices<'i', 'k'>(state);
                     A[state] = -999;
                 });
         });
@@ -110,5 +108,5 @@ int main(int argc, char *argv[]) {
     if (argv[0] != ""s)
         noarr::serialize_data(std::cout, C);
 
-    std::cout << duration.count() << std::endl;
+    std::cerr << duration << std::endl;
 }
