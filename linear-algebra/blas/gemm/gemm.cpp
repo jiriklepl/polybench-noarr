@@ -6,7 +6,10 @@
 #include <noarr/structures/interop/bag.hpp>
 #include <noarr/structures/interop/serialize_data.hpp>
 
-using num_t = float;
+#include "defines.hpp"
+#include "gemm.hpp"
+
+using num_t = DATA_TYPE;
 
 namespace {
 

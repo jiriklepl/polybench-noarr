@@ -19,14 +19,14 @@ void init_array(num_t &alpha, auto imgIn, auto) {
 
     alpha = 0.25;
 
-    auto ni = imgIn | noarr::get_length<'i'>();
-    auto nj = imgIn | noarr::get_length<'j'>();
+    auto nw = imgIn | noarr::get_length<'w'>();
+    auto nh = imgIn | noarr::get_length<'h'>();
 
     noarr::traverser(imgIn)
         .for_each([=](auto state) {
-            auto [i, j] = state | noarr::get_indices<'i', 'j'>(state);
+            auto [w, h] = noarr::get_indices<'w', 'h'>(state);
 
-            imgIn[state] = (num_t)((313 * i + 991 * j) % 65536) / 65535.0f;
+            imgIn[state] = (num_t)((313 * w + 991 * h) % 65536) / 65535.0f;
         });
 }
 
@@ -49,13 +49,13 @@ void kernel_deriche(num_t alpha, auto imgIn, auto imgOut, auto y1, auto y2) {
     c1 = c2 = 1;
 
     noarr::traverser(imgIn, y1)
-        .template for_dims<'i'>([=](auto inner) {
+        .template for_dims<'w'>([=](auto inner) {
             num_t ym1 = 0;
             num_t ym2 = 0;
             num_t xm1 = 0;
             
             inner
-                .template for_each<'j'>([=, &ym1, &ym2, &xm1](auto state) {
+                .template for_each<'h'>([=, &ym1, &ym2, &xm1](auto state) {
                     y1[state] = a1 * imgIn[state] + a2 * xm1 + b1 * ym1 + b2 * ym2;
                     xm1 = imgIn[state];
                     ym2 = ym1;
@@ -64,15 +64,15 @@ void kernel_deriche(num_t alpha, auto imgIn, auto imgOut, auto y1, auto y2) {
         });
 
     noarr::traverser(imgIn, y2)
-        .template for_dims<'i'>([=](auto inner) {
+        .template for_dims<'w'>([=](auto inner) {
             num_t yp1 = 0;
             num_t yp2 = 0;
             num_t xp1 = 0;
             num_t xp2 = 0;
             
             inner
-                .order(noarr::reverse<'j'>())
-                .template for_each<'j'>([=, &yp1, &yp2, &xp1, &xp2](auto state) {
+                .order(noarr::reverse<'h'>())
+                .template for_each<'h'>([=, &yp1, &yp2, &xp1, &xp2](auto state) {
                     y2[state] = a3 * xp1 + a4 * xp2 + b1 * yp1 + b2 * yp2;
                     xp2 = xp1;
                     xp1 = imgIn[state];
@@ -88,13 +88,13 @@ void kernel_deriche(num_t alpha, auto imgIn, auto imgOut, auto y1, auto y2) {
         });
     
     noarr::traverser(imgOut, y1)
-        .template for_dims<'j'>([=](auto inner) {
+        .template for_dims<'h'>([=](auto inner) {
             num_t tm1 = 0;
             num_t ym1 = 0;
             num_t ym2 = 0;
             
             inner
-                .template for_each<'i'>([=, &tm1, &ym1, &ym2](auto state) {
+                .template for_each<'w'>([=, &tm1, &ym1, &ym2](auto state) {
                     y1[state] = a5 * imgOut[state] + a6 * tm1 + b1 * ym1 + b2 * ym2;
                     tm1 = imgOut[state];
                     ym2 = ym1;
@@ -103,15 +103,15 @@ void kernel_deriche(num_t alpha, auto imgIn, auto imgOut, auto y1, auto y2) {
         });
 
     noarr::traverser(imgOut, y2)
-        .template for_dims<'j'>([=](auto inner) {
+        .template for_dims<'h'>([=](auto inner) {
             num_t tp1 = 0;
             num_t tp2 = 0;
             num_t yp1 = 0;
             num_t yp2 = 0;
             
             inner
-                .order(noarr::reverse<'i'>())
-                .template for_each<'i'>([=, &tp1, &tp2, &yp1, &yp2](auto state) {
+                .order(noarr::reverse<'w'>())
+                .template for_each<'w'>([=, &tp1, &tp2, &yp1, &yp2](auto state) {
                     y2[state] = a7 * tp1 + a8 * tp2 + b1 * yp1 + b2 * yp2;
                     tp2 = tp1;
                     tp1 = imgOut[state];
@@ -132,16 +132,16 @@ int main(int argc, char *argv[]) {
     using namespace std::string_literals;
 
     // problem size
-    std::size_t ni = NI;
-    std::size_t nj = NJ;
+    std::size_t nw = NW;
+    std::size_t nh = NH;
 
     // data
     num_t alpha;
-    auto imgIn = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'j'>(ni, nj));
-    auto imgOut = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'j'>(ni, nj));
+    auto imgIn = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'w', 'h'>(nw, nh));
+    auto imgOut = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'w', 'h'>(nw, nh));
 
-    auto y1 = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'j'>(ni, nj));
-    auto y2 = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'j'>(ni, nj));
+    auto y1 = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'w', 'h'>(nw, nh));
+    auto y2 = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'w', 'h'>(nw, nh));
 
     // initialize data
     init_array(alpha, imgIn.get_ref(), imgOut.get_ref());
