@@ -68,10 +68,11 @@ void kernel_adi(auto steps, auto u, auto v, auto p, auto q) {
                 q[state & noarr::idx<'j'>(0)] = v[state & noarr::idx<'j'>(0)];
 
                 inner.template for_each<'j'>([=](auto state) {
-                    p[state] = -c / (b + a * p[noarr::neighbor<'j'>(state, -1)]);
-                    q[state] = (-d * u_trans[noarr::neighbor<'i'>(state, -1)] + (B1 + B2 * d) * u_trans[state] -
-                                 f * u_trans[noarr::neighbor<'i'>(state, +1)] - a * q[noarr::neighbor<'j'>(state, -1)]) /
-                               (b + a * p[noarr::neighbor<'j'>(state, -1)]);
+                    p[state] = -c / (a * p[noarr::neighbor<'j'>(state, -1)] + b);
+                    q[state] = (-d * u_trans[noarr::neighbor<'i'>(state, -1)] + (B2 + B1 * d) * u_trans[state] -
+                                 f * u_trans[noarr::neighbor<'i'>(state, +1)] -
+                                 a * q[noarr::neighbor<'j'>(state, -1)]) /
+                               (a * p[noarr::neighbor<'j'>(state, -1)] + b);
                 });
 
                 v[state & noarr::idx<'j'>((traverser.top_struct() | noarr::get_length<'j'>()) - 1)] = (num_t)1.0; // TODO: think about this
@@ -92,10 +93,11 @@ void kernel_adi(auto steps, auto u, auto v, auto p, auto q) {
                 q[state & noarr::idx<'j'>(0)] = u[state & noarr::idx<'j'>(0)];
 
                 inner.template for_each<'j'>([=](auto state) {
-                    p[state] = -f / (e + d * p[noarr::neighbor<'j'>(state, -1)]);
-                    q[state] = (-a * v_trans[noarr::neighbor<'i'>(state, -1)] + (B1 + B2 * a) * v_trans[state] -
-                                 c * v_trans[noarr::neighbor<'i'>(state, +1)] - d * q[noarr::neighbor<'j'>(state, -1)]) /
-                               (e + d * p[noarr::neighbor<'j'>(state, -1)]);
+                    p[state] = -f / (d * p[noarr::neighbor<'j'>(state, -1)] + e);
+                    q[state] = (-a * v_trans[noarr::neighbor<'i'>(state, -1)] + (B2 + B1 * a) * v_trans[state] -
+                                 c * v_trans[noarr::neighbor<'i'>(state, +1)] -
+                                 d * q[noarr::neighbor<'j'>(state, -1)]) /
+                               (d * p[noarr::neighbor<'j'>(state, -1)] + e);
                 });
 
                 u[state & noarr::idx<'j'>((traverser.top_struct() | noarr::get_length<'j'>()) - 1)] = (num_t)1.0;

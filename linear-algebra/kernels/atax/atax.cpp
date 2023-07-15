@@ -24,7 +24,7 @@ void init_array(auto A, auto x) {
 
     noarr::traverser(x).for_each([=](auto state) {
         auto j = noarr::get_index<'j'>(state);
-        x[state] = 1 + j / nj;
+        x[state] = 1 + j / (num_t)nj;
     });
 
     noarr::traverser(A).for_each([=](auto state) {
@@ -49,7 +49,7 @@ void kernel_atax(auto A, auto x, auto y, auto tmp) {
         .template for_dims<'i'>([=](auto inner) {
             auto state = inner.state();
 
-            tmp[state] = 0;
+            tmp[state] = 0.0;
 
             inner.template for_each<'j'>([=](auto state) {
                 tmp[state] += A[state] * x[state];

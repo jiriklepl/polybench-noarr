@@ -57,10 +57,10 @@ void kernel_trisolv(auto L, auto x, auto b) {
             inner
                 .order(noarr::slice<'j'>(0, noarr::get_index<'i'>(state)))
                 .template for_each<'j'>([=](auto state) {
-                    b[state] -= L[state] * x_j[state];
+                    x[state] -= L[state] * x_j[state];
                 });
 
-            x[state] /= L[state & noarr::idx<'j'>(noarr::get_index<'i'>(state))];
+            x[state] = x[state] / L[state & noarr::idx<'j'>(noarr::get_index<'i'>(state))];
         });
 }
 

@@ -30,7 +30,7 @@ void init_array(num_t &alpha, num_t &beta, auto C, auto A, auto B) {
         .for_each([=](auto state) {
             auto [i, k] = noarr::get_indices<'i', 'k'>(state);
             A[state] = (num_t)((i * k + 1) % ni) / ni;
-            B[state] = (num_t)((k * i + 2) % nk) / nk;
+            B[state] = (num_t)((i * k + 2) % nk) / nk;
         });
 
     noarr::traverser(C)
@@ -55,15 +55,15 @@ void kernel_syr2k(num_t alpha, num_t beta, auto C, auto A, auto B) {
                 auto state = inner.state();
 
                 inner
-                    .order(noarr::slice<'j'>(0, noarr::get_index<'i'>(state)))
+                    .order(noarr::slice<'j'>(0, noarr::get_index<'i'>(state) + 1))
                     .template for_each<'j'>([=](auto state) {
                         C[state] *= beta;
                     });
 
                 inner
-                    .order(noarr::slice<'j'>(0, noarr::get_index<'i'>(state)))
+                    .order(noarr::slice<'j'>(0, noarr::get_index<'i'>(state) + 1))
                     .template for_each<'k', 'j'>([=](auto state) {
-                        C[state] += alpha * A_renamed[state] * B[state] + alpha * B_renamed[state] * A[state];
+                        C[state] += A_renamed[state] * alpha * B[state] + B_renamed[state] * alpha * A[state];
                     });
             });
 }

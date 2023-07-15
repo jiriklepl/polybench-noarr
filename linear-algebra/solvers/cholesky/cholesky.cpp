@@ -17,7 +17,9 @@ namespace {
 
 // initialization function
 void init_array(auto A) {
-    auto n = A | noarr::get_length<'i'>();
+    // A: i x j
+
+    int n = A | noarr::get_length<'i'>();
 
     noarr::traverser(A)
         .template for_dims<'i'>([=](auto inner) {
@@ -30,8 +32,7 @@ void init_array(auto A) {
             inner
                 .order(noarr::slice<'j'>(0, i + 1))
                 .for_each([=](auto state) {
-                    auto j = noarr::get_index<'j'>(state);
-                    A[state] = (num_t)(-j % n) / n + 1;
+                    A[state] = (num_t) (-(int)noarr::get_index<'j'>(state) % n) / n + 1;
                 });
 
             inner
@@ -73,19 +74,28 @@ void kernel_cholesky(auto A) {
     auto A_ik = A ^ noarr::rename<'j', 'k'>();
     auto A_jk = A ^ noarr::rename<'i', 'j', 'j', 'k'>();
 
-    noarr::traverser(A, A_ik)
+    noarr::traverser(A, A_ik, A_jk)
         .template for_dims<'i'>([=](auto inner) {
             auto state = inner.state();
 
             inner
                 .order(noarr::slice<'j'>(0, noarr::get_index<'i'>(state)))
-                .for_each([=](auto state) {
-                    A[state] -= A_ik[state] * A_jk[state];
+                .template for_dims<'j'>([=](auto inner) {
+                    auto state = inner.state();
+                    
+                    inner
+                        .order(noarr::slice<'k'>(0, noarr::get_index<'j'>(state)))
+                        .template for_each<'k'>([=](auto state) {
+                            A[state] -= A_ik[state] * A_jk[state];
+                        });
+
+                    A[state] /= (A ^ noarr::fix<'i'>(noarr::get_index<'j'>(state)))[state];
                 });
 
             auto A_ii = A ^ noarr::fix<'j'>(noarr::get_index<'i'>(state));
 
             inner
+                .order(noarr::slice<'k'>(0, noarr::get_index<'i'>(state)))
                 .template for_each<'k'>([=](auto state) {
                     A_ii[state] -= A_ik[state] * A_ik[state];
                 });

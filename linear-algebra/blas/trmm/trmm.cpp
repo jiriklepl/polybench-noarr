@@ -60,6 +60,7 @@ void kernel_trmm(num_t alpha, auto A, auto B) {
             auto state = inner.state();
 
             inner
+                .order(noarr::shift<'k'>(noarr::get_index<'i'>(state) + 1))
                 .template for_each<'k'>([=](auto state) {
                     B[state] += A[state] * B_renamed[state];
                 });

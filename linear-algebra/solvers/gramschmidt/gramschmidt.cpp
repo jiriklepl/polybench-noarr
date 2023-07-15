@@ -28,7 +28,7 @@ void init_array(auto A, auto R, auto Q) {
             auto i = noarr::get_index<'i'>(state);
             auto k = noarr::get_index<'k'>(state);
 
-            A[state] = ((num_t)((i * k) % ni) / ni) * 100 + 10;
+            A[state] =(((num_t)((i * k) % ni) / ni) * 100) + 10;
             Q[state] = 0.0;
         });
 
@@ -109,7 +109,6 @@ int main(int argc, char *argv[]) {
 
     // print results
     if (argv[0] != ""s) {
-        noarr::serialize_data(std::cout, A);
         noarr::serialize_data(std::cout, R);
         noarr::serialize_data(std::cout, Q);
     }

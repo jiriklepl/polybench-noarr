@@ -21,7 +21,7 @@ void init_array(auto A, auto b, auto x, auto y) {
     // x: i
     // y: i
 
-    auto n = A | noarr::get_length<'i'>();
+    int n = A | noarr::get_length<'i'>();
     num_t fn = (num_t)n;
 
     noarr::traverser(b, x, y)
@@ -42,16 +42,14 @@ void init_array(auto A, auto b, auto x, auto y) {
             inner
                 .order(noarr::slice<'j'>(0, i + 1))
                 .for_each([=](auto state) {
-                    auto j = noarr::get_index<'j'>(state);
+                    int j = noarr::get_index<'j'>(state);
 
                     A[state] = (num_t)(-j % n) / n + 1;
                 });
             
             inner
                 .order(noarr::shift<'j'>(i + 1))
-                .for_each([=](auto state) {
-                    auto j = noarr::get_index<'j'>(state);
-
+                .template for_each<'j'>([=](auto state) {
                     A[state] = 0;
                 });
 
@@ -91,7 +89,7 @@ void kernel_ludcmp(auto A, auto b, auto x, auto y) {
     auto A_ik = A ^ noarr::rename<'j', 'k'>();
     auto A_kj = A ^ noarr::rename<'i', 'k'>();
 
-    noarr::traverser(A, b, A_ik, A_kj)
+    noarr::traverser(A, b, x, y, A_ik, A_kj)
         .template for_dims<'i'>([=](auto inner) {
             auto state = inner.state();
 
@@ -175,6 +173,7 @@ int main(int argc, char *argv[]) {
     auto y = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'i'>(n));
 
     // initialize data
+    init_array(A.get_ref(), b.get_ref(), x.get_ref(), y.get_ref());
 
     auto start = std::chrono::high_resolution_clock::now();
 
