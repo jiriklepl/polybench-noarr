@@ -60,7 +60,7 @@ void kernel_mvt(auto x1, auto x2, auto y1, auto y2, auto A) {
             x1[state] += A[state] * y1[state];
         });
 
-    noarr::traverser(x2, A, y2)
+    noarr::traverser(x2, A_ji, y2)
         .template for_each<'i', 'j'>([=](auto state) {
             x2[state] += A_ji[state] * y2[state];
         });

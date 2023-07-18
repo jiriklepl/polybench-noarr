@@ -58,9 +58,15 @@ void kernel_fdtd_2d(auto ex, auto ey, auto hz, auto _fict_) {
                 });
 
             inner
-                .order(noarr::shift<'j'>(1))
+                .order(noarr::shift<'i'>(1))
                 .template for_each([=](auto state) {
                     ey[state] = ey[state] - (num_t).5 * (hz[state] - hz[noarr::neighbor<'i'>(state, -1)]);
+                });
+
+            inner
+                .order(noarr::shift<'j'>(1))
+                .template for_each([=](auto state) {
+                    ex[state] = ex[state] - (num_t).5 * (hz[state] - hz[noarr::neighbor<'j'>(state, -1)]);
                 });
 
             inner

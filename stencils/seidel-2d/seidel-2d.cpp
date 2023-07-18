@@ -37,9 +37,9 @@ void kernel_seidel_2d(std::size_t steps, auto A) {
 
     traverser
         .order(noarr::symmetric_spans<'i', 'j'>(traverser.top_struct(), 1, 1))
-        .order(noarr::hoist<'t'>())
+        .order(noarr::reorder<'t', 'i', 'j'>())
         .template for_each([=](auto state) {
-            A[state] = .2 * (
+            A[state] = (
                 A[neighbor<'i', 'j'>(state, -1, -1)] + // corner
                 A[neighbor<'i'>(state, -1)] +          // edge
                 A[neighbor<'i', 'j'>(state, -1, +1)] + // corner
@@ -48,7 +48,7 @@ void kernel_seidel_2d(std::size_t steps, auto A) {
                 A[neighbor<'j'>(state, +1)] +          // edge
                 A[neighbor<'i', 'j'>(state, +1, -1)] + // corner
                 A[neighbor<'i'>(state, +1)] +          // edge
-                A[neighbor<'i', 'j'>(state, +1, +1)]); // corner
+                A[neighbor<'i', 'j'>(state, +1, +1)]) / (num_t)9.0; // corner
         });
 }
 

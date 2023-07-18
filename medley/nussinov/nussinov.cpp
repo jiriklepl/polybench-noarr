@@ -113,10 +113,20 @@ int main(int argc, char *argv[]) {
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
 
     // print results
-    if (argv[0] != ""s) {
+    if (argv[0] != ""s) [table = table.get_ref()] {
         std::cout << std::fixed << std::setprecision(2);
-        noarr::serialize_data(std::cout, table.get_ref() ^ noarr::hoist<'i'>());
-    }
+        noarr::traverser(table)
+            .template for_dims<'i'>([=](auto inner) {
+                auto state = inner.state();
+                std::cout << std::fixed << std::setprecision(2);
+                inner
+                    .order(noarr::shift<'j'>(noarr::get_index<'i'>(state)))
+                    .template for_each<'j'>([=](auto state) {
+                        std::cout << table[state] << " ";
+                    });
+            });
+    }();
+
 
     std::cerr << duration << std::endl;
 }

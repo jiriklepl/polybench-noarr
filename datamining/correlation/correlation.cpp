@@ -39,6 +39,8 @@ void kernel_correlation(num_t float_n, auto data, auto corr, auto mean, auto std
     auto corr_ji = corr ^ noarr::rename<'i', 'j', 'j', 'i'>();
     auto data_ki = data ^ noarr::rename<'j', 'i'>();
 
+    auto ni = corr | noarr::get_length<'i'>();
+
     noarr::traverser(data, mean)
         .template for_dims<'j'>([=](auto inner) {
             auto state = inner.state();
@@ -62,9 +64,9 @@ void kernel_correlation(num_t float_n, auto data, auto corr, auto mean, auto std
                 stddev[state] += (data[state] - mean[state]) * (data[state] - mean[state]);
             });
 
-            stddev[state] /= float_n; // TODO?: - 1
+            stddev[state] /= float_n;
             stddev[state] = std::sqrt(stddev[state]);
-            stddev[state] = stddev[state] <= eps ? (num_t)1 : stddev[state];
+            stddev[state] = stddev[state] <= eps ? (num_t)1.0 : stddev[state];
         });
 
     noarr::traverser(data, mean, stddev)
@@ -75,13 +77,15 @@ void kernel_correlation(num_t float_n, auto data, auto corr, auto mean, auto std
 
     auto traverser = noarr::traverser(data, corr, data_ki, corr_ji);
     traverser
+        .order(noarr::span<'i'>(0, ni - 1))
         .template for_dims<'i'>([=](auto inner) {
             auto state = inner.state();
+            auto i = noarr::get_index<'i'>(state);
 
-            corr[state & noarr::idx<'j'>(noarr::get_index<'i'>(state))] = 1; // TODO: corr_diag
+            corr[state & noarr::idx<'j'>(i)] = 1; // TODO: corr_diag
 
             inner
-                .order(noarr::shift<'j'>(noarr::get_index<'i'>(state) + 1))
+                .order(noarr::shift<'j'>(i + 1))
                 .template for_dims<'j'>([=](auto inner) {
                     auto state = inner.state();
 
@@ -92,9 +96,10 @@ void kernel_correlation(num_t float_n, auto data, auto corr, auto mean, auto std
                     });
 
                     corr_ji[state] = corr[state];
-                    corr_ji[state] /= float_n;
                 });
         });
+
+        corr[noarr::idx<'i'>(ni - 1) & noarr::idx<'j'>(ni - 1)] = 1;
 }
 
 } // namespace
