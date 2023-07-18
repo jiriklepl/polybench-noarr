@@ -1,4 +1,5 @@
 #include <chrono>
+#include <iomanip>
 #include <iostream>
 
 #include <noarr/structures/extra/shortcuts.hpp>
@@ -97,9 +98,13 @@ int main(int argc, char *argv[]) {
 
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
 
+    std::cout << std::fixed << std::setprecision(2);
+
     // print results
-    if (argv[0] != ""s)
+    if (argv[0] != ""s) {
+        std::cout << std::fixed << std::setprecision(2);
         noarr::serialize_data(std::cout, y);
+    }
 
     std::cerr << duration << std::endl;
 }

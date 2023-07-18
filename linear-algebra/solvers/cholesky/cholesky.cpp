@@ -1,5 +1,6 @@
 #include <chrono>
 #include <cmath>
+#include <iomanip>
 #include <iostream>
 
 #include <noarr/structures/extra/shortcuts.hpp>
@@ -128,8 +129,21 @@ int main(int argc, char *argv[]) {
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
 
     // print results
-    if (argv[0] != ""s)
-        noarr::serialize_data(std::cout, A);
+    if (argv[0] != ""s) [A = A.get_ref()] {
+        std::cout << std::fixed << std::setprecision(2);
+        noarr::traverser(A)
+            .template for_dims<'i'>([=](auto inner) {
+                auto state = inner.state();
+
+                inner
+                    .order(noarr::slice<'j'>(0, noarr::get_index<'i'>(state) + 1))
+                    .template for_each<'j'>([=](auto state) {
+                        std::cout << A[state] << " ";
+                    });
+
+                std::cout << std::endl;
+            });
+    }();
 
     std::cerr << duration << std::endl;
 }

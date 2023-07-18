@@ -1,4 +1,5 @@
 #include <chrono>
+#include <iomanip>
 #include <iostream>
 
 #include <noarr/structures/extra/shortcuts.hpp>
@@ -96,6 +97,7 @@ int main(int argc, char *argv[]) {
 
     // print results
     if (argv[0] != ""s) {
+        std::cout << std::fixed << std::setprecision(2);
         noarr::serialize_data(std::cout, x1);
         noarr::serialize_data(std::cout, x2);
     }

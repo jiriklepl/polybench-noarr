@@ -12,7 +12,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 FetchContent_Declare(
   Noarr
   GIT_REPOSITORY https://github.com/jiriklepl/noarr-structures.git
-  GIT_TAG        main)
+  GIT_TAG        constraints-WIP)
 FetchContent_MakeAvailable(Noarr)
 
 # datamining
