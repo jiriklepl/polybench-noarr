@@ -126,7 +126,7 @@ int main(int argc, char *argv[]) {
 
 	auto end = std::chrono::high_resolution_clock::now();
 
-	auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+	auto duration = std::chrono::duration<long double>(end - start);
 
 	// print results
 	if (argv[0] != ""s) [A = A.get_ref()] {
@@ -145,5 +145,5 @@ int main(int argc, char *argv[]) {
 			});
 	}();
 
-	std::cerr << duration << std::endl;
+	std::cerr << duration.count() << std::endl;
 }

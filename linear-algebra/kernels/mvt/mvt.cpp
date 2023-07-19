@@ -93,7 +93,7 @@ int main(int argc, char *argv[]) {
 
 	auto end = std::chrono::high_resolution_clock::now();
 
-	auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+	auto duration = std::chrono::duration<long double>(end - start);
 
 	// print results
 	if (argv[0] != ""s) {
@@ -102,5 +102,5 @@ int main(int argc, char *argv[]) {
 		noarr::serialize_data(std::cout, x2);
 	}
 
-	std::cerr << duration << std::endl;
+	std::cerr << duration.count() << std::endl;
 }
