@@ -17,89 +17,89 @@ namespace {
 
 // initialization function
 void init_array(auto A, auto B) {
-    // A: i x j x k
-    // B: i x j x k
+	// A: i x j x k
+	// B: i x j x k
 
-    auto n = A | noarr::get_length<'i'>();
+	auto n = A | noarr::get_length<'i'>();
 
-    noarr::traverser(A, B)
-        .for_each([=](auto state) {
-            auto [i, j, k] = noarr::get_indices<'i', 'j', 'k'>(state);
+	noarr::traverser(A, B)
+		.for_each([=](auto state) {
+			auto [i, j, k] = noarr::get_indices<'i', 'j', 'k'>(state);
 
-            A[state] = B[state] = (num_t) (i + j + (n - k)) * 10 / n;
-        });
+			A[state] = B[state] = (num_t) (i + j + (n - k)) * 10 / n;
+		});
 }
 
 // computation kernel
 void kernel_heat_3d(std::size_t steps, auto A, auto B) {
-    // A: i x j x k
-    // B: i x j x k
+	// A: i x j x k
+	// B: i x j x k
 
-    auto traverser = noarr::traverser(A, B).order(noarr::bcast<'t'>(steps));
+	auto traverser = noarr::traverser(A, B).order(noarr::bcast<'t'>(steps));
 
-    traverser
-        .order(noarr::symmetric_spans<'i', 'j', 'k'>(traverser.top_struct(), 1, 1, 1))
-        .template for_dims<'t'>([=](auto inner) {
-            inner.for_each([=](auto state) {
-                B[state] =
-                    (num_t).125 * (A[neighbor<'i'>(state, -1)] -
-                                   2 * A[state] +
-                                   A[neighbor<'i'>(state, +1)]) +
-                    (num_t).125 * (A[neighbor<'j'>(state, -1)] -
-                                   2 * A[state] +
-                                   A[neighbor<'j'>(state, +1)]) +
-                    (num_t).125 * (A[neighbor<'k'>(state, -1)] -
-                                   2 * A[state] +
-                                   A[neighbor<'k'>(state, +1)]) +
-                    A[state];
-            });
+	traverser
+		.order(noarr::symmetric_spans<'i', 'j', 'k'>(traverser.top_struct(), 1, 1, 1))
+		.template for_dims<'t'>([=](auto inner) {
+			inner.for_each([=](auto state) {
+				B[state] =
+					(num_t).125 * (A[neighbor<'i'>(state, -1)] -
+					               2 * A[state] +
+								   A[neighbor<'i'>(state, +1)]) +
+					(num_t).125 * (A[neighbor<'j'>(state, -1)] -
+					               2 * A[state] +
+					               A[neighbor<'j'>(state, +1)]) +
+					(num_t).125 * (A[neighbor<'k'>(state, -1)] -
+					               2 * A[state] +
+					               A[neighbor<'k'>(state, +1)]) +
+					A[state];
+			});
 
-            inner.for_each([=](auto state) {
-                A[state] =
-                    (num_t).125 * (B[neighbor<'i'>(state, -1)] -
-                                   2 * B[state] +
-                                   B[neighbor<'i'>(state, +1)]) +
-                    (num_t).125 * (B[neighbor<'j'>(state, -1)] -
-                                   2 * B[state] +
-                                   B[neighbor<'j'>(state, +1)]) +
-                    (num_t).125 * (B[neighbor<'k'>(state, -1)] -
-                                   2 * B[state] +
-                                   B[neighbor<'k'>(state, +1)]) +
-                    B[state];
-            });
-        });
+			inner.for_each([=](auto state) {
+				A[state] =
+					(num_t).125 * (B[neighbor<'i'>(state, -1)] -
+					               2 * B[state] +
+					               B[neighbor<'i'>(state, +1)]) +
+					(num_t).125 * (B[neighbor<'j'>(state, -1)] -
+					               2 * B[state] +
+					               B[neighbor<'j'>(state, +1)]) +
+					(num_t).125 * (B[neighbor<'k'>(state, -1)] -
+					               2 * B[state] +
+					               B[neighbor<'k'>(state, +1)]) +
+					B[state];
+			});
+		});
 }
 
 } // namespace
 
 int main(int argc, char *argv[]) {
-    using namespace std::string_literals;
+	using namespace std::string_literals;
 
-    // problem size
-    std::size_t n = N;
-    std::size_t t = TSTEPS;
+	// problem size
+	std::size_t n = N;
+	std::size_t t = TSTEPS;
 
-    // data
-    auto A = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'j', 'k'>(n, n, n));
-    auto B = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'j', 'k'>(n, n, n));
+	// data
+	auto A = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'j', 'k'>(n, n, n));
+	auto B = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'j', 'k'>(n, n, n));
 
-    // initialize data
-    init_array(A.get_ref(), B.get_ref());
+	// initialize data
+	init_array(A.get_ref(), B.get_ref());
 
-    auto start = std::chrono::high_resolution_clock::now();
+	auto start = std::chrono::high_resolution_clock::now();
 
-    // run kernel
-    kernel_heat_3d(t, A.get_ref(), B.get_ref());
+	// run kernel
+	kernel_heat_3d(t, A.get_ref(), B.get_ref());
 
-    auto end = std::chrono::high_resolution_clock::now();
+	auto end = std::chrono::high_resolution_clock::now();
 
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+	auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
 
-    // print results
-    if (argv[0] != ""s) {
-        std::cout << std::fixed << std::setprecision(2);
-        noarr::serialize_data(std::cout, A.get_ref() ^ noarr::reorder<'i', 'j', 'k'>());
-    }
+	// print results
+	if (argv[0] != ""s) {
+		std::cout << std::fixed << std::setprecision(2);
+		noarr::serialize_data(std::cout, A.get_ref() ^ noarr::reorder<'i', 'j', 'k'>());
+	}
 
-    std::cerr << duration << std::endl;
+	std::cerr << duration << std::endl;
 }

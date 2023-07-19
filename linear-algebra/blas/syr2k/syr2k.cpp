@@ -17,94 +17,92 @@ namespace {
 
 // initialization function
 void init_array(num_t &alpha, num_t &beta, auto C, auto A, auto B) {
-    // C: i x j
-    // A: i x k
-    // B: i x k
+	// C: i x j
+	// A: i x k
+	// B: i x k
 
-    alpha = 1.5;
-    beta = 1.2;
+	alpha = (num_t)1.5;
+	beta = (num_t)1.2;
 
-    auto ni = C | noarr::get_length<'i'>();
-    auto nk = A | noarr::get_length<'k'>();
+	auto ni = C | noarr::get_length<'i'>();
+	auto nk = A | noarr::get_length<'k'>();
 
-    noarr::traverser(A, B)
-        .for_each([=](auto state) {
-            auto [i, k] = noarr::get_indices<'i', 'k'>(state);
-            A[state] = (num_t)((i * k + 1) % ni) / ni;
-            B[state] = (num_t)((i * k + 2) % nk) / nk;
-        });
+	noarr::traverser(A, B)
+		.for_each([=](auto state) {
+			auto [i, k] = noarr::get_indices<'i', 'k'>(state);
+			A[state] = (num_t)((i * k + 1) % ni) / ni;
+			B[state] = (num_t)((i * k + 2) % nk) / nk;
+		});
 
-    noarr::traverser(C)
-        .for_each([=](auto state) {
-            auto [i, j] = noarr::get_indices<'i', 'j'>(state);
-            C[state] = (num_t)((i * j + 3) % ni) / nk;
-        });
+	noarr::traverser(C)
+		.for_each([=](auto state) {
+			auto [i, j] = noarr::get_indices<'i', 'j'>(state);
+			C[state] = (num_t)((i * j + 3) % ni) / nk;
+		});
 }
 
 // computation kernel
 void kernel_syr2k(num_t alpha, num_t beta, auto C, auto A, auto B) {
-    // C: i x j
-    // A: i x k
-    // B: i x k
+	// C: i x j
+	// A: i x k
+	// B: i x k
 
-    auto A_renamed = A ^ noarr::rename<'i', 'j'>();
-    auto B_renamed = B ^ noarr::rename<'i', 'j'>();
+	auto A_renamed = A ^ noarr::rename<'i', 'j'>();
+	auto B_renamed = B ^ noarr::rename<'i', 'j'>();
 
-    noarr::traverser(C, A, B)
-        .template for_dims<'i'>(
-            [=](auto inner) {
-                auto state = inner.state();
+	noarr::traverser(C, A, B)
+		.template for_dims<'i'>(
+			[=](auto inner) {
+				auto state = inner.state();
 
-                inner
-                    .order(noarr::slice<'j'>(0, noarr::get_index<'i'>(state) + 1))
-                    .template for_each<'j'>([=](auto state) {
-                        C[state] *= beta;
-                    });
+				inner
+					.order(noarr::slice<'j'>(0, noarr::get_index<'i'>(state) + 1))
+					.template for_each<'j'>([=](auto state) {
+						C[state] *= beta;
+					});
 
-                inner
-                    .order(noarr::slice<'j'>(0, noarr::get_index<'i'>(state) + 1))
-                    .template for_each<'k', 'j'>([=](auto state) {
-                        C[state] += A_renamed[state] * alpha * B[state] + B_renamed[state] * alpha * A[state];
-                    });
-            });
+				inner
+					.order(noarr::slice<'j'>(0, noarr::get_index<'i'>(state) + 1))
+					.template for_each<'k', 'j'>([=](auto state) {
+						C[state] += A_renamed[state] * alpha * B[state] + B_renamed[state] * alpha * A[state];
+					});
+			});
 }
 
 } // namespace
 
 int main(int argc, char *argv[]) {
-    using namespace std::string_literals;
+	using namespace std::string_literals;
 
-    // problem size
-    std::size_t ni = NI;
-    std::size_t nk = NK;
+	// problem size
+	std::size_t ni = NI;
+	std::size_t nk = NK;
 
-    // data
-    num_t alpha;
-    num_t beta;
-    
-    auto C = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'j'>(ni, ni));
-    auto A = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'k'>(ni, nk));
-    auto B = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'k'>(ni, nk));
+	// data
+	num_t alpha;
+	num_t beta;
+	
+	auto C = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'j'>(ni, ni));
+	auto A = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'k'>(ni, nk));
+	auto B = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'k'>(ni, nk));
 
-    // initialize data
-    init_array(alpha, beta, C.get_ref(), A.get_ref(), B.get_ref());
+	// initialize data
+	init_array(alpha, beta, C.get_ref(), A.get_ref(), B.get_ref());
 
-    auto start = std::chrono::high_resolution_clock::now();
+	auto start = std::chrono::high_resolution_clock::now();
 
-    // run kernel
-    kernel_syr2k(alpha, beta, C.get_ref(), A.get_ref(), B.get_ref());
+	// run kernel
+	kernel_syr2k(alpha, beta, C.get_ref(), A.get_ref(), B.get_ref());
 
-    auto end = std::chrono::high_resolution_clock::now();
+	auto end = std::chrono::high_resolution_clock::now();
 
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+	auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
 
-    std::cout << std::fixed << std::setprecision(2);
+	// print results
+	if (argv[0] != ""s) {
+		std::cout << std::fixed << std::setprecision(2);
+		noarr::serialize_data(std::cout, C.get_ref() ^ noarr::hoist<'i'>());
+	}
 
-    // print results
-    if (argv[0] != ""s) {
-        std::cout << std::fixed << std::setprecision(2);
-        noarr::serialize_data(std::cout, C.get_ref() ^ noarr::hoist<'i'>());
-    }
-
-    std::cerr << duration << std::endl;
+	std::cerr << duration << std::endl;
 }

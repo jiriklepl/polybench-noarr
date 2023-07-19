@@ -17,179 +17,179 @@ namespace {
 
 // initialization function
 void init_array(auto A, auto b, auto x, auto y) {
-    // A: i x j
-    // b: i
-    // x: i
-    // y: i
+	// A: i x j
+	// b: i
+	// x: i
+	// y: i
 
-    int n = A | noarr::get_length<'i'>();
-    num_t fn = (num_t)n;
+	int n = A | noarr::get_length<'i'>();
+	num_t fn = (num_t)n;
 
-    noarr::traverser(b, x, y)
-        .for_each([=](auto state) {
-            auto i = noarr::get_index<'i'>(state);
+	noarr::traverser(b, x, y)
+		.for_each([=](auto state) {
+			auto i = noarr::get_index<'i'>(state);
 
-            x[state] = 0;
-            y[state] = 0;
-            b[state] = (i + 1) / fn / 2.0 + 4;
-        });
+			x[state] = 0;
+			y[state] = 0;
+			b[state] = (i + 1) / fn / 2.0 + 4;
+		});
 
-    noarr::traverser(A)
-        .template for_dims<'i'>([=](auto inner) {
-            auto state = inner.state();
+	noarr::traverser(A)
+		.template for_dims<'i'>([=](auto inner) {
+			auto state = inner.state();
 
-            auto i = noarr::get_index<'i'>(state);
+			auto i = noarr::get_index<'i'>(state);
 
-            inner
-                .order(noarr::slice<'j'>(0, i + 1))
-                .for_each([=](auto state) {
-                    int j = noarr::get_index<'j'>(state);
+			inner
+				.order(noarr::slice<'j'>(0, i + 1))
+				.for_each([=](auto state) {
+					int j = noarr::get_index<'j'>(state);
 
-                    A[state] = (num_t)(-j % n) / n + 1;
-                });
-            
-            inner
-                .order(noarr::shift<'j'>(i + 1))
-                .template for_each<'j'>([=](auto state) {
-                    A[state] = 0;
-                });
+					A[state] = (num_t)(-j % n) / n + 1;
+				});
+			
+			inner
+				.order(noarr::shift<'j'>(i + 1))
+				.template for_each<'j'>([=](auto state) {
+					A[state] = 0;
+				});
 
-            A[state & noarr::idx<'j'>(i)] = 1;
-        });
+			A[state & noarr::idx<'j'>(i)] = 1;
+		});
 
-    // make A positive semi-definite
-    auto B = noarr::make_bag(A.structure());
-    auto B_ref = B.get_ref();
+	// make A positive semi-definite
+	auto B = noarr::make_bag(A.structure());
+	auto B_ref = B.get_ref();
 
-    auto A_ik = A ^ noarr::rename<'j', 'k'>();
-    auto A_jk = A ^ noarr::rename<'i', 'j', 'j', 'k'>();
+	auto A_ik = A ^ noarr::rename<'j', 'k'>();
+	auto A_jk = A ^ noarr::rename<'i', 'j', 'j', 'k'>();
 
-    noarr::traverser(B_ref)
-        .for_each([=](auto state) {
-            B_ref[state] = 0;
-        });
+	noarr::traverser(B_ref)
+		.for_each([=](auto state) {
+			B_ref[state] = 0;
+		});
 
-    noarr::traverser(B_ref, A_ik, A_jk)
-        .for_each([=](auto state) {
-            B_ref[state] += A_ik[state] * A_jk[state];
-        });
+	noarr::traverser(B_ref, A_ik, A_jk)
+		.for_each([=](auto state) {
+			B_ref[state] += A_ik[state] * A_jk[state];
+		});
 
-    noarr::traverser(A, B_ref)
-        .template for_each([=](auto state) {
-            A[state] = B_ref[state];
-        });
+	noarr::traverser(A, B_ref)
+		.template for_each([=](auto state) {
+			A[state] = B_ref[state];
+		});
 }
 
 // computation kernel
 void kernel_ludcmp(auto A, auto b, auto x, auto y) {
-    // A: i x j
-    // b: i
-    // x: i
-    // y: i
+	// A: i x j
+	// b: i
+	// x: i
+	// y: i
 
-    auto A_ik = A ^ noarr::rename<'j', 'k'>();
-    auto A_kj = A ^ noarr::rename<'i', 'k'>();
+	auto A_ik = A ^ noarr::rename<'j', 'k'>();
+	auto A_kj = A ^ noarr::rename<'i', 'k'>();
 
-    noarr::traverser(A, b, x, y, A_ik, A_kj)
-        .template for_dims<'i'>([=](auto inner) {
-            auto state = inner.state();
+	noarr::traverser(A, b, x, y, A_ik, A_kj)
+		.template for_dims<'i'>([=](auto inner) {
+			auto state = inner.state();
 
-            inner
-                .order(noarr::slice<'j'>(0, noarr::get_index<'i'>(state)))
-                .template for_dims<'j'>([=](auto inner) {
-                    auto state = inner.state();
+			inner
+				.order(noarr::slice<'j'>(0, noarr::get_index<'i'>(state)))
+				.template for_dims<'j'>([=](auto inner) {
+					auto state = inner.state();
 
-                    num_t w = A[state];
+					num_t w = A[state];
 
-                    inner
-                        .order(noarr::slice<'k'>(0, noarr::get_index<'j'>(state)))
-                        .template for_each<'k'>([=, &w](auto state) {
-                            w -= A_ik[state] * A_kj[state];
-                        });
+					inner
+						.order(noarr::slice<'k'>(0, noarr::get_index<'j'>(state)))
+						.template for_each<'k'>([=, &w](auto state) {
+							w -= A_ik[state] * A_kj[state];
+						});
 
-                    A[state] = w / (A ^ noarr::fix<'i'>(noarr::get_index<'j'>(state)))[state];
-                });
+					A[state] = w / (A ^ noarr::fix<'i'>(noarr::get_index<'j'>(state)))[state];
+				});
 
-            inner
-                .order(noarr::shift<'j'>(noarr::get_index<'i'>(state)))
-                .template for_dims<'j'>([=](auto inner) {
-                    auto state = inner.state();
+			inner
+				.order(noarr::shift<'j'>(noarr::get_index<'i'>(state)))
+				.template for_dims<'j'>([=](auto inner) {
+					auto state = inner.state();
 
-                    num_t w = A[state];
+					num_t w = A[state];
 
-                    inner
-                        .order(noarr::slice<'k'>(0, noarr::get_index<'i'>(state)))
-                        .template for_each<'k'>([=, &w](auto state) {
-                            w -= A_ik[state] * A_kj[state];
-                        });
+					inner
+						.order(noarr::slice<'k'>(0, noarr::get_index<'i'>(state)))
+						.template for_each<'k'>([=, &w](auto state) {
+							w -= A_ik[state] * A_kj[state];
+						});
 
-                    A[state] = w;
-                });
-        });
+					A[state] = w;
+				});
+		});
 
-        noarr::traverser(A, b, y)
-            .template for_dims<'i'>([=](auto inner) {
-                auto state = inner.state();
+		noarr::traverser(A, b, y)
+			.template for_dims<'i'>([=](auto inner) {
+				auto state = inner.state();
 
-                num_t w = b[state];
+				num_t w = b[state];
 
-                inner
-                    .order(noarr::slice<'j'>(0, noarr::get_index<'i'>(state)))
-                    .template for_each<'j'>([=, &w](auto state) {
-                        w -= A[state] * y[noarr::idx<'i'>(noarr::get_index<'j'>(state))];
-                    });
-                
-                y[state] = w;
-            });
+				inner
+					.order(noarr::slice<'j'>(0, noarr::get_index<'i'>(state)))
+					.template for_each<'j'>([=, &w](auto state) {
+						w -= A[state] * y[noarr::idx<'i'>(noarr::get_index<'j'>(state))];
+					});
+				
+				y[state] = w;
+			});
 
-        noarr::traverser(A, x)
-            .order(noarr::reverse<'i'>())
-            .template for_dims<'i'>([=](auto inner) {
-                auto state = inner.state();
+		noarr::traverser(A, x)
+			.order(noarr::reverse<'i'>())
+			.template for_dims<'i'>([=](auto inner) {
+				auto state = inner.state();
 
-                num_t w = y[state];
+				num_t w = y[state];
 
-                inner
-                    .order(noarr::shift<'j'>(noarr::get_index<'i'>(state) + 1))
-                    .template for_each<'j'>([=, &w](auto state) {
-                        w -= A[state] * x[noarr::idx<'i'>(noarr::get_index<'j'>(state))];
-                    });
-                
-                x[state] = w / A[state & noarr::idx<'j'>(noarr::get_index<'i'>(state))]; // TODO: A_diag
-            });
+				inner
+					.order(noarr::shift<'j'>(noarr::get_index<'i'>(state) + 1))
+					.template for_each<'j'>([=, &w](auto state) {
+						w -= A[state] * x[noarr::idx<'i'>(noarr::get_index<'j'>(state))];
+					});
+				
+				x[state] = w / A[state & noarr::idx<'j'>(noarr::get_index<'i'>(state))]; // TODO: A_diag
+			});
 }
 
 } // namespace
 
 int main(int argc, char *argv[]) {
-    using namespace std::string_literals;
+	using namespace std::string_literals;
 
-    // problem size
-    std::size_t n = N;
+	// problem size
+	std::size_t n = N;
 
-    // data
-    auto A = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'j'>(n, n));
-    auto b = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'i'>(n));
-    auto x = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'i'>(n));
-    auto y = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'i'>(n));
+	// data
+	auto A = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'j'>(n, n));
+	auto b = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'i'>(n));
+	auto x = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'i'>(n));
+	auto y = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'i'>(n));
 
-    // initialize data
-    init_array(A.get_ref(), b.get_ref(), x.get_ref(), y.get_ref());
+	// initialize data
+	init_array(A.get_ref(), b.get_ref(), x.get_ref(), y.get_ref());
 
-    auto start = std::chrono::high_resolution_clock::now();
+	auto start = std::chrono::high_resolution_clock::now();
 
-    // run kernel
-    kernel_ludcmp(A.get_ref(), b.get_ref(), x.get_ref(), y.get_ref());
+	// run kernel
+	kernel_ludcmp(A.get_ref(), b.get_ref(), x.get_ref(), y.get_ref());
 
-    auto end = std::chrono::high_resolution_clock::now();
+	auto end = std::chrono::high_resolution_clock::now();
 
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+	auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
 
-    // print results
-    if (argv[0] != ""s) {
-        std::cout << std::fixed << std::setprecision(2);
-        noarr::serialize_data(std::cout, x);
-    }
+	// print results
+	if (argv[0] != ""s) {
+		std::cout << std::fixed << std::setprecision(2);
+		noarr::serialize_data(std::cout, x);
+	}
 
-    std::cerr << duration << std::endl;
+	std::cerr << duration << std::endl;
 }

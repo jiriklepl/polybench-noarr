@@ -8,9 +8,20 @@ if [ -z "$POLYBENCH_C_DIR" ]; then
 	exit 1
 fi
 
+dirname=$(mktemp -d)
+
+trap "rm -rf $dirname" EXIT
+
 find build -maxdepth 1 -executable -type f \
 	| while read -r file; do
 		filename=$(basename "$file")
-		echo "Comparing $filename"
-		diff -y --suppress-common-lines <("build/$filename" | grep -oE '[0-9]+(\.[0-9]+)?' | cat -n) <("$POLYBENCH_C_DIR/build/$filename" 2>&1 | grep -oE '[0-9]+\.[0-9]+' | cat -n) ||  printf "Different output on %s\n" "$filename" >&2
+		echo "Comparing $filename" >&2
+
+		"build/$filename" > "$dirname/cpp"
+		"$POLYBENCH_C_DIR/build/$filename" 1>&2 2> "$dirname/c"
+
+		diff -y --suppress-common-lines \
+			<(grep -oE '[0-9]+(\.[0-9]+)?' "$dirname/cpp" | cat -n) \
+			<(grep -oE '[0-9]+\.[0-9]+' "$dirname/c" | cat -n) || \
+				printf "Different output on %s\n" "$filename" >&2
 	done

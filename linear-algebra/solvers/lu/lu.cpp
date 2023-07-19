@@ -17,116 +17,116 @@ namespace {
 
 // initialization function
 void init_array(auto A) {
-    // A: i x j
+	// A: i x j
 
-    int n = A | noarr::get_length<'i'>();
+	int n = A | noarr::get_length<'i'>();
 
-    noarr::traverser(A)
-        .template for_dims<'i'>([=](auto inner) {
-            auto state = inner.state();
+	noarr::traverser(A)
+		.template for_dims<'i'>([=](auto inner) {
+			auto state = inner.state();
 
-            auto i = noarr::get_index<'i'>(state);
+			auto i = noarr::get_index<'i'>(state);
 
-            inner
-                .order(noarr::slice<'j'>(0, i + 1))
-                .template for_each<'j'>([=](auto state) {
-                    A[state] = (num_t) (-(int)noarr::get_index<'j'>(state) % n) / n + 1;
-                });
+			inner
+				.order(noarr::slice<'j'>(0, i + 1))
+				.template for_each<'j'>([=](auto state) {
+					A[state] = (num_t) (-(int)noarr::get_index<'j'>(state) % n) / n + 1;
+				});
 
-            inner
-                .order(noarr::shift<'j'>(i + 1))
-                .template for_each<'j'>([=](auto state) {
-                    A[state] = 0;
-                });
+			inner
+				.order(noarr::shift<'j'>(i + 1))
+				.template for_each<'j'>([=](auto state) {
+					A[state] = 0;
+				});
 
-            A[state & noarr::idx<'j'>(i)] = 1;
-        });
+			A[state & noarr::idx<'j'>(i)] = 1;
+		});
 
-    // make A positive semi-definite
-    auto B = noarr::make_bag(A.structure());
-    auto B_ref = B.get_ref();
+	// make A positive semi-definite
+	auto B = noarr::make_bag(A.structure());
+	auto B_ref = B.get_ref();
 
-    auto A_ik = A ^ noarr::rename<'j', 'k'>();
-    auto A_jk = A ^ noarr::rename<'i', 'j', 'j', 'k'>();
+	auto A_ik = A ^ noarr::rename<'j', 'k'>();
+	auto A_jk = A ^ noarr::rename<'i', 'j', 'j', 'k'>();
 
-    noarr::traverser(B_ref)
-        .for_each([=](auto state) {
-            B_ref[state] = 0;
-        });
+	noarr::traverser(B_ref)
+		.for_each([=](auto state) {
+			B_ref[state] = 0;
+		});
 
-    noarr::traverser(B_ref, A_ik, A_jk)
-        .for_each([=](auto state) {
-            B_ref[state] += A_ik[state] * A_jk[state];
-        });
+	noarr::traverser(B_ref, A_ik, A_jk)
+		.for_each([=](auto state) {
+			B_ref[state] += A_ik[state] * A_jk[state];
+		});
 
-    noarr::traverser(A, B_ref)
-        .template for_each([=](auto state) {
-            A[state] = B_ref[state];
-        });
+	noarr::traverser(A, B_ref)
+		.template for_each([=](auto state) {
+			A[state] = B_ref[state];
+		});
 }
 
 // computation kernel
 void kernel_lu(auto A) {
-    // A: i x j
+	// A: i x j
 
-    auto A_ik = A ^ noarr::rename<'j', 'k'>();
-    auto A_kj = A ^ noarr::rename<'i', 'k'>();
+	auto A_ik = A ^ noarr::rename<'j', 'k'>();
+	auto A_kj = A ^ noarr::rename<'i', 'k'>();
 
-    noarr::traverser(A, A_ik, A_kj)
-        .template for_dims<'i'>([=](auto inner) {
-            auto state = inner.state();
+	noarr::traverser(A, A_ik, A_kj)
+		.template for_dims<'i'>([=](auto inner) {
+			auto state = inner.state();
 
-            inner
-                .order(noarr::slice<'j'>(0, noarr::get_index<'i'>(state)))
-                .template for_dims<'j'>([=](auto inner) {
-                    auto state = inner.state();
-                    
-                    inner
-                        .order(noarr::slice<'k'>(0, noarr::get_index<'j'>(state)))
-                        .template for_each<'k'>([=](auto state) {
-                            A[state] -= A_ik[state] * A_kj[state];
-                        });
+			inner
+				.order(noarr::slice<'j'>(0, noarr::get_index<'i'>(state)))
+				.template for_dims<'j'>([=](auto inner) {
+					auto state = inner.state();
+					
+					inner
+						.order(noarr::slice<'k'>(0, noarr::get_index<'j'>(state)))
+						.template for_each<'k'>([=](auto state) {
+							A[state] -= A_ik[state] * A_kj[state];
+						});
 
-                    A[state] /= (A ^ noarr::fix<'i'>(noarr::get_index<'j'>(state)))[state];
-                });
+					A[state] /= (A ^ noarr::fix<'i'>(noarr::get_index<'j'>(state)))[state];
+				});
 
-            inner
-                .order(noarr::shift<'j'>(noarr::get_index<'i'>(state)))
-                .order(noarr::slice<'k'>(0, noarr::get_index<'i'>(state)))
-                .template for_each<'j', 'k'>([=](auto state) {
-                    A[state] -= A_ik[state] * A_kj[state];
-                });
-        });
+			inner
+				.order(noarr::shift<'j'>(noarr::get_index<'i'>(state)))
+				.order(noarr::slice<'k'>(0, noarr::get_index<'i'>(state)))
+				.template for_each<'j', 'k'>([=](auto state) {
+					A[state] -= A_ik[state] * A_kj[state];
+				});
+		});
 }
 
 } // namespace
 
 int main(int argc, char *argv[]) {
-    using namespace std::string_literals;
+	using namespace std::string_literals;
 
-    // problem size
-    std::size_t n = N;
+	// problem size
+	std::size_t n = N;
 
-    // data
-    auto A = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'j'>(n, n));
+	// data
+	auto A = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'j'>(n, n));
 
-    // initialize data
-    init_array(A.get_ref());
+	// initialize data
+	init_array(A.get_ref());
 
-    auto start = std::chrono::high_resolution_clock::now();
+	auto start = std::chrono::high_resolution_clock::now();
 
-    // run kernel
-    kernel_lu(A.get_ref());
+	// run kernel
+	kernel_lu(A.get_ref());
 
-    auto end = std::chrono::high_resolution_clock::now();
+	auto end = std::chrono::high_resolution_clock::now();
 
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+	auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
 
-    // print results
-    if (argv[0] != ""s) {
-        std::cout << std::fixed << std::setprecision(2);
-        noarr::serialize_data(std::cout, A.get_ref() ^ noarr::hoist<'i'>());
-    }
+	// print results
+	if (argv[0] != ""s) {
+		std::cout << std::fixed << std::setprecision(2);
+		noarr::serialize_data(std::cout, A.get_ref() ^ noarr::hoist<'i'>());
+	}
 
-    std::cerr << duration << std::endl;
+	std::cerr << duration << std::endl;
 }

@@ -17,124 +17,124 @@ using num_t = DATA_TYPE;
 namespace {
 
 void init_array(num_t &float_n, auto data) {
-    // data: k x j
+	// data: k x j
 
-    float_n = data | noarr::get_length<'k'>();
+	float_n = data | noarr::get_length<'k'>();
 
-    noarr::traverser(data)
-        .template for_each([=](auto state) {
-            auto [k, j] = noarr::get_indices<'k', 'j'>(state);
-            data[state] = (num_t)(k * j) / (data | noarr::get_length<'j'>()) + k;
-        });
+	noarr::traverser(data)
+		.template for_each([=](auto state) {
+			auto [k, j] = noarr::get_indices<'k', 'j'>(state);
+			data[state] = (num_t)(k * j) / (data | noarr::get_length<'j'>()) + k;
+		});
 }
 
 void kernel_correlation(num_t float_n, auto data, auto corr, auto mean, auto stddev) {
-    // data: k x j
-    // corr: i x j
-    // mean: j
-    // stddev: j
+	// data: k x j
+	// corr: i x j
+	// mean: j
+	// stddev: j
 
-    num_t eps = .1;
+	num_t eps = (num_t).1;
 
-    auto corr_ji = corr ^ noarr::rename<'i', 'j', 'j', 'i'>();
-    auto data_ki = data ^ noarr::rename<'j', 'i'>();
+	auto corr_ji = corr ^ noarr::rename<'i', 'j', 'j', 'i'>();
+	auto data_ki = data ^ noarr::rename<'j', 'i'>();
 
-    auto ni = corr | noarr::get_length<'i'>();
+	auto ni = corr | noarr::get_length<'i'>();
 
-    noarr::traverser(data, mean)
-        .template for_dims<'j'>([=](auto inner) {
-            auto state = inner.state();
+	noarr::traverser(data, mean)
+		.template for_dims<'j'>([=](auto inner) {
+			auto state = inner.state();
 
-            mean[state] = 0;
+			mean[state] = 0;
 
-            inner.template for_each<'k'>([=](auto state) {
-                mean[state] += data[state];
-            });
+			inner.template for_each<'k'>([=](auto state) {
+				mean[state] += data[state];
+			});
 
-            mean[state] /= float_n;
-        });
+			mean[state] /= float_n;
+		});
 
-    noarr::traverser(data, mean, stddev)
-        .template for_dims<'j'>([=](auto inner) {
-            auto state = inner.state();
+	noarr::traverser(data, mean, stddev)
+		.template for_dims<'j'>([=](auto inner) {
+			auto state = inner.state();
 
-            stddev[state] = 0;
+			stddev[state] = 0;
 
-            inner.template for_each<'k'>([=](auto state) {
-                stddev[state] += (data[state] - mean[state]) * (data[state] - mean[state]);
-            });
+			inner.template for_each<'k'>([=](auto state) {
+				stddev[state] += (data[state] - mean[state]) * (data[state] - mean[state]);
+			});
 
-            stddev[state] /= float_n;
-            stddev[state] = std::sqrt(stddev[state]);
-            stddev[state] = stddev[state] <= eps ? (num_t)1.0 : stddev[state];
-        });
+			stddev[state] /= float_n;
+			stddev[state] = std::sqrt(stddev[state]);
+			stddev[state] = stddev[state] <= eps ? (num_t)1.0 : stddev[state];
+		});
 
-    noarr::traverser(data, mean, stddev)
-        .template for_each<'k', 'j'>([=](auto state) {
-            data[state] -= mean[state];
-            data[state] /= std::sqrt(float_n) * stddev[state];
-        });
+	noarr::traverser(data, mean, stddev)
+		.template for_each<'k', 'j'>([=](auto state) {
+			data[state] -= mean[state];
+			data[state] /= std::sqrt(float_n) * stddev[state];
+		});
 
-    auto traverser = noarr::traverser(data, corr, data_ki, corr_ji);
-    traverser
-        .order(noarr::span<'i'>(0, ni - 1))
-        .template for_dims<'i'>([=](auto inner) {
-            auto state = inner.state();
-            auto i = noarr::get_index<'i'>(state);
+	auto traverser = noarr::traverser(data, corr, data_ki, corr_ji);
+	traverser
+		.order(noarr::span<'i'>(0, ni - 1))
+		.template for_dims<'i'>([=](auto inner) {
+			auto state = inner.state();
+			auto i = noarr::get_index<'i'>(state);
 
-            corr[state & noarr::idx<'j'>(i)] = 1; // TODO: corr_diag
+			corr[state & noarr::idx<'j'>(i)] = 1; // TODO: corr_diag
 
-            inner
-                .order(noarr::shift<'j'>(i + 1))
-                .template for_dims<'j'>([=](auto inner) {
-                    auto state = inner.state();
+			inner
+				.order(noarr::shift<'j'>(i + 1))
+				.template for_dims<'j'>([=](auto inner) {
+					auto state = inner.state();
 
-                    corr[state] = 0;
+					corr[state] = 0;
 
-                    inner.template for_each<'k'>([=](auto state) {
-                        corr[state] += data_ki[state] * data[state];
-                    });
+					inner.template for_each<'k'>([=](auto state) {
+						corr[state] += data_ki[state] * data[state];
+					});
 
-                    corr_ji[state] = corr[state];
-                });
-        });
+					corr_ji[state] = corr[state];
+				});
+		});
 
-        corr[noarr::idx<'i'>(ni - 1) & noarr::idx<'j'>(ni - 1)] = 1;
+		corr[noarr::idx<'i'>(ni - 1) & noarr::idx<'j'>(ni - 1)] = 1;
 }
 
 } // namespace
 
 int main(int argc, char *argv[]) {
-    using namespace std::string_literals;
+	using namespace std::string_literals;
 
-    // problem size
-    std::size_t nk = NK;
-    std::size_t nj = NJ;
+	// problem size
+	std::size_t nk = NK;
+	std::size_t nj = NJ;
 
-    // data
-    num_t float_n;
-    auto data = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'k', 'j'>(nk, nj));
-    auto corr = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'j'>(nj, nj));
-    auto mean = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'j'>(nj));
-    auto stddev = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'j'>(nj));
+	// data
+	num_t float_n;
+	auto data = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'k', 'j'>(nk, nj));
+	auto corr = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'j'>(nj, nj));
+	auto mean = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'j'>(nj));
+	auto stddev = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'j'>(nj));
 
-    // initialize data
-    init_array(float_n, data.get_ref());
+	// initialize data
+	init_array(float_n, data.get_ref());
 
-    auto start = std::chrono::high_resolution_clock::now();
+	auto start = std::chrono::high_resolution_clock::now();
 
-    // run kernel
-    kernel_correlation(float_n, data.get_ref(), corr.get_ref(), mean.get_ref(), stddev.get_ref());
+	// run kernel
+	kernel_correlation(float_n, data.get_ref(), corr.get_ref(), mean.get_ref(), stddev.get_ref());
 
-    auto end = std::chrono::high_resolution_clock::now();
+	auto end = std::chrono::high_resolution_clock::now();
 
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+	auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
 
-    // print results
-    if (argv[0] != ""s) {
-        std::cout << std::fixed << std::setprecision(2);
-        noarr::serialize_data(std::cout, corr.get_ref() ^ noarr::hoist<'i'>());
-    }
+	// print results
+	if (argv[0] != ""s) {
+		std::cout << std::fixed << std::setprecision(2);
+		noarr::serialize_data(std::cout, corr.get_ref() ^ noarr::hoist<'i'>());
+	}
 
-    std::cerr << duration << std::endl;
+	std::cerr << duration << std::endl;
 }
