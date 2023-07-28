@@ -95,7 +95,7 @@ int main(int argc, char *argv[]) {
 	auto duration = std::chrono::duration<long double>(end - start);
 
 	// print results
-	if (argv[0] != ""s) {
+	if (argc > 0 && argv[0] != ""s) {
 		std::cout << std::fixed << std::setprecision(2);
 		noarr::serialize_data(std::cout, A.get_ref() ^ noarr::reorder<'i', 'j', 'k'>());
 	}

@@ -128,7 +128,7 @@ int main(int argc, char *argv[]) {
 	auto duration = std::chrono::duration<long double>(end - start);
 
 	// print results
-	if (argv[0] != ""s) [A = A.get_ref()] {
+	if (argc > 0 && argv[0] != ""s) [A = A.get_ref()] {
 		std::cout << std::fixed << std::setprecision(2);
 		noarr::traverser(A)
 			.template for_dims<'i'>([=](auto inner) {
