@@ -3,7 +3,6 @@
 #include <iomanip>
 #include <iostream>
 
-#include <noarr/structures/extra/shortcuts.hpp>
 #include <noarr/structures_extended.hpp>
 #include <noarr/structures/extra/traverser.hpp>
 #include <noarr/structures/interop/bag.hpp>
@@ -47,7 +46,7 @@ void kernel_gramschmidt(auto A, auto R, auto Q) {
 
 	auto A_ij = A ^ noarr::rename<'k', 'j'>();
 
-	noarr::traverser(/* FIXME: A_ij, */ R, Q)
+	noarr::traverser(A_ij, R, Q)
 		.template for_dims<'k'>([=](auto inner) {
 			auto state = inner.state();
 			num_t norm = 0;
@@ -72,11 +71,11 @@ void kernel_gramschmidt(auto A, auto R, auto Q) {
 					R[state] = 0;
 
 					inner.template for_each<'i'>([=](auto state) {
-						R[state] += Q[state] * A_ij[state];
+						R[state] = R[state] + Q[state] * A_ij[state];
 					});
 
 					inner.template for_each<'i'>([=](auto state) {
-						A_ij[state] -= Q[state] * R[state];
+						A_ij[state] = A_ij[state] - Q[state] * R[state];
 					});
 				});
 		});

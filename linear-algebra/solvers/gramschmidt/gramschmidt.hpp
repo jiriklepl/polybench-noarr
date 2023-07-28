@@ -16,7 +16,7 @@
 # define NI 1000
 # define NJ 1200
 #elif defined(EXTRALARGE_DATASET)
-# define NI 2200
+# define NI 2000
 # define NJ 2600
 #endif
 

@@ -3,7 +3,6 @@
 #include <iomanip>
 #include <iostream>
 
-#include <noarr/structures/extra/shortcuts.hpp>
 #include <noarr/structures_extended.hpp>
 #include <noarr/structures/extra/traverser.hpp>
 #include <noarr/structures/interop/bag.hpp>
