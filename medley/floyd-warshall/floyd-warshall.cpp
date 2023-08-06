@@ -42,7 +42,6 @@ void kernel_floyd_warshall(auto path) {
 			inner.for_each([=](auto state) {
 				path[state] = std::min(path_start_k[state] + path_end_k[state], path[state]);
 			});
-
 		});
 }
 
