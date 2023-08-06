@@ -12,12 +12,24 @@ dirname=$(mktemp -d)
 
 trap "rm -rf $dirname" EXIT
 
+(
+	cd "$POLYBENCH_C_DIR" || exit 1
+	./build.sh || exit 1
+)
+
+(
+	./build.sh || exit 1
+)
+
 find build -maxdepth 1 -executable -type f \
 	| while read -r file; do
 		filename=$(basename "$file")
-		echo "Comparing $filename" >&2
+		echo "Comparing $filename"
 
+		printf "Noarr: " >&2
 		"build/$filename" > "$dirname/cpp"
+
+		printf "C:     " >&2
 		"$POLYBENCH_C_DIR/build/$filename" 1>&2 2> "$dirname/c"
 
 		diff -y --suppress-common-lines \
