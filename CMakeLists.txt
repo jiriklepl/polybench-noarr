@@ -12,11 +12,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 FetchContent_Declare(
   Noarr
   GIT_REPOSITORY https://github.com/jiriklepl/noarr-structures.git
-  GIT_TAG        main)
+  GIT_TAG        metastructures-WIP)
 FetchContent_MakeAvailable(Noarr)
 
 include_directories(include)
 include_directories(${Noarr_SOURCE_DIR}/include)
+include_directories(${Noarr_SOURCE_DIR}/autotuners/opentuner_test)
 
 # datamining
 add_executable(correlation datamining/correlation/correlation.cpp)
@@ -59,3 +60,6 @@ add_executable(heat-3d stencils/heat-3d/heat-3d.cpp)
 add_executable(jacobi-1d stencils/jacobi-1d/jacobi-1d.cpp)
 add_executable(jacobi-2d stencils/jacobi-2d/jacobi-2d.cpp)
 add_executable(seidel-2d stencils/seidel-2d/seidel-2d.cpp)
+
+# autotuning
+add_executable(gemm_autotune linear-algebra/blas/gemm/gemm.cpp)
