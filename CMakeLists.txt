@@ -63,3 +63,4 @@ add_executable(seidel-2d stencils/seidel-2d/seidel-2d.cpp)
 
 # autotuning
 add_executable(gemm_autotune linear-algebra/blas/gemm/gemm.cpp)
+add_executable(jacobi-2d_autotune stencils/jacobi-2d/jacobi-2d.cpp)
