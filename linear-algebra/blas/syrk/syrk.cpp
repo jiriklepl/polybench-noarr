@@ -60,7 +60,7 @@ void kernel_syrk(num_t alpha, num_t beta, auto C, auto A) {
 
 				inner
 					.order(noarr::slice<'j'>(0, noarr::get_index<'i'>(state) + 1))
-					.template for_each<'k', 'j'>([=](auto state) {
+					.for_each([=](auto state) {
 						C[state] += alpha * A[state] * A_renamed[state];
 					});
 			});

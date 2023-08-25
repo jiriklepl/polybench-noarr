@@ -19,11 +19,10 @@ void init_array(num_t &float_n, auto data) {
 
 	float_n = data | noarr::get_length<'k'>();
 
-	noarr::traverser(data)
-		.template for_each([=](auto state) {
-			auto [k, j] = noarr::get_indices<'k', 'j'>(state);
-			data[state] = (num_t)(k * j) / (data | noarr::get_length<'j'>());
-		});
+	noarr::traverser(data).for_each([=](auto state) {
+		auto [k, j] = noarr::get_indices<'k', 'j'>(state);
+		data[state] = (num_t)(k * j) / (data | noarr::get_length<'j'>());
+	});
 }
 
 
@@ -41,17 +40,16 @@ void kernel_covariance(num_t float_n, auto data, auto cov, auto mean) {
 
 			mean[state] = 0;
 
-			inner.template for_each<'k'>([=](auto state) {
+			inner.for_each([=](auto state) {
 				mean[state] += data[state];
 			});
 
 			mean[state] /= float_n;
 		});
 
-	noarr::traverser(data, mean)
-		.template for_each<'k', 'j'>([=](auto state) {
-			data[state] -= mean[state];
-		});
+	noarr::traverser(data, mean).for_each([=](auto state) {
+		data[state] -= mean[state];
+	});
 
 	noarr::traverser(data, cov, mean)
 		.template for_dims<'i'>([=](auto inner) {
@@ -62,7 +60,7 @@ void kernel_covariance(num_t float_n, auto data, auto cov, auto mean) {
 
 					cov[state] = 0;
 
-					inner.template for_each<'k'>([=](auto state) {
+					inner.for_each([=](auto state) {
 						cov[state] += data[state] * data_ki[state];
 					});
 

@@ -49,7 +49,7 @@ void init_array(auto A, auto b, auto x, auto y) {
 			
 			inner
 				.order(noarr::shift<'j'>(i + 1))
-				.template for_each<'j'>([=](auto state) {
+				.for_each([=](auto state) {
 					A[state] = 0;
 				});
 
@@ -73,10 +73,9 @@ void init_array(auto A, auto b, auto x, auto y) {
 			B_ref[state] += A_ik[state] * A_jk[state];
 		});
 
-	noarr::traverser(A, B_ref)
-		.template for_each([=](auto state) {
-			A[state] = B_ref[state];
-		});
+	noarr::traverser(A, B_ref).for_each([=](auto state) {
+		A[state] = B_ref[state];
+	});
 }
 
 // computation kernel

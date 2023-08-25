@@ -51,11 +51,11 @@ void kernel_atax(auto A, auto x, auto y, auto tmp) {
 
 			tmp[state] = 0.0;
 
-			inner.template for_each<'j'>([=](auto state) {
+			inner.for_each([=](auto state) {
 				tmp[state] += A[state] * x[state];
 			});
 
-			inner.template for_each<'j'>([=](auto state) {
+			inner.for_each([=](auto state) {
 				y[state] += A[state] * tmp[state];
 			});
 		});

@@ -31,7 +31,7 @@ void init_array(num_t &alpha, auto A, auto B) {
 			auto k = noarr::get_index<'k'>(state);
 
 			inner.order(noarr::slice<'i'>(0, k))
-				.template for_each<'i'>([=](auto state) {
+				.for_each([=](auto state) {
 					auto i = noarr::get_index<'i'>(state);
 					A[state] = (num_t)((k + i) % ni) / ni;
 				});
@@ -39,13 +39,11 @@ void init_array(num_t &alpha, auto A, auto B) {
 			A[state & noarr::idx<'i'>(k)] = 1.0;
 		});
 
-	noarr::traverser(B)
-		.template for_each([=](auto state) {
+	noarr::traverser(B).for_each([=](auto state) {
+		auto [i, j] = noarr::get_indices<'i', 'j'>(state);
 
-			auto [i, j] = noarr::get_indices<'i', 'j'>(state);
-
-			B[state] = (num_t)((nj + (i - j)) % nj) / nj;
-		});
+		B[state] = (num_t)((nj + (i - j)) % nj) / nj;
+	});
 }
 
 // computation kernel

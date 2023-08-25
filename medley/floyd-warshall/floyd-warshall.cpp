@@ -32,12 +32,15 @@ void init_array(auto path) {
 
 
 // computation kernel
-void kernel_floyd_warshall(auto path) {
+template<class Order = noarr::neutral_proto>
+void kernel_floyd_warshall(auto path, Order order = {}) {
 	// path: i x j
+
 	auto path_start_k = path ^ noarr::rename<'i', 'k'>();
 	auto path_end_k = path ^ noarr::rename<'j', 'k'>();
 	
 	noarr::traverser(path, path_start_k, path_end_k)
+		.order(order)
 		.template for_dims<'k'>([=](auto inner) {
 			inner.for_each([=](auto state) {
 				path[state] = std::min(path_start_k[state] + path_end_k[state], path[state]);

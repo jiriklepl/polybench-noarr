@@ -36,7 +36,7 @@ void init_array(auto A, auto r, auto p) {
 
 			r[state] = (num_t)(i % ni) / ni;
 
-			inner.template for_each<'j'>([=](auto state) {
+			inner.for_each([=](auto state) {
 				auto j = noarr::get_index<'j'>(state);
 
 				A[state] = (num_t)(i * (j + 1) % ni) / ni;

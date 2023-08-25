@@ -37,7 +37,7 @@ void kernel_seidel_2d(std::size_t steps, auto A) {
 	traverser
 		.order(noarr::symmetric_spans<'i', 'j'>(traverser.top_struct(), 1, 1))
 		.order(noarr::reorder<'t', 'i', 'j'>())
-		.template for_each([=](auto state) {
+		.for_each([=](auto state) {
 			A[state] = (
 				A[neighbor<'i', 'j'>(state, -1, -1)] + // corner
 				A[neighbor<'i'>(state, -1)] +          // edge

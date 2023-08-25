@@ -69,7 +69,7 @@ void kernel_2mm(num_t alpha, num_t beta, auto tmp, auto A, auto B, auto C, auto 
 
 			tmp[state] = 0;
 
-			inner.template for_each<'k'>([=](auto state) {
+			inner.for_each([=](auto state) {
 				tmp[state] += alpha * A[state] * B[state];
 			});
 		});
@@ -80,7 +80,7 @@ void kernel_2mm(num_t alpha, num_t beta, auto tmp, auto A, auto B, auto C, auto 
 
 			D[state] *= beta;
 
-			inner.template for_each<'j'>([=](auto state) {
+			inner.for_each([=](auto state) {
 				D[state] += tmp[state] * C[state];
 			});
 		});

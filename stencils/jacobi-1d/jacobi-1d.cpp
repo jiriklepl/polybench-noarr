@@ -22,7 +22,7 @@ void init_array(auto A, auto B) {
 	auto n = A | noarr::get_length<'i'>();
 
 	noarr::traverser(A, B)
-		.template for_each<'i'>([=](auto state) {
+		.for_each([=](auto state) {
 			auto i = noarr::get_index<'i'>(state);
 
 			A[state] = ((num_t) i + 2) / n;
@@ -32,7 +32,8 @@ void init_array(auto A, auto B) {
 
 
 // computation kernel
-void kernel_jacobi_1d(std::size_t steps, auto A, auto B) {
+template<class Order = noarr::neutral_proto>
+void kernel_jacobi_1d(std::size_t steps, auto A, auto B, Order order = {}) {
 	// A: i
 	// B: i
 
@@ -40,6 +41,7 @@ void kernel_jacobi_1d(std::size_t steps, auto A, auto B) {
 
 	traverser
 		.order(noarr::symmetric_span<'i'>(traverser.top_struct(), 1))
+		.order(order)
 		.template for_dims<'t'>([=](auto inner) {
 			inner.for_each([=](auto state) {
 				B[state] = 0.33333 * (A[neighbor<'i'>(state, -1)] + A[state] + A[neighbor<'i'>(state, +1)]);

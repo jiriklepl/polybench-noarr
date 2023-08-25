@@ -33,7 +33,7 @@ void init_array(num_t &alpha, num_t &beta, auto A, auto B, auto x) {
 
 			x[noarr::idx<'j'>(i)] = (num_t)(i % n) / n;
 
-			inner.template for_each<'j'>([=](auto state) {
+			inner.for_each([=](auto state) {
 				auto j = noarr::get_index<'j'>(state);
 
 				A[state] = (num_t)((i * j + 1) % n) / n;
@@ -57,7 +57,7 @@ void kernel_gesummv(num_t alpha, num_t beta, auto A, auto B, auto tmp, auto x, a
 			tmp[state] = 0;
 			y[state] = 0;
 
-			inner.template for_each<'j'>([=](auto state) {
+			inner.for_each([=](auto state) {
 				tmp[state] += A[state] * x[state];
 				y[state] += B[state] * x[state];
 			});

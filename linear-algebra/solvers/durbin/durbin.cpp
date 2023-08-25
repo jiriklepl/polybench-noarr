@@ -56,26 +56,23 @@ void kernel_durbin(auto r, auto y) {
 			auto traverser = inner
 				.order(noarr::slice<'i'>(0, noarr::get_index<'k'>(state)));
 
-			traverser
-				.template for_each<'i'>([=, &sum](auto state) {
-					auto [i, k] = noarr::get_indices<'i', 'k'>(state);
-					// sum += r_k[noarr::neighbor<'k'>(state, -i - 1)] * y[state];
-					sum += r[noarr::idx<'i'>(k - i - 1)] * y[state];
-				});
+			traverser.for_each([=, &sum](auto state) {
+				auto [i, k] = noarr::get_indices<'i', 'k'>(state);
+				// sum += r_k[noarr::neighbor<'k'>(state, -i - 1)] * y[state];
+				sum += r[noarr::idx<'i'>(k - i - 1)] * y[state];
+			});
 
 			alpha = -(r_k[state] + sum) / beta;
 
-			traverser
-				.template for_each<'i'>([=, &alpha](auto state) {
-					auto [i, k] = noarr::get_indices<'i', 'k'>(state);
-					// z[state] = y[state] + alpha * y_k[noarr::neighbor<'k'>(state, -i - 1)];
-					z[state] = y[state] + alpha * y[noarr::idx<'i'>(k - i - 1)];
-				});
+			traverser.for_each([=, &alpha](auto state) {
+				auto [i, k] = noarr::get_indices<'i', 'k'>(state);
+				// z[state] = y[state] + alpha * y_k[noarr::neighbor<'k'>(state, -i - 1)];
+				z[state] = y[state] + alpha * y[noarr::idx<'i'>(k - i - 1)];
+			});
 
-			traverser
-				.template for_each<'i'>([=](auto state) {
-					y[state] = z[state];
-				});
+			traverser.for_each([=](auto state) {
+				y[state] = z[state];
+			});
 
 			y_k[state] = alpha;
 		});

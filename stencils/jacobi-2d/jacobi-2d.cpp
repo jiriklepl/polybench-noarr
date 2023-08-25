@@ -32,7 +32,8 @@ void init_array(auto A, auto B) {
 
 
 // computation kernel
-void kernel_jacobi_2d(std::size_t steps, auto A, auto B) {
+template<class Order = noarr::neutral_proto>
+void kernel_jacobi_2d(std::size_t steps, auto A, auto B, Order order = {}) {
 	// A: i x j
 	// B: i x j
 
@@ -40,6 +41,7 @@ void kernel_jacobi_2d(std::size_t steps, auto A, auto B) {
 
 	traverser
 		.order(noarr::symmetric_spans<'i', 'j'>(traverser.top_struct(), 1, 1))
+		.order(order)
 		.template for_dims<'t'>([=](auto inner) {
 			inner.for_each([=](auto state) {
 				B[state] = (num_t).2 * (

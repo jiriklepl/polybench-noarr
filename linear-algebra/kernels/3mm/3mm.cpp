@@ -67,7 +67,7 @@ void kernel_3mm(auto E, auto A, auto B, auto F, auto C, auto D, auto G) {
 
 			E[state] = 0;
 
-			inner.template for_each<'k'>([=](auto state) {
+			inner.for_each([=](auto state) {
 				E[state] += A[state] * B[state];
 			});
 		});
@@ -78,7 +78,7 @@ void kernel_3mm(auto E, auto A, auto B, auto F, auto C, auto D, auto G) {
 
 			F[state] = 0;
 
-			inner.template for_each<'m'>([=](auto state) {
+			inner.for_each([=](auto state) {
 				F[state] += C[state] * D[state];
 			});
 		});
@@ -89,7 +89,7 @@ void kernel_3mm(auto E, auto A, auto B, auto F, auto C, auto D, auto G) {
 
 			G[state] = 0;
 
-			inner.template for_each<'j'>([=](auto state) {
+			inner.for_each([=](auto state) {
 				G[state] += E[state] * F[state];
 			});
 		});

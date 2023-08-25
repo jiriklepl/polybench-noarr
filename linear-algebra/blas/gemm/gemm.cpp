@@ -43,7 +43,8 @@ void init_array(num_t &alpha, num_t &beta, auto C, auto A, auto B) {
 }
 
 // computation kernel
-void kernel_gemm(num_t alpha, num_t beta, auto C, auto A, auto B) {
+template<class Order = noarr::neutral_proto>
+void kernel_gemm(num_t alpha, num_t beta, auto C, auto A, auto B, Order order = {}) {
 	// C: i x j
 	// A: i x k
 	// B: k x j
@@ -53,7 +54,7 @@ void kernel_gemm(num_t alpha, num_t beta, auto C, auto A, auto B) {
 			C[state] *= beta;
 		});
 
-	noarr::traverser(C, A, B)
+	noarr::traverser(C, A, B).order(order)
 		.for_each([=](auto state) {
 			C[state] += alpha * A[state] * B[state];
 		});

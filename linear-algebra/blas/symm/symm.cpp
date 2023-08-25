@@ -66,7 +66,7 @@ void kernel_symm(num_t alpha, num_t beta, auto C, auto A, auto B) {
 
 			inner
 				.order(noarr::slice<'k'>(0, noarr::get_index<'i'>(state)))
-				. template for_each<'k'>([=, &temp](auto state) {
+				.for_each([=, &temp](auto state) {
 					C_renamed[state] += alpha * B[state] * A[state];
 					temp += B_renamed[state] * A[state];
 				});

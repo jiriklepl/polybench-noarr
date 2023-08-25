@@ -37,7 +37,7 @@ void init_array(auto A) {
 
 			inner
 				.order(noarr::shift<'j'>(i + 1))
-				.template for_each<'j'>([=](auto state) {
+				.for_each([=](auto state) {
 					A[state] = 0;
 				});
 
@@ -51,20 +51,17 @@ void init_array(auto A) {
 	auto A_ik = A ^ noarr::rename<'j', 'k'>();
 	auto A_jk = A ^ noarr::rename<'i', 'j', 'j', 'k'>();
 
-	noarr::traverser(B_ref)
-		.for_each([=](auto state) {
-			B_ref[state] = 0;
-		});
+	noarr::traverser(B_ref).for_each([=](auto state) {
+		B_ref[state] = 0;
+	});
 
-	noarr::traverser(B_ref, A_ik, A_jk)
-		.for_each([=](auto state) {
-			B_ref[state] += A_ik[state] * A_jk[state];
-		});
+	noarr::traverser(B_ref, A_ik, A_jk).for_each([=](auto state) {
+		B_ref[state] += A_ik[state] * A_jk[state];
+	});
 
-	noarr::traverser(A, B_ref)
-		.template for_each([=](auto state) {
-			A[state] = B_ref[state];
-		});
+	noarr::traverser(A, B_ref).for_each([=](auto state) {
+		A[state] = B_ref[state];
+	});
 }
 
 // computation kernel
@@ -85,7 +82,7 @@ void kernel_cholesky(auto A) {
 					
 					inner
 						.order(noarr::slice<'k'>(0, noarr::get_index<'j'>(state)))
-						.template for_each<'k'>([=](auto state) {
+						.for_each([=](auto state) {
 							A[state] -= A_ik[state] * A_jk[state];
 						});
 
@@ -136,7 +133,7 @@ int main(int argc, char *argv[]) {
 
 				inner
 					.order(noarr::slice<'j'>(0, noarr::get_index<'i'>(state) + 1))
-					.template for_each<'j'>([=](auto state) {
+					.for_each([=](auto state) {
 						std::cout << A[state] << " ";
 					});
 

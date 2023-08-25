@@ -61,7 +61,12 @@ void init_array(num_t &alpha, num_t &beta, auto A, auto u1, auto v1, auto u2, au
 }
 
 // computation kernel
-void kernel_gemver(num_t alpha, num_t beta, auto A, auto u1, auto v1, auto u2, auto v2, auto w, auto x, auto y, auto z) {
+template<class Order1 = noarr::neutral_proto, class Order2 = noarr::neutral_proto, class Order3 = noarr::neutral_proto>
+void kernel_gemver(num_t alpha, num_t beta, auto A,
+	auto u1, auto v1,
+	auto u2, auto v2,
+	auto w, auto x, auto y, auto z,
+	Order1 order1 = {}, Order2 order2 = {}, Order3 order3 = {}) {
 	// A: i x j
 	// u1: i
 	// v1: j
@@ -76,11 +81,13 @@ void kernel_gemver(num_t alpha, num_t beta, auto A, auto u1, auto v1, auto u2, a
 	auto x_j = x ^ noarr::rename<'i', 'j'>();
 
 	noarr::traverser(A, u1, u2, v1, v2)
+		.order(order1)
 		.for_each([=](auto state) {
 			A[state] = A[state] + u1[state] * v1[state] + u2[state] * v2[state];
 		});
 
 	noarr::traverser(x, A_ji, y)
+		.order(order2)
 		.for_each([=](auto state) {
 			x[state] = x[state] + beta * A_ji[state] * y[state];
 		});
@@ -91,7 +98,8 @@ void kernel_gemver(num_t alpha, num_t beta, auto A, auto u1, auto v1, auto u2, a
 		});
 
 	noarr::traverser(A, w, x_j)
-		.template for_each([=](auto state) {
+		.order(order3)
+		.for_each([=](auto state) {
 		   w[state] = w[state] + alpha * A[state] * x_j[state];
 		});
 }

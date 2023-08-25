@@ -37,7 +37,7 @@ void init_array(auto x1, auto x2, auto y1, auto y2, auto A) {
 			y1_i[state] = (num_t)((i + 3) % n) / n;
 			y2_i[state] = (num_t)((i + 4) % n) / n;
 
-			inner.template for_each<'j'>([=](auto state) {
+			inner.for_each([=](auto state) {
 				auto j = noarr::get_index<'j'>(state);
 
 				A[state] = (num_t)(i * j % n) / n;
@@ -46,21 +46,23 @@ void init_array(auto x1, auto x2, auto y1, auto y2, auto A) {
 }
 
 // computation kernel
-void kernel_mvt(auto x1, auto x2, auto y1, auto y2, auto A) {
+template<class Order1 = noarr::neutral_proto, class Order2 = noarr::neutral_proto>
+void kernel_mvt(auto x1, auto x2, auto y1, auto y2, auto A, Order1 order1 = {}, Order2 order2 = {}) {
 	// x1: i
 	// x2: i
 	// y1: j
 	// y2: j
 	// A: i x j
+
 	auto A_ji = A ^ noarr::rename<'i', 'j', 'j', 'i'>();
 
-	noarr::traverser(x1, A, y1)
-		.template for_each<'i', 'j'>([=](auto state) {
+	noarr::traverser(x1, A, y1).order(order1)
+		.for_each([=](auto state) {
 			x1[state] += A[state] * y1[state];
 		});
 
-	noarr::traverser(x2, A_ji, y2)
-		.template for_each<'i', 'j'>([=](auto state) {
+	noarr::traverser(x2, A_ji, y2).order(order2)
+		.for_each([=](auto state) {
 			x2[state] += A_ji[state] * y2[state];
 		});
 }

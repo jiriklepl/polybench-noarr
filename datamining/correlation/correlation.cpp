@@ -20,11 +20,10 @@ void init_array(num_t &float_n, auto data) {
 
 	float_n = data | noarr::get_length<'k'>();
 
-	noarr::traverser(data)
-		.template for_each([=](auto state) {
-			auto [k, j] = noarr::get_indices<'k', 'j'>(state);
-			data[state] = (num_t)(k * j) / (data | noarr::get_length<'j'>()) + k;
-		});
+	noarr::traverser(data).for_each([=](auto state) {
+		auto [k, j] = noarr::get_indices<'k', 'j'>(state);
+		data[state] = (num_t)(k * j) / (data | noarr::get_length<'j'>()) + k;
+	});
 }
 
 void kernel_correlation(num_t float_n, auto data, auto corr, auto mean, auto stddev) {
@@ -46,7 +45,7 @@ void kernel_correlation(num_t float_n, auto data, auto corr, auto mean, auto std
 
 			mean[state] = 0;
 
-			inner.template for_each<'k'>([=](auto state) {
+			inner.for_each([=](auto state) {
 				mean[state] += data[state];
 			});
 
@@ -59,7 +58,7 @@ void kernel_correlation(num_t float_n, auto data, auto corr, auto mean, auto std
 
 			stddev[state] = 0;
 
-			inner.template for_each<'k'>([=](auto state) {
+			inner.for_each([=](auto state) {
 				stddev[state] += (data[state] - mean[state]) * (data[state] - mean[state]);
 			});
 
@@ -68,11 +67,10 @@ void kernel_correlation(num_t float_n, auto data, auto corr, auto mean, auto std
 			stddev[state] = stddev[state] <= eps ? (num_t)1.0 : stddev[state];
 		});
 
-	noarr::traverser(data, mean, stddev)
-		.template for_each<'k', 'j'>([=](auto state) {
-			data[state] -= mean[state];
-			data[state] /= std::sqrt(float_n) * stddev[state];
-		});
+	noarr::traverser(data, mean, stddev).for_each([=](auto state) {
+		data[state] -= mean[state];
+		data[state] /= std::sqrt(float_n) * stddev[state];
+	});
 
 	auto traverser = noarr::traverser(data, corr, data_ki, corr_ji);
 	traverser
@@ -90,7 +88,7 @@ void kernel_correlation(num_t float_n, auto data, auto corr, auto mean, auto std
 
 					corr[state] = 0;
 
-					inner.template for_each<'k'>([=](auto state) {
+					inner.for_each([=](auto state) {
 						corr[state] += data_ki[state] * data[state];
 					});
 
