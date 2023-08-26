@@ -3,12 +3,13 @@
 #include <iostream>
 
 #include <noarr/structures_extended.hpp>
-#include <noarr/structures/extra/traverser.hpp>
+#include <noarr/structures/extra/planner.hpp>
 #include <noarr/structures/interop/bag.hpp>
 #include <noarr/structures/interop/serialize_data.hpp>
 
 #include "defines.hpp"
 #include "gesummv.hpp"
+#include "noarr/structures/structs/blocks.hpp"
 
 using num_t = DATA_TYPE;
 
@@ -50,20 +51,22 @@ void kernel_gesummv(num_t alpha, num_t beta, auto A, auto B, auto tmp, auto x, a
 	// x: j
 	// y: i
 
-	noarr::traverser(A, B, tmp, x, y)
-		.template for_dims<'i'>([=](auto inner) {
+	noarr::planner(A, B, tmp, x, y)
+		.for_each([](auto &&A, auto &&B, auto &&tmp, auto &&x, auto &&y) {
+			tmp += A * x;
+			y += B * x;
+		})
+		.template for_sections<'i'>([=](auto inner) {
 			auto state = inner.state();
 
 			tmp[state] = 0;
 			y[state] = 0;
 
-			inner.for_each([=](auto state) {
-				tmp[state] += A[state] * x[state];
-				y[state] += B[state] * x[state];
-			});
+			inner();
 
 			y[state] = alpha * tmp[state] + beta * y[state];
-		});
+		})
+		.order(noarr::reorder<'i','j'>())();
 }
 
 } // namespace

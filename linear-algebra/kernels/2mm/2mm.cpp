@@ -3,7 +3,7 @@
 #include <iostream>
 
 #include <noarr/structures_extended.hpp>
-#include <noarr/structures/extra/traverser.hpp>
+#include <noarr/structures/extra/planner.hpp>
 #include <noarr/structures/interop/bag.hpp>
 #include <noarr/structures/interop/serialize_data.hpp>
 
@@ -63,27 +63,29 @@ void kernel_2mm(num_t alpha, num_t beta, auto tmp, auto A, auto B, auto C, auto 
 	// C: j x l
 	// D: i x l
 
-	noarr::traverser(tmp, A, B)
-		.template for_dims<'i', 'j'>([=](auto inner) {
+	noarr::planner(tmp, A, B)
+		.for_each([alpha](auto &&tmp, auto &&A, auto &&B) {
+			tmp += alpha * A * B;
+		})
+		.template for_sections<'i', 'j'>([=](auto inner) {
 			auto state = inner.state();
 
 			tmp[state] = 0;
 
-			inner.for_each([=](auto state) {
-				tmp[state] += alpha * A[state] * B[state];
-			});
-		});
+			inner();
+		}).order(noarr::reorder<'i','j','k'>())();
 
-	noarr::traverser(C, D, tmp)
-		.template for_dims<'i', 'l'>([=](auto inner) {
+	noarr::planner(C, D, tmp)
+		.for_each([](auto &&C, auto &&D, auto &&tmp) {
+			D += tmp * C;
+		})
+		.template for_sections<'i', 'l'>([=](auto inner) {
 			auto state = inner.state();
 
 			D[state] *= beta;
 
-			inner.for_each([=](auto state) {
-				D[state] += tmp[state] * C[state];
-			});
-		});
+			inner();
+		}).order(noarr::reorder<'i','l','j'>())();
 }
 
 } // namespace

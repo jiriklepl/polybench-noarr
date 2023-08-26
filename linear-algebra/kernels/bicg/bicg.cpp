@@ -3,7 +3,7 @@
 #include <iostream>
 
 #include <noarr/structures_extended.hpp>
-#include <noarr/structures/extra/traverser.hpp>
+#include <noarr/structures/extra/planner.hpp>
 #include <noarr/structures/interop/bag.hpp>
 #include <noarr/structures/interop/serialize_data.hpp>
 
@@ -57,17 +57,20 @@ void kernel_bicg(auto A, auto s, auto q, auto p, auto r) {
 			s[state] = 0;
 		});
 	
-	noarr::traverser(A, s, q, p, r)
-		.template for_dims<'i'>([=](auto inner) {
+	noarr::planner(A, s, q, p, r)
+		.for_each([=](auto &&A, auto &&s, auto &&q, auto &&p, auto &&r) {
+			// s[state] += A[state] * r[state];
+			// q[state] += A[state] * p[state];
+			s += A * r;
+			q += A * p;
+		})
+		.template for_sections<'i'>([=](auto inner) {
 			auto state = inner.state();
 
 			q[state] = 0;
 
-			inner.template for_each<'j'>([=](auto state) {
-				s[state] += A[state] * r[state];
-				q[state] += A[state] * p[state];
-			});
-		});
+			inner();
+		}).order(noarr::hoist<'i'>())();
 }
 
 } // namespace
