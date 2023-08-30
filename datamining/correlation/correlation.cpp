@@ -15,6 +15,7 @@ using num_t = DATA_TYPE;
 
 namespace {
 
+// initialization function
 void init_array(num_t &float_n, auto data) {
 	// data: k x j
 
@@ -26,6 +27,7 @@ void init_array(num_t &float_n, auto data) {
 	});
 }
 
+// computation kernel
 void kernel_correlation(num_t float_n, auto data, auto corr, auto mean, auto stddev) {
 	// data: k x j
 	// corr: i x j

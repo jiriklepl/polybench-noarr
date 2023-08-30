@@ -3,7 +3,7 @@
 #include <iostream>
 
 #include <noarr/structures_extended.hpp>
-#include <noarr/structures/extra/traverser.hpp>
+#include <noarr/structures/extra/planner.hpp>
 #include <noarr/structures/interop/bag.hpp>
 #include <noarr/structures/interop/serialize_data.hpp>
 
@@ -52,7 +52,8 @@ void init_array(auto A, auto B, auto C, auto D) {
 }
 
 // computation kernel
-void kernel_3mm(auto E, auto A, auto B, auto F, auto C, auto D, auto G) {
+template<class Order1 = noarr::neutral_proto, class Order2 = noarr::neutral_proto, class Order3 = noarr::neutral_proto>
+void kernel_3mm(auto E, auto A, auto B, auto F, auto C, auto D, auto G, Order1 order1 = {}, Order2 order2 = {}, Order3 order3 = {}) {
 	// E: i x j
 	// A: i x k
 	// B: k x j
@@ -61,38 +62,45 @@ void kernel_3mm(auto E, auto A, auto B, auto F, auto C, auto D, auto G) {
 	// D: m x l
 	// G: i x l
 
-	noarr::traverser(E, A, B)
-		.template for_dims<'i', 'j'>([=](auto inner) {
-			auto state = inner.state();
+	constexpr auto madd = [](auto &&m, auto &&l, auto &&r) {
+		m += l * r;
+	};
 
-			E[state] = 0;
+	noarr::planner(E, A, B)
+		.for_each_elem(madd)
+		.template for_sections<'i', 'j'>([=](auto inner) {
+			E[inner.state()] = 0;
+			inner();
+		})
+		.order(noarr::hoist<'k'>())
+		.order(noarr::hoist<'j'>())
+		.order(noarr::hoist<'i'>())
+		.order(order1)
+		();
 
-			inner.for_each([=](auto state) {
-				E[state] += A[state] * B[state];
-			});
-		});
+	noarr::planner(F, C, D)
+		.for_each_elem(madd)
+		.template for_sections<'j', 'l'>([=](auto inner) {
+			F[inner.state()] = 0;
+			inner();
+		})
+		.order(noarr::hoist<'m'>())
+		.order(noarr::hoist<'l'>())
+		.order(noarr::hoist<'j'>())
+		.order(order2)
+		();
 
-	noarr::traverser(F, C, D)
-		.template for_dims<'j', 'l'>([=](auto inner) {
-			auto state = inner.state();
-
-			F[state] = 0;
-
-			inner.for_each([=](auto state) {
-				F[state] += C[state] * D[state];
-			});
-		});
-
-	noarr::traverser(G, E, F)
-		.template for_dims<'i', 'l'>([=](auto inner) {
-			auto state = inner.state();
-
-			G[state] = 0;
-
-			inner.for_each([=](auto state) {
-				G[state] += E[state] * F[state];
-			});
-		});
+	noarr::planner(G, E, F)
+		.for_each_elem(madd)
+		.template for_sections<'i', 'l'>([=](auto inner) {
+			G[inner.state()] = 0;
+			inner();
+		})
+		.order(noarr::hoist<'j'>())
+		.order(noarr::hoist<'l'>())
+		.order(noarr::hoist<'i'>())
+		.order(order3)
+		();
 }
 
 } // namespace

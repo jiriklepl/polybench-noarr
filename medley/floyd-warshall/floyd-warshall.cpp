@@ -10,6 +10,7 @@
 
 #include "defines.hpp"
 #include "floyd-warshall.hpp"
+#include "noarr/structures/structs/blocks.hpp"
 
 using num_t = DATA_TYPE;
 
@@ -40,11 +41,10 @@ void kernel_floyd_warshall(auto path, Order order = {}) {
 	auto path_end_k = path ^ noarr::rename<'j', 'k'>();
 	
 	noarr::traverser(path, path_start_k, path_end_k)
+		.order(noarr::hoist<'k'>())
 		.order(order)
-		.template for_dims<'k'>([=](auto inner) {
-			inner.for_each([=](auto state) {
-				path[state] = std::min(path_start_k[state] + path_end_k[state], path[state]);
-			});
+		.for_each([=](auto state) {
+			path[state] = std::min(path_start_k[state] + path_end_k[state], path[state]);
 		});
 }
 

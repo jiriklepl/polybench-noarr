@@ -3,7 +3,7 @@
 #include <iostream>
 
 #include <noarr/structures_extended.hpp>
-#include <noarr/structures/extra/traverser.hpp>
+#include <noarr/structures/extra/planner.hpp>
 #include <noarr/structures/interop/bag.hpp>
 #include <noarr/structures/interop/serialize_data.hpp>
 
@@ -41,29 +41,38 @@ void init_array(num_t &alpha, num_t &beta, auto C, auto A) {
 }
 
 // computation kernel
-void kernel_syrk(num_t alpha, num_t beta, auto C, auto A) {
+template<class Order = noarr::neutral_proto>
+void kernel_syrk(num_t alpha, num_t beta, auto C, auto A, Order order = {}) {
 	// C: i x j
 	// A: i x k
 
 	auto A_renamed = A ^ noarr::rename<'i', 'j'>();
 
-	noarr::traverser(C, A)
-		.template for_dims<'i'>(
-			[=](auto inner) {
-				auto state = inner.state();
+	noarr::traverser(C)
+		.template for_dims<'i'>([=](auto inner) {
+			auto state = inner.state();
 
-				inner
-					.order(noarr::slice<'j'>(0, noarr::get_index<'i'>(state) + 1))
-					.template for_each<'j'>([=](auto state) {
-						C[state] *= beta;
-					});
+			inner
+				.order(noarr::slice<'j'>(0, noarr::get_index<'i'>(state) + 1))
+				.for_each([=](auto state) {
+					C[state] *= beta;
+				});
+		});
 
-				inner
-					.order(noarr::slice<'j'>(0, noarr::get_index<'i'>(state) + 1))
-					.for_each([=](auto state) {
-						C[state] += alpha * A[state] * A_renamed[state];
-					});
-			});
+	noarr::planner(C, A)
+		.for_each([=](auto state) {
+			C[state] += alpha * A[state] * A_renamed[state];
+		})
+		.template for_sections<'i'>([=](auto inner) {
+			auto state = inner.state();
+
+			inner
+				.order(noarr::slice<'j'>(0, noarr::get_index<'i'>(state) + 1))
+				();
+		})
+		.order(noarr::hoist<'i'>())
+		.order(order)
+		();
 }
 
 } // namespace

@@ -3,7 +3,7 @@
 #include <iostream>
 
 #include <noarr/structures_extended.hpp>
-#include <noarr/structures/extra/traverser.hpp>
+#include <noarr/structures/extra/planner.hpp>
 #include <noarr/structures/interop/bag.hpp>
 #include <noarr/structures/interop/serialize_data.hpp>
 
@@ -14,6 +14,7 @@ using num_t = DATA_TYPE;
 
 namespace {
 
+// initialization function
 void init_array(num_t &float_n, auto data) {
 	// data: k x j
 
@@ -25,8 +26,9 @@ void init_array(num_t &float_n, auto data) {
 	});
 }
 
-
-void kernel_covariance(num_t float_n, auto data, auto cov, auto mean) {
+// computation kernel
+template<class Order = noarr::neutral_proto>
+void kernel_covariance(num_t float_n, auto data, auto cov, auto mean, Order order = {}) {
 	// data: k x j
 	// cov: i x j
 	// mean: j
@@ -34,39 +36,50 @@ void kernel_covariance(num_t float_n, auto data, auto cov, auto mean) {
 	auto cov_ji = cov ^ noarr::rename<'i', 'j', 'j', 'i'>();
 	auto data_ki = data ^ noarr::rename<'j', 'i'>();
 
-	noarr::traverser(data, mean)
-		.template for_dims<'j'>([=](auto inner) {
-			auto state = inner.state();
+	noarr::traverser(mean).for_each([=](auto state) {
+		mean[state] = 0;
+	});
 
-			mean[state] = 0;
+	noarr::traverser(data, mean).for_each([=](auto state) {
+		mean[state] += data[state];
+	});
 
-			inner.for_each([=](auto state) {
-				mean[state] += data[state];
-			});
-
-			mean[state] /= float_n;
-		});
+	noarr::traverser(mean).for_each([=](auto state) {
+		mean[state] /= float_n;
+	});
 
 	noarr::traverser(data, mean).for_each([=](auto state) {
 		data[state] -= mean[state];
 	});
 
-	noarr::traverser(data, cov, mean)
+	noarr::traverser(cov).template for_dims<'i'>([=](auto inner) {
+		inner
+			.order(noarr::shift<'j'>(noarr::get_index<'i'>(inner.state())))
+			.for_each([=](auto state) {
+				cov[state] = 0;
+			});
+	});
+
+	noarr::planner(data, cov, mean)
+		.for_each([=](auto state) {
+			cov[state] += data[state] * data_ki[state];
+		})
+		.template for_sections<'i'>([=](auto inner) {
+			inner
+				.order(noarr::shift<'j'>(noarr::get_index<'i'>(inner.state())))
+				();
+		})
+		.order(order)
+		();
+
+	noarr::traverser(cov, cov_ji)
 		.template for_dims<'i'>([=](auto inner) {
 			inner
 				.order(noarr::shift<'j'>(noarr::get_index<'i'>(inner.state())))
-				.template for_dims<'j'>([=](auto inner) {
-					auto state = inner.state();
-
-					cov[state] = 0;
-
-					inner.for_each([=](auto state) {
-						cov[state] += data[state] * data_ki[state];
-					});
-
+				.for_each([=](auto state) {
 					cov[state] /= float_n - (num_t)1;
 					cov_ji[state] = cov[state];
-			});
+				});
 		});
 }
 

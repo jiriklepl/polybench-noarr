@@ -56,12 +56,14 @@ void kernel_mvt(auto x1, auto x2, auto y1, auto y2, auto A, Order1 order1 = {}, 
 
 	auto A_ji = A ^ noarr::rename<'i', 'j', 'j', 'i'>();
 
-	noarr::traverser(x1, A, y1).order(order1)
+	noarr::traverser(x1, A, y1)
+		.order(order1)
 		.for_each([=](auto state) {
 			x1[state] += A[state] * y1[state];
 		});
 
-	noarr::traverser(x2, A_ji, y2).order(order2)
+	noarr::traverser(x2, A_ji, y2)
+		.order(order2)
 		.for_each([=](auto state) {
 			x2[state] += A_ji[state] * y2[state];
 		});

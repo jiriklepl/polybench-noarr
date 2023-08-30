@@ -3,13 +3,12 @@
 #include <iostream>
 
 #include <noarr/structures_extended.hpp>
-#include <noarr/structures/extra/planner.hpp>
+#include <noarr/structures/extra/traverser.hpp>
 #include <noarr/structures/interop/bag.hpp>
 #include <noarr/structures/interop/serialize_data.hpp>
 
 #include "defines.hpp"
 #include "gesummv.hpp"
-#include "noarr/structures/structs/blocks.hpp"
 
 using num_t = DATA_TYPE;
 
@@ -44,29 +43,31 @@ void init_array(num_t &alpha, num_t &beta, auto A, auto B, auto x) {
 }
 
 // computation kernel
-void kernel_gesummv(num_t alpha, num_t beta, auto A, auto B, auto tmp, auto x, auto y) {
+template<class Order1 = noarr::neutral_proto, class Order2 = noarr::neutral_proto>
+void kernel_gesummv(num_t alpha, num_t beta, auto A, auto B, auto tmp, auto x, auto y, Order1 order1 = {}, Order2 order2 = {}) {
 	// A: i x j
 	// B: i x j
 	// tmp: i
 	// x: j
 	// y: i
 
-	noarr::planner(A, B, tmp, x, y)
-		.for_each([](auto &&A, auto &&B, auto &&tmp, auto &&x, auto &&y) {
-			tmp += A * x;
-			y += B * x;
-		})
-		.template for_sections<'i'>([=](auto inner) {
-			auto state = inner.state();
+	noarr::traverser(A, B, tmp, x, y).for_each([=](auto state) {
+		tmp[state] = 0;
+		y[state] = 0;
+	});
 
-			tmp[state] = 0;
-			y[state] = 0;
+	noarr::traverser(A, B, tmp, x, y)
+		.order(order1)
+		.for_each([=](auto state) {
+			tmp[state] += A[state] * x[state];
+			y[state] += B[state] * x[state];
+		});
 
-			inner();
-
+	noarr::traverser(y, tmp)
+		.order(order2)
+		.for_each([=](auto state) {
 			y[state] = alpha * tmp[state] + beta * y[state];
-		})
-		.order(noarr::reorder<'i','j'>())();
+		});
 }
 
 } // namespace

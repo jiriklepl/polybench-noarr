@@ -3,7 +3,7 @@
 #include <iostream>
 
 #include <noarr/structures_extended.hpp>
-#include <noarr/structures/extra/traverser.hpp>
+#include <noarr/structures/extra/planner.hpp>
 #include <noarr/structures/interop/bag.hpp>
 #include <noarr/structures/interop/serialize_data.hpp>
 
@@ -51,7 +51,8 @@ void init_array(num_t &alpha, num_t &beta, auto C, auto A, auto B) {
 }
 
 // computation kernel
-void kernel_symm(num_t alpha, num_t beta, auto C, auto A, auto B) {
+template<class Order = noarr::neutral_proto>
+void kernel_symm(num_t alpha, num_t beta, auto C, auto A, auto B, Order order = {}) {
 	// C: i x j
 	// A: i x k
 	// B: i x j
@@ -59,8 +60,8 @@ void kernel_symm(num_t alpha, num_t beta, auto C, auto A, auto B) {
 	auto C_renamed = C ^ noarr::rename<'i', 'k'>();
 	auto B_renamed = B ^ noarr::rename<'i', 'k'>();
 
-	noarr::traverser(C, A, B)
-		.template for_dims<'i', 'j'>([=](auto inner) {
+	noarr::planner(C, A, B)
+		.template for_sections<'i', 'j'>([=](auto inner) {
 			num_t temp = 0;
 			auto state = inner.state();
 
@@ -69,10 +70,15 @@ void kernel_symm(num_t alpha, num_t beta, auto C, auto A, auto B) {
 				.for_each([=, &temp](auto state) {
 					C_renamed[state] += alpha * B[state] * A[state];
 					temp += B_renamed[state] * A[state];
-				});
+				})
+				();
 
 			C[state] = beta * C[state] + alpha * B[state] * A[state & noarr::idx<'k'>(noarr::get_index<'i'>(state))] + alpha * temp; // TODO: A_diag
-		});
+		})
+		.order(noarr::hoist<'j'>())
+		.order(noarr::hoist<'i'>())
+		.order(order)
+		();
 }
 
 } // namespace

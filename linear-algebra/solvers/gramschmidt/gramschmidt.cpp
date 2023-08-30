@@ -70,11 +70,11 @@ void kernel_gramschmidt(auto A, auto R, auto Q) {
 
 					R[state] = 0;
 
-					inner.template for_each<'i'>([=](auto state) {
+					inner.for_each([=](auto state) {
 						R[state] = R[state] + Q[state] * A_ij[state];
 					});
 
-					inner.template for_each<'i'>([=](auto state) {
+					inner.for_each([=](auto state) {
 						A_ij[state] = A_ij[state] - Q[state] * R[state];
 					});
 				});

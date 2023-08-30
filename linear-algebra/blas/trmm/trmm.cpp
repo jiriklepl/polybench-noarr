@@ -3,7 +3,7 @@
 #include <iostream>
 
 #include <noarr/structures_extended.hpp>
-#include <noarr/structures/extra/traverser.hpp>
+#include <noarr/structures/extra/planner.hpp>
 #include <noarr/structures/interop/bag.hpp>
 #include <noarr/structures/interop/serialize_data.hpp>
 
@@ -47,24 +47,30 @@ void init_array(num_t &alpha, auto A, auto B) {
 }
 
 // computation kernel
-void kernel_trmm(num_t alpha, auto A, auto B) {
+template<class Order = noarr::neutral_proto>
+void kernel_trmm(num_t alpha, auto A, auto B, Order order = {}) {
 	// A: k x i
 	// B: i x j
 
 	auto B_renamed = B ^ noarr::rename<'i', 'k'>();
 
-	noarr::traverser(A, B)
-		.template for_dims<'i', 'j'>([=](auto inner) {
+	noarr::planner(A, B, B_renamed)
+		.for_each_elem([](auto &&A, auto &&B, auto &&B_renamed) {
+			B += A * B_renamed;
+		})
+		.template for_sections<'i', 'j'>([=](auto inner) {
 			auto state = inner.state();
 
 			inner
 				.order(noarr::shift<'k'>(noarr::get_index<'i'>(state) + 1))
-				.template for_each<'k'>([=](auto state) {
-					B[state] += A[state] * B_renamed[state];
-				});
-			
+				();
+
 			B[state] *= alpha;
-		});
+		})
+		.order(noarr::hoist<'j'>())
+		.order(noarr::hoist<'i'>())
+		.order(order)
+		();
 }
 
 } // namespace

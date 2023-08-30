@@ -3,12 +3,13 @@
 #include <iostream>
 
 #include <noarr/structures_extended.hpp>
-#include <noarr/structures/extra/traverser.hpp>
+#include <noarr/structures/extra/planner.hpp>
 #include <noarr/structures/interop/bag.hpp>
 #include <noarr/structures/interop/serialize_data.hpp>
 
 #include "defines.hpp"
 #include "atax.hpp"
+#include "noarr/structures/structs/blocks.hpp"
 
 using num_t = DATA_TYPE;
 
@@ -34,30 +35,31 @@ void init_array(auto A, auto x) {
 }
 
 // computation kernel
-void kernel_atax(auto A, auto x, auto y, auto tmp) {
+template<class Order1 = noarr::neutral_proto, class Order2 = noarr::neutral_proto>
+void kernel_atax(auto A, auto x, auto y, auto tmp, Order1 order1 = {}, Order2 order2 = {}) {
 	// A: i x j
 	// x: j
 	// y: j
 	// tmp: i
 
-	noarr::traverser(y)
+	noarr::traverser(y).for_each([=](auto state) {
+		y[state] = 0;
+	});
+
+	noarr::traverser(tmp).for_each([=](auto state) {
+		tmp[state] = 0;
+	});
+
+	noarr::traverser(tmp, A, x)
+		.order(order1)
 		.for_each([=](auto state) {
-			y[state] = 0;
+			tmp[state] += A[state] * x[state];
 		});
-	
-	noarr::traverser(A, x, y, tmp)
-		.template for_dims<'i'>([=](auto inner) {
-			auto state = inner.state();
 
-			tmp[state] = 0.0;
-
-			inner.for_each([=](auto state) {
-				tmp[state] += A[state] * x[state];
-			});
-
-			inner.for_each([=](auto state) {
-				y[state] += A[state] * tmp[state];
-			});
+	noarr::traverser(y, A, tmp)
+		.order(order2)
+		.for_each([=](auto state) {
+			y[state] += A[state] * tmp[state];
 		});
 }
 

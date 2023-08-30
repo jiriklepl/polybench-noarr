@@ -45,7 +45,8 @@ void init_array(auto A, auto r, auto p) {
 }
 
 // computation kernel
-void kernel_bicg(auto A, auto s, auto q, auto p, auto r) {
+template<class Order = noarr::neutral_proto>
+void kernel_bicg(auto A, auto s, auto q, auto p, auto r, Order order = {}) {
 	// A: i x j
 	// s: j
 	// q: i
@@ -56,11 +57,9 @@ void kernel_bicg(auto A, auto s, auto q, auto p, auto r) {
 		.for_each([=](auto state) {
 			s[state] = 0;
 		});
-	
+
 	noarr::planner(A, s, q, p, r)
-		.for_each([=](auto &&A, auto &&s, auto &&q, auto &&p, auto &&r) {
-			// s[state] += A[state] * r[state];
-			// q[state] += A[state] * p[state];
+		.for_each_elem([](auto &&A, auto &&s, auto &&q, auto &&p, auto &&r) {
 			s += A * r;
 			q += A * p;
 		})
@@ -70,7 +69,10 @@ void kernel_bicg(auto A, auto s, auto q, auto p, auto r) {
 			q[state] = 0;
 
 			inner();
-		}).order(noarr::hoist<'i'>())();
+		})
+		.order(noarr::hoist<'i'>())
+		.order(order)
+		();
 }
 
 } // namespace
