@@ -11,12 +11,15 @@
 #include "gemm.hpp"
 
 // autotuning
-#include "noarr/structures/extra/shortcuts.hpp"
 #include "test.hpp"
 
 using num_t = DATA_TYPE;
 
 namespace {
+
+constexpr auto i_vec =  noarr::vector<'i'>();
+constexpr auto j_vec =  noarr::vector<'j'>();
+constexpr auto k_vec =  noarr::vector<'k'>();
 
 struct tuning {
 	NOARR_TUNE_BEGIN(opentuner_formatter( \
@@ -59,6 +62,18 @@ struct tuning {
 		*block_j ^ *block_k ^ *block_i,
 		*block_k ^ *block_i ^ *block_j,
 		*block_k ^ *block_j ^ *block_i);
+
+	NOARR_TUNE_PAR(c_layout, noarr::tuning::choice,
+		i_vec ^ j_vec,
+		j_vec ^ i_vec);
+
+	NOARR_TUNE_PAR(a_layout, noarr::tuning::choice,
+		i_vec ^ k_vec,
+		k_vec ^ i_vec);
+	
+	NOARR_TUNE_PAR(b_layout, noarr::tuning::choice,
+		k_vec ^ j_vec,
+		j_vec ^ k_vec);
 
 	NOARR_TUNE_END();
 } tuning;
@@ -125,9 +140,11 @@ int main(int argc, char *argv[]) {
 	num_t alpha;
 	num_t beta;
 
-	auto C = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'j'>(ni, nj));
-	auto A = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'k'>(ni, nk));
-	auto B = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'k', 'j'>(nk, nj));
+	auto set_sizes = noarr::set_length<'i'>(ni) ^ noarr::set_length<'j'>(nj) ^ noarr::set_length<'k'>(nk);
+
+	auto C = noarr::make_bag(noarr::scalar<num_t>() ^ *tuning.c_layout ^ set_sizes);
+	auto A = noarr::make_bag(noarr::scalar<num_t>() ^ *tuning.a_layout ^ set_sizes);
+	auto B = noarr::make_bag(noarr::scalar<num_t>() ^ *tuning.b_layout ^ set_sizes);
 
 	// initialize data
 	init_array(alpha, beta, C.get_ref(), A.get_ref(), B.get_ref());

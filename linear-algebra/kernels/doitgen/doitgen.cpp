@@ -10,9 +10,61 @@
 #include "defines.hpp"
 #include "doitgen.hpp"
 
+// autotuning
+#include "test.hpp"
+
 using num_t = DATA_TYPE;
 
 namespace {
+
+constexpr auto r_vec =  noarr::vector<'r'>();
+constexpr auto q_vec =  noarr::vector<'q'>();
+constexpr auto p_vec =  noarr::vector<'p'>();
+constexpr auto s_vec =  noarr::vector<'s'>();
+
+struct tuning {
+	NOARR_TUNE_BEGIN(opentuner_formatter( \
+		std::cout, \
+		std::make_shared<noarr::tuning::cmake_compile_command_builder>("../..", "build", "gemm", "-DPOLYBENCH_TIME -DPOLYBENCH_DUMP_ARRAYS -DLARGE_DATASET -DDATA_TYPE_IS_DOUBLE -D_POSIX_C_SOURCE=200809L"), \
+		std::make_shared<noarr::tuning::direct_run_command_builder>("build/gemm"), \
+		"return Result(time=float(run_result['stderr'].split()[0]))"));
+
+	NOARR_TUNE_PAR(block_r, noarr::tuning::choice,
+		noarr::bcast<'R'>(noarr::lit<1>),
+		noarr::strip_mine<'r', 'R', 'r'>(noarr::lit<2>),
+		noarr::strip_mine<'r', 'R', 'r'>(noarr::lit<4>),
+		noarr::strip_mine<'r', 'R', 'r'>(noarr::lit<8>),
+		noarr::strip_mine<'r', 'R', 'r'>(noarr::lit<16>),
+		noarr::strip_mine<'r', 'R', 'r'>(noarr::lit<32>),
+		noarr::strip_mine<'r', 'R', 'r'>(noarr::lit<64>));
+
+	NOARR_TUNE_PAR(block_q, noarr::tuning::choice,
+		noarr::bcast<'Q'>(noarr::lit<1>),
+		noarr::strip_mine<'q', 'Q', 'q'>(noarr::lit<2>),
+		noarr::strip_mine<'q', 'Q', 'q'>(noarr::lit<4>),
+		noarr::strip_mine<'q', 'Q', 'q'>(noarr::lit<8>),
+		noarr::strip_mine<'q', 'Q', 'q'>(noarr::lit<16>),
+		noarr::strip_mine<'q', 'Q', 'q'>(noarr::lit<32>),
+		noarr::strip_mine<'q', 'Q', 'q'>(noarr::lit<64>));
+
+	NOARR_TUNE_PAR(order, noarr::tuning::choice,
+		*block_r ^ *block_q,
+		*block_q ^ *block_r);
+
+	NOARR_TUNE_PAR(a_layout, noarr::tuning::choice,
+		r_vec ^ q_vec ^ p_vec,
+		r_vec ^ p_vec ^ q_vec,
+		q_vec ^ r_vec ^ p_vec,
+		q_vec ^ p_vec ^ r_vec,
+		p_vec ^ r_vec ^ q_vec,
+		p_vec ^ q_vec ^ r_vec);
+
+	NOARR_TUNE_PAR(c4_layout, noarr::tuning::choice,
+		s_vec ^ p_vec,
+		p_vec ^ s_vec);
+
+	NOARR_TUNE_END();
+} tuning;
 
 // initialization function
 void init_array(auto A, auto C4) {
@@ -81,10 +133,12 @@ int main(int argc, char *argv[]) {
 	std::size_t nq = NQ;
 	std::size_t np = NP;
 
+	auto set_sizes = noarr::set_length<'r'>(nr) ^ noarr::set_length<'q'>(nq) ^ noarr::set_length<'s'>(np) ^ noarr::set_length<'p'>(np);
+
 	// data
-	auto A = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'r', 'q', 'p'>(nr, nq, np));
-	auto sum = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'p'>(np));
-	auto C4 = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'s', 'p'>(np, np));
+	auto A = noarr::make_bag(noarr::scalar<num_t>() ^ *tuning.a_layout ^ set_sizes);
+	auto sum = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'p'>(np));
+	auto C4 = noarr::make_bag(noarr::scalar<num_t>() ^ *tuning.c4_layout ^ set_sizes);
 
 	// initialize data
 	init_array(A.get_ref(), C4.get_ref());
@@ -92,7 +146,7 @@ int main(int argc, char *argv[]) {
 	auto start = std::chrono::high_resolution_clock::now();
 
 	// run kernel
-	kernel_doitgen(A.get_ref(), C4.get_ref(), sum.get_ref());
+	kernel_doitgen(A.get_ref(), C4.get_ref(), sum.get_ref(), *tuning.order);
 
 	auto end = std::chrono::high_resolution_clock::now();
 

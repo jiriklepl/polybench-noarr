@@ -10,9 +10,60 @@
 #include "defines.hpp"
 #include "syr2k.hpp"
 
+// autotuning
+#include "test.hpp"
+
 using num_t = DATA_TYPE;
 
 namespace {
+
+constexpr auto i_vec =  noarr::vector<'i'>();
+constexpr auto j_vec =  noarr::vector<'j'>();
+constexpr auto k_vec =  noarr::vector<'k'>();
+
+struct tuning {
+	NOARR_TUNE_BEGIN(opentuner_formatter( \
+		std::cout, \
+		std::make_shared<noarr::tuning::cmake_compile_command_builder>("../..", "build", "gemm", "-DPOLYBENCH_TIME -DPOLYBENCH_DUMP_ARRAYS -DLARGE_DATASET -DDATA_TYPE_IS_DOUBLE -D_POSIX_C_SOURCE=200809L"), \
+		std::make_shared<noarr::tuning::direct_run_command_builder>("build/gemm"), \
+		"return Result(time=float(run_result['stderr'].split()[0]))"));
+
+	NOARR_TUNE_PAR(block_i, noarr::tuning::choice,
+		noarr::bcast<'I'>(noarr::lit<1>),
+		noarr::strip_mine<'i', 'I', 'i'>(noarr::lit<2>),
+		noarr::strip_mine<'i', 'I', 'i'>(noarr::lit<4>),
+		noarr::strip_mine<'i', 'I', 'i'>(noarr::lit<8>),
+		noarr::strip_mine<'i', 'I', 'i'>(noarr::lit<16>),
+		noarr::strip_mine<'i', 'I', 'i'>(noarr::lit<32>),
+		noarr::strip_mine<'i', 'I', 'i'>(noarr::lit<64>));
+
+	NOARR_TUNE_PAR(block_k, noarr::tuning::choice,
+		noarr::bcast<'K'>(noarr::lit<1>),
+		noarr::strip_mine<'k', 'K', 'k'>(noarr::lit<2>),
+		noarr::strip_mine<'k', 'K', 'k'>(noarr::lit<4>),
+		noarr::strip_mine<'k', 'K', 'k'>(noarr::lit<8>),
+		noarr::strip_mine<'k', 'K', 'k'>(noarr::lit<16>),
+		noarr::strip_mine<'k', 'K', 'k'>(noarr::lit<32>),
+		noarr::strip_mine<'k', 'K', 'k'>(noarr::lit<64>));
+
+	NOARR_TUNE_PAR(order, noarr::tuning::choice,
+		*block_i ^ *block_k,
+		*block_k ^ *block_i);
+
+	NOARR_TUNE_PAR(c_layout, noarr::tuning::choice,
+		i_vec ^ j_vec,
+		j_vec ^ i_vec);
+
+	NOARR_TUNE_PAR(a_layout, noarr::tuning::choice,
+		i_vec ^ k_vec,
+		k_vec ^ i_vec);
+	
+	NOARR_TUNE_PAR(b_layout, noarr::tuning::choice,
+		i_vec ^ k_vec,
+		k_vec ^ i_vec);
+
+	NOARR_TUNE_END();
+} tuning;
 
 // initialization function
 void init_array(num_t &alpha, num_t &beta, auto C, auto A, auto B) {
@@ -89,10 +140,12 @@ int main(int argc, char *argv[]) {
 	// data
 	num_t alpha;
 	num_t beta;
+
+	auto set_lengths = noarr::set_length<'i'>(ni) ^ noarr::set_length<'k'>(nk) ^ noarr::set_length<'j'>(ni);
 	
-	auto C = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'j'>(ni, ni));
-	auto A = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'k'>(ni, nk));
-	auto B = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'k'>(ni, nk));
+	auto C = noarr::make_bag(noarr::scalar<num_t>() ^ *tuning.c_layout ^ set_lengths);
+	auto A = noarr::make_bag(noarr::scalar<num_t>() ^ *tuning.a_layout ^ set_lengths);
+	auto B = noarr::make_bag(noarr::scalar<num_t>() ^ *tuning.b_layout ^ set_lengths);
 
 	// initialize data
 	init_array(alpha, beta, C.get_ref(), A.get_ref(), B.get_ref());
@@ -100,7 +153,7 @@ int main(int argc, char *argv[]) {
 	auto start = std::chrono::high_resolution_clock::now();
 
 	// run kernel
-	kernel_syr2k(alpha, beta, C.get_ref(), A.get_ref(), B.get_ref());
+	kernel_syr2k(alpha, beta, C.get_ref(), A.get_ref(), B.get_ref(), *tuning.order);
 
 	auto end = std::chrono::high_resolution_clock::now();
 

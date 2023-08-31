@@ -10,9 +10,56 @@
 #include "defines.hpp"
 #include "covariance.hpp"
 
+// autotuning
+#include "test.hpp"
+
 using num_t = DATA_TYPE;
 
 namespace {
+
+constexpr auto i_vec =  noarr::vector<'i'>();
+constexpr auto j_vec =  noarr::vector<'j'>();
+constexpr auto k_vec =  noarr::vector<'k'>();
+
+struct tuning {
+	NOARR_TUNE_BEGIN(opentuner_formatter( \
+		std::cout, \
+		std::make_shared<noarr::tuning::cmake_compile_command_builder>("../..", "build", "gemm", "-DPOLYBENCH_TIME -DPOLYBENCH_DUMP_ARRAYS -DLARGE_DATASET -DDATA_TYPE_IS_DOUBLE -D_POSIX_C_SOURCE=200809L"), \
+		std::make_shared<noarr::tuning::direct_run_command_builder>("build/gemm"), \
+		"return Result(time=float(run_result['stderr'].split()[0]))"));
+
+	NOARR_TUNE_PAR(block_i, noarr::tuning::choice,
+		noarr::bcast<'I'>(noarr::lit<1>) ^ noarr::hoist<'I'>(),
+		noarr::strip_mine<'i', 'I', 'i'>(noarr::lit<2>),
+		noarr::strip_mine<'i', 'I', 'i'>(noarr::lit<4>),
+		noarr::strip_mine<'i', 'I', 'i'>(noarr::lit<8>),
+		noarr::strip_mine<'i', 'I', 'i'>(noarr::lit<16>),
+		noarr::strip_mine<'i', 'I', 'i'>(noarr::lit<32>),
+		noarr::strip_mine<'i', 'I', 'i'>(noarr::lit<64>));
+
+	NOARR_TUNE_PAR(block_k, noarr::tuning::choice,
+		noarr::bcast<'K'>(noarr::lit<1>) ^ noarr::hoist<'K'>(),
+		noarr::strip_mine<'k', 'K', 'k'>(noarr::lit<2>),
+		noarr::strip_mine<'k', 'K', 'k'>(noarr::lit<4>),
+		noarr::strip_mine<'k', 'K', 'k'>(noarr::lit<8>),
+		noarr::strip_mine<'k', 'K', 'k'>(noarr::lit<16>),
+		noarr::strip_mine<'k', 'K', 'k'>(noarr::lit<32>),
+		noarr::strip_mine<'k', 'K', 'k'>(noarr::lit<64>));
+
+	NOARR_TUNE_PAR(order, noarr::tuning::choice,
+		*block_i ^ *block_k,
+		*block_k ^ *block_i);
+
+	NOARR_TUNE_PAR(data_layout, noarr::tuning::choice,
+		k_vec ^ j_vec,
+		j_vec ^ k_vec);
+
+	NOARR_TUNE_PAR(cov_layout, noarr::tuning::choice,
+		i_vec ^ j_vec,
+		j_vec ^ i_vec);
+
+	NOARR_TUNE_END();
+} tuning;
 
 // initialization function
 void init_array(num_t &float_n, auto data) {
@@ -69,6 +116,9 @@ void kernel_covariance(num_t float_n, auto data, auto cov, auto mean, Order orde
 				.order(noarr::shift<'j'>(noarr::get_index<'i'>(inner.state())))
 				();
 		})
+		.order(noarr::hoist<'k'>())
+		.order(noarr::hoist<'j'>())
+		.order(noarr::hoist<'i'>())
 		.order(order)
 		();
 
@@ -92,10 +142,12 @@ int main(int argc, char *argv[]) {
 	std::size_t nk = NK;
 	std::size_t nj = NJ;
 
+	auto set_lengths = noarr::set_length<'k'>(nk) ^ noarr::set_length<'j'>(nj) ^ noarr::set_length<'i'>(nj);
+
 	// data
 	num_t float_n;
-	auto data = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'k', 'j'>(nk, nj));
-	auto cov = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'j'>(nj, nj));
+	auto data = noarr::make_bag(noarr::scalar<num_t>() ^ *tuning.data_layout ^ set_lengths);
+	auto cov = noarr::make_bag(noarr::scalar<num_t>() ^ *tuning.cov_layout ^ set_lengths);
 	auto mean = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'j'>(nj));
 
 	// initialize data
@@ -104,7 +156,7 @@ int main(int argc, char *argv[]) {
 	auto start = std::chrono::high_resolution_clock::now();
 
 	// run kernel
-	kernel_covariance(float_n, data.get_ref(), cov.get_ref(), mean.get_ref());
+	kernel_covariance(float_n, data.get_ref(), cov.get_ref(), mean.get_ref(), *tuning.order);
 
 	auto end = std::chrono::high_resolution_clock::now();
 

@@ -10,9 +10,73 @@
 #include "defines.hpp"
 #include "mvt.hpp"
 
+// autotuning
+#include "test.hpp"
+
 using num_t = DATA_TYPE;
 
 namespace {
+
+constexpr auto i_vec =  noarr::vector<'i'>();
+constexpr auto j_vec =  noarr::vector<'j'>();
+
+struct tuning {
+	NOARR_TUNE_BEGIN(opentuner_formatter( \
+		std::cout, \
+		std::make_shared<noarr::tuning::cmake_compile_command_builder>("../..", "build", "gemm", "-DPOLYBENCH_TIME -DPOLYBENCH_DUMP_ARRAYS -DLARGE_DATASET -DDATA_TYPE_IS_DOUBLE -D_POSIX_C_SOURCE=200809L"), \
+		std::make_shared<noarr::tuning::direct_run_command_builder>("build/gemm"), \
+		"return Result(time=float(run_result['stderr'].split()[0]))"));
+
+	NOARR_TUNE_PAR(block_i1, noarr::tuning::choice,
+		noarr::bcast<'I'>(noarr::lit<1>),
+		noarr::strip_mine<'i', 'I', 'i'>(noarr::lit<2>),
+		noarr::strip_mine<'i', 'I', 'i'>(noarr::lit<4>),
+		noarr::strip_mine<'i', 'I', 'i'>(noarr::lit<8>),
+		noarr::strip_mine<'i', 'I', 'i'>(noarr::lit<16>),
+		noarr::strip_mine<'i', 'I', 'i'>(noarr::lit<32>),
+		noarr::strip_mine<'i', 'I', 'i'>(noarr::lit<64>));
+
+	NOARR_TUNE_PAR(block_j1, noarr::tuning::choice,
+		noarr::bcast<'J'>(noarr::lit<1>),
+		noarr::strip_mine<'j', 'J', 'j'>(noarr::lit<2>),
+		noarr::strip_mine<'j', 'J', 'j'>(noarr::lit<4>),
+		noarr::strip_mine<'j', 'J', 'j'>(noarr::lit<8>),
+		noarr::strip_mine<'j', 'J', 'j'>(noarr::lit<16>),
+		noarr::strip_mine<'j', 'J', 'j'>(noarr::lit<32>),
+		noarr::strip_mine<'j', 'J', 'j'>(noarr::lit<64>));
+
+	NOARR_TUNE_PAR(block_i2, noarr::tuning::choice,
+		noarr::bcast<'I'>(noarr::lit<1>),
+		noarr::strip_mine<'i', 'I', 'i'>(noarr::lit<2>),
+		noarr::strip_mine<'i', 'I', 'i'>(noarr::lit<4>),
+		noarr::strip_mine<'i', 'I', 'i'>(noarr::lit<8>),
+		noarr::strip_mine<'i', 'I', 'i'>(noarr::lit<16>),
+		noarr::strip_mine<'i', 'I', 'i'>(noarr::lit<32>),
+		noarr::strip_mine<'i', 'I', 'i'>(noarr::lit<64>));
+
+	NOARR_TUNE_PAR(block_j2, noarr::tuning::choice,
+		noarr::bcast<'J'>(noarr::lit<1>),
+		noarr::strip_mine<'j', 'J', 'j'>(noarr::lit<2>),
+		noarr::strip_mine<'j', 'J', 'j'>(noarr::lit<4>),
+		noarr::strip_mine<'j', 'J', 'j'>(noarr::lit<8>),
+		noarr::strip_mine<'j', 'J', 'j'>(noarr::lit<16>),
+		noarr::strip_mine<'j', 'J', 'j'>(noarr::lit<32>),
+		noarr::strip_mine<'j', 'J', 'j'>(noarr::lit<64>));
+
+	NOARR_TUNE_PAR(order1, noarr::tuning::choice,
+		*block_i1 ^ *block_j1,
+		*block_j1 ^ *block_i1);
+
+	NOARR_TUNE_PAR(order2, noarr::tuning::choice,
+		*block_i2 ^ *block_j2,
+		*block_j2 ^ *block_i2);
+
+	NOARR_TUNE_PAR(a_layout, noarr::tuning::choice,
+		i_vec ^ j_vec,
+		j_vec ^ i_vec);
+
+	NOARR_TUNE_END();
+} tuning;
 
 // initialization function
 void init_array(auto x1, auto x2, auto y1, auto y2, auto A) {
@@ -84,7 +148,7 @@ int main(int argc, char *argv[]) {
 	auto y1 = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'j'>(n));
 	auto y2 = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'j'>(n));
 
-	auto A = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'j'>(n, n));
+	auto A = noarr::make_bag(noarr::scalar<num_t>() ^ *tuning.a_layout ^ noarr::set_length<'i'>(n) ^ noarr::set_length<'j'>(n));
 
 	// initialize data
 	init_array(x1.get_ref(), x2.get_ref(), y1.get_ref(), y2.get_ref(), A.get_ref());
@@ -92,7 +156,7 @@ int main(int argc, char *argv[]) {
 	auto start = std::chrono::high_resolution_clock::now();
 
 	// run kernel
-	kernel_mvt(x1.get_ref(), x2.get_ref(), y1.get_ref(), y2.get_ref(), A.get_ref());
+	kernel_mvt(x1.get_ref(), x2.get_ref(), y1.get_ref(), y2.get_ref(), A.get_ref(), *tuning.order1, *tuning.order2);
 
 	auto end = std::chrono::high_resolution_clock::now();
 
