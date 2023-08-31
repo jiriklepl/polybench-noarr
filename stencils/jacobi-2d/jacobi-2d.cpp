@@ -10,11 +10,48 @@
 #include "defines.hpp"
 #include "jacobi-2d.hpp"
 
+// autotuning
+#include "test.hpp"
+
 using num_t = DATA_TYPE;
 
 namespace {
 
+struct tuning {
+	NOARR_TUNE_BEGIN(opentuner_formatter( \
+		std::cout, \
+		std::make_shared<noarr::tuning::cmake_compile_command_builder>("../..", "build", "jacobi-2d", "-DPOLYBENCH_TIME -DPOLYBENCH_DUMP_ARRAYS -DLARGE_DATASET -DDATA_TYPE_IS_DOUBLE -D_POSIX_C_SOURCE=200809L"), \
+		std::make_shared<noarr::tuning::direct_run_command_builder>("build/jacobi-2d"), \
+		"return Result(time=float(run_result['stderr'].split()[0]))"));
+
+	NOARR_TUNE_PAR(block_i, noarr::tuning::choice,
+		noarr::bcast<'I'>(noarr::lit<1>),
+		noarr::into_blocks_dynamic<'i', 'I', 'i', 'a'>(noarr::lit<2>),
+		noarr::into_blocks_dynamic<'i', 'I', 'i', 'a'>(noarr::lit<4>),
+		noarr::into_blocks_dynamic<'i', 'I', 'i', 'a'>(noarr::lit<8>),
+		noarr::into_blocks_dynamic<'i', 'I', 'i', 'a'>(noarr::lit<16>),
+		noarr::into_blocks_dynamic<'i', 'I', 'i', 'a'>(noarr::lit<32>),
+		noarr::into_blocks_dynamic<'i', 'I', 'i', 'a'>(noarr::lit<64>));
+
+	NOARR_TUNE_PAR(block_j, noarr::tuning::choice,
+		noarr::bcast<'J'>(noarr::lit<1>),
+		noarr::into_blocks_dynamic<'j', 'J', 'j', 'b'>(noarr::lit<2>),
+		noarr::into_blocks_dynamic<'j', 'J', 'j', 'b'>(noarr::lit<4>),
+		noarr::into_blocks_dynamic<'j', 'J', 'j', 'b'>(noarr::lit<8>),
+		noarr::into_blocks_dynamic<'j', 'J', 'j', 'b'>(noarr::lit<16>),
+		noarr::into_blocks_dynamic<'j', 'J', 'j', 'b'>(noarr::lit<32>),
+		noarr::into_blocks_dynamic<'j', 'J', 'j', 'b'>(noarr::lit<64>));
+
+	NOARR_TUNE_PAR(order, noarr::tuning::choice,
+		*block_i ^ *block_j ^ noarr::hoist<'I'>() ^ noarr::hoist<'J'>(),
+		*block_i ^ *block_j ^ noarr::hoist<'J'>() ^ noarr::hoist<'I'>());
+
+	NOARR_TUNE_END();
+} tuning;
+
+
 // initialization function
+[[gnu::cold]]
 void init_array(auto A, auto B) {
 	// A: i x j
 	// B: i x j
@@ -33,7 +70,8 @@ void init_array(auto A, auto B) {
 
 // computation kernel
 template<class Order = noarr::neutral_proto>
-void kernel_jacobi_2d(std::size_t steps, auto A, auto B, Order order = {}) {
+[[gnu::hot]]
+void kernel_jacobi_2d(std::size_t steps, auto A, auto B, Order order = {}) noexcept {
 	// A: i x j
 	// B: i x j
 
@@ -42,7 +80,7 @@ void kernel_jacobi_2d(std::size_t steps, auto A, auto B, Order order = {}) {
 	traverser
 		.order(noarr::symmetric_spans<'i', 'j'>(traverser.top_struct(), 1, 1))
 		.order(order)
-		.template for_dims<'t'>([=](auto inner) {
+		.template for_dims<'t'>([=](auto inner) noexcept {
 			inner.for_each([=](auto state) {
 				B[state] = (num_t).2 * (
 					A[state] +
@@ -52,7 +90,7 @@ void kernel_jacobi_2d(std::size_t steps, auto A, auto B, Order order = {}) {
 					A[neighbor<'i'>(state, -1)]);
 			});
 
-			inner.for_each([=](auto state) {
+			inner.for_each([=](auto state) noexcept {
 				A[state] = (num_t).2 * (
 					B[state] +
 					B[neighbor<'j'>(state, -1)] +
@@ -82,7 +120,7 @@ int main(int argc, char *argv[]) {
 	auto start = std::chrono::high_resolution_clock::now();
 
 	// run kernel
-	kernel_jacobi_2d(t, A.get_ref(), B.get_ref());
+	kernel_jacobi_2d(t, A.get_ref(), B.get_ref(), *tuning.order);
 
 	auto end = std::chrono::high_resolution_clock::now();
 
