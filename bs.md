@@ -67,6 +67,8 @@
 
 *Transformations of these are currently not supported by Noarr.*
 
+- jacobi-1d - there is nothing to do
+
 - adi
 - bicg
 - fdtd-2d
@@ -97,7 +99,6 @@ These are the easiest to transform, some of them do not even require the planner
   - can be reimplemented to allow higher transformation
 - doitgen
 - heat-3d
-- jacobi-1d
 - jacobi-2d
 
 - symm (triangular)

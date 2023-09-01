@@ -61,6 +61,52 @@ add_executable(jacobi-1d stencils/jacobi-1d/jacobi-1d.cpp)
 add_executable(jacobi-2d stencils/jacobi-2d/jacobi-2d.cpp)
 add_executable(seidel-2d stencils/seidel-2d/seidel-2d.cpp)
 
-# autotuning
+# AUTOTUNING
+
+add_executable(floyd-warshall_autotune medley/floyd-warshall/floyd-warshall.cpp)
+target_compile_definitions(floyd-warshall_autotune PRIVATE NOARR_TUNE)
+
 add_executable(gemm_autotune linear-algebra/blas/gemm/gemm.cpp)
+target_compile_definitions(gemm_autotune PRIVATE NOARR_TUNE)
+
+add_executable(gemver_autotune linear-algebra/blas/gemver/gemver.cpp)
+target_compile_definitions(gemver_autotune PRIVATE NOARR_TUNE)
+
+add_executable(mvt_autotune linear-algebra/kernels/mvt/mvt.cpp)
+target_compile_definitions(mvt_autotune PRIVATE NOARR_TUNE)
+
+# TODO: fix 2mm autotuning (it takes too long)
+# add_executable(2mm_autotune linear-algebra/kernels/2mm/2mm.cpp)
+# target_compile_definitions(2mm_autotune PRIVATE NOARR_TUNE)
+
+# TODO: fix 3mm autotuning (it takes too long)
+# add_executable(3mm_autotune linear-algebra/kernels/3mm/3mm.cpp)
+# target_compile_definitions(3mm_autotune PRIVATE NOARR_TUNE)
+
+add_executable(doitgen_autotune linear-algebra/kernels/doitgen/doitgen.cpp)
+target_compile_definitions(doitgen_autotune PRIVATE NOARR_TUNE)
+
+add_executable(heat-3d_autotune stencils/heat-3d/heat-3d.cpp)
+target_compile_definitions(heat-3d_autotune PRIVATE NOARR_TUNE)
+
 add_executable(jacobi-2d_autotune stencils/jacobi-2d/jacobi-2d.cpp)
+target_compile_definitions(jacobi-2d_autotune PRIVATE NOARR_TUNE)
+
+add_executable(atax_autotune linear-algebra/kernels/atax/atax.cpp)
+target_compile_definitions(atax_autotune PRIVATE NOARR_TUNE)
+
+# TODO: add autotuning for correlation
+# add_executable(correlation_autotune datamining/correlation/correlation.cpp)
+# target_compile_definitions(correlation_autotune PRIVATE NOARR_TUNE)
+
+add_executable(covariance_autotune datamining/covariance/covariance.cpp)
+target_compile_definitions(covariance_autotune PRIVATE NOARR_TUNE)
+
+add_executable(gesummv_autotune linear-algebra/blas/gesummv/gesummv.cpp)
+target_compile_definitions(gesummv_autotune PRIVATE NOARR_TUNE)
+
+add_executable(syr2k_autotune linear-algebra/blas/syr2k/syr2k.cpp)
+target_compile_definitions(syr2k_autotune PRIVATE NOARR_TUNE)
+
+add_executable(syrk_autotune linear-algebra/blas/syrk/syrk.cpp)
+target_compile_definitions(syrk_autotune PRIVATE NOARR_TUNE)

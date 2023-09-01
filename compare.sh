@@ -24,6 +24,15 @@ trap "rm -rf $dirname" EXIT
 find build -maxdepth 1 -executable -type f \
 	| while read -r file; do
 		filename=$(basename "$file")
+
+		case "$filename" in
+			*_autotune)
+				continue
+				;;
+		esac
+
+		grep -vE '^\s*#|^\s*$' compare-ignore.txt | grep "^$filename\$" > /dev/null && continue
+
 		echo "Comparing $filename"
 
 		printf "Noarr: " >&2
