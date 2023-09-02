@@ -25,27 +25,27 @@ constexpr auto s_vec =  noarr::vector<'s'>();
 struct tuning {
 	NOARR_TUNE_BEGIN(opentuner_formatter( \
 		std::cout, \
-		std::make_shared<noarr::tuning::cmake_compile_command_builder>("../..", "build", "gemm", "-DPOLYBENCH_TIME -DPOLYBENCH_DUMP_ARRAYS -DLARGE_DATASET -DDATA_TYPE_IS_DOUBLE -D_POSIX_C_SOURCE=200809L"), \
-		std::make_shared<noarr::tuning::direct_run_command_builder>("build/gemm"), \
+		std::make_shared<noarr::tuning::cmake_compile_command_builder>("../..", "build", "doitgen", "-DPOLYBENCH_TIME -DPOLYBENCH_DUMP_ARRAYS -DLARGE_DATASET -DDATA_TYPE_IS_DOUBLE -D_POSIX_C_SOURCE=200809L"), \
+		std::make_shared<noarr::tuning::direct_run_command_builder>("build/doitgen"), \
 		"return Result(time=float(run_result['stderr'].split()[0]))"));
 
 	NOARR_TUNE_PAR(block_r, noarr::tuning::choice,
 		noarr::bcast<'R'>(noarr::lit<1>),
-		noarr::strip_mine<'r', 'R', 'r'>(noarr::lit<2>),
-		noarr::strip_mine<'r', 'R', 'r'>(noarr::lit<4>),
-		noarr::strip_mine<'r', 'R', 'r'>(noarr::lit<8>),
-		noarr::strip_mine<'r', 'R', 'r'>(noarr::lit<16>),
-		noarr::strip_mine<'r', 'R', 'r'>(noarr::lit<32>),
-		noarr::strip_mine<'r', 'R', 'r'>(noarr::lit<64>));
+		noarr::strip_mine_dynamic<'r', 'R', 'r', 'x'>(noarr::lit<2>),
+		noarr::strip_mine_dynamic<'r', 'R', 'r', 'x'>(noarr::lit<4>),
+		noarr::strip_mine_dynamic<'r', 'R', 'r', 'x'>(noarr::lit<8>),
+		noarr::strip_mine_dynamic<'r', 'R', 'r', 'x'>(noarr::lit<16>),
+		noarr::strip_mine_dynamic<'r', 'R', 'r', 'x'>(noarr::lit<32>),
+		noarr::strip_mine_dynamic<'r', 'R', 'r', 'x'>(noarr::lit<64>));
 
 	NOARR_TUNE_PAR(block_q, noarr::tuning::choice,
 		noarr::bcast<'Q'>(noarr::lit<1>),
-		noarr::strip_mine<'q', 'Q', 'q'>(noarr::lit<2>),
-		noarr::strip_mine<'q', 'Q', 'q'>(noarr::lit<4>),
-		noarr::strip_mine<'q', 'Q', 'q'>(noarr::lit<8>),
-		noarr::strip_mine<'q', 'Q', 'q'>(noarr::lit<16>),
-		noarr::strip_mine<'q', 'Q', 'q'>(noarr::lit<32>),
-		noarr::strip_mine<'q', 'Q', 'q'>(noarr::lit<64>));
+		noarr::strip_mine_dynamic<'q', 'Q', 'q', 'y'>(noarr::lit<2>),
+		noarr::strip_mine_dynamic<'q', 'Q', 'q', 'y'>(noarr::lit<4>),
+		noarr::strip_mine_dynamic<'q', 'Q', 'q', 'y'>(noarr::lit<8>),
+		noarr::strip_mine_dynamic<'q', 'Q', 'q', 'y'>(noarr::lit<16>),
+		noarr::strip_mine_dynamic<'q', 'Q', 'q', 'y'>(noarr::lit<32>),
+		noarr::strip_mine_dynamic<'q', 'Q', 'q', 'y'>(noarr::lit<64>));
 
 	NOARR_TUNE_PAR(order, noarr::tuning::choice,
 		*block_r ^ *block_q,

@@ -23,53 +23,31 @@ constexpr auto j_vec =  noarr::vector<'j'>();
 struct tuning {
 	NOARR_TUNE_BEGIN(opentuner_formatter( \
 		std::cout, \
-		std::make_shared<noarr::tuning::cmake_compile_command_builder>("../..", "build", "gemm", "-DPOLYBENCH_TIME -DPOLYBENCH_DUMP_ARRAYS -DLARGE_DATASET -DDATA_TYPE_IS_DOUBLE -D_POSIX_C_SOURCE=200809L"), \
-		std::make_shared<noarr::tuning::direct_run_command_builder>("build/gemm"), \
+		std::make_shared<noarr::tuning::cmake_compile_command_builder>("../..", "build", "gesummv", "-DPOLYBENCH_TIME -DPOLYBENCH_DUMP_ARRAYS -DLARGE_DATASET -DDATA_TYPE_IS_DOUBLE -D_POSIX_C_SOURCE=200809L"), \
+		std::make_shared<noarr::tuning::direct_run_command_builder>("build/gesummv"), \
 		"return Result(time=float(run_result['stderr'].split()[0]))"));
 
 	NOARR_TUNE_PAR(block_i1, noarr::tuning::choice,
 		noarr::bcast<'I'>(noarr::lit<1>),
-		noarr::strip_mine<'i', 'I', 'i'>(noarr::lit<2>),
-		noarr::strip_mine<'i', 'I', 'i'>(noarr::lit<4>),
-		noarr::strip_mine<'i', 'I', 'i'>(noarr::lit<8>),
-		noarr::strip_mine<'i', 'I', 'i'>(noarr::lit<16>),
-		noarr::strip_mine<'i', 'I', 'i'>(noarr::lit<32>),
-		noarr::strip_mine<'i', 'I', 'i'>(noarr::lit<64>));
+		noarr::strip_mine_dynamic<'i', 'I', 'i', 's'>(noarr::lit<2>),
+		noarr::strip_mine_dynamic<'i', 'I', 'i', 's'>(noarr::lit<4>),
+		noarr::strip_mine_dynamic<'i', 'I', 'i', 's'>(noarr::lit<8>),
+		noarr::strip_mine_dynamic<'i', 'I', 'i', 's'>(noarr::lit<16>),
+		noarr::strip_mine_dynamic<'i', 'I', 'i', 's'>(noarr::lit<32>),
+		noarr::strip_mine_dynamic<'i', 'I', 'i', 's'>(noarr::lit<64>));
 
 	NOARR_TUNE_PAR(block_j1, noarr::tuning::choice,
 		noarr::bcast<'J'>(noarr::lit<1>),
-		noarr::strip_mine<'j', 'J', 'j'>(noarr::lit<2>),
-		noarr::strip_mine<'j', 'J', 'j'>(noarr::lit<4>),
-		noarr::strip_mine<'j', 'J', 'j'>(noarr::lit<8>),
-		noarr::strip_mine<'j', 'J', 'j'>(noarr::lit<16>),
-		noarr::strip_mine<'j', 'J', 'j'>(noarr::lit<32>),
-		noarr::strip_mine<'j', 'J', 'j'>(noarr::lit<64>));
+		noarr::strip_mine_dynamic<'j', 'J', 'j', 't'>(noarr::lit<2>),
+		noarr::strip_mine_dynamic<'j', 'J', 'j', 't'>(noarr::lit<4>),
+		noarr::strip_mine_dynamic<'j', 'J', 'j', 't'>(noarr::lit<8>),
+		noarr::strip_mine_dynamic<'j', 'J', 'j', 't'>(noarr::lit<16>),
+		noarr::strip_mine_dynamic<'j', 'J', 'j', 't'>(noarr::lit<32>),
+		noarr::strip_mine_dynamic<'j', 'J', 'j', 't'>(noarr::lit<64>));
 
 	NOARR_TUNE_PAR(order1, noarr::tuning::choice,
 		*block_i1 ^ *block_j1,
 		*block_j1 ^ *block_i1);
-	
-	NOARR_TUNE_PAR(block_i2, noarr::tuning::choice,
-		noarr::bcast<'I'>(noarr::lit<1>),
-		noarr::strip_mine<'i', 'I', 'i'>(noarr::lit<2>),
-		noarr::strip_mine<'i', 'I', 'i'>(noarr::lit<4>),
-		noarr::strip_mine<'i', 'I', 'i'>(noarr::lit<8>),
-		noarr::strip_mine<'i', 'I', 'i'>(noarr::lit<16>),
-		noarr::strip_mine<'i', 'I', 'i'>(noarr::lit<32>),
-		noarr::strip_mine<'i', 'I', 'i'>(noarr::lit<64>));
-
-	NOARR_TUNE_PAR(block_j2, noarr::tuning::choice,
-		noarr::bcast<'J'>(noarr::lit<1>),
-		noarr::strip_mine<'j', 'J', 'j'>(noarr::lit<2>),
-		noarr::strip_mine<'j', 'J', 'j'>(noarr::lit<4>),
-		noarr::strip_mine<'j', 'J', 'j'>(noarr::lit<8>),
-		noarr::strip_mine<'j', 'J', 'j'>(noarr::lit<16>),
-		noarr::strip_mine<'j', 'J', 'j'>(noarr::lit<32>),
-		noarr::strip_mine<'j', 'J', 'j'>(noarr::lit<64>));
-	
-	NOARR_TUNE_PAR(order2, noarr::tuning::choice,
-		*block_i2 ^ *block_j2,
-		*block_j2 ^ *block_i2);
 
 	NOARR_TUNE_PAR(a_layout, noarr::tuning::choice,
 		i_vec ^ j_vec,
@@ -111,8 +89,8 @@ void init_array(num_t &alpha, num_t &beta, auto A, auto B, auto x) {
 }
 
 // computation kernel
-template<class Order1 = noarr::neutral_proto, class Order2 = noarr::neutral_proto>
-void kernel_gesummv(num_t alpha, num_t beta, auto A, auto B, auto tmp, auto x, auto y, Order1 order1 = {}, Order2 order2 = {}) {
+template<class Order1 = noarr::neutral_proto>
+void kernel_gesummv(num_t alpha, num_t beta, auto A, auto B, auto tmp, auto x, auto y, Order1 order1 = {}) {
 	// A: i x j
 	// B: i x j
 	// tmp: i
@@ -132,7 +110,6 @@ void kernel_gesummv(num_t alpha, num_t beta, auto A, auto B, auto tmp, auto x, a
 		});
 
 	noarr::traverser(y, tmp)
-		.order(order2)
 		.for_each([=](auto state) {
 			y[state] = alpha * tmp[state] + beta * y[state];
 		});
@@ -163,7 +140,7 @@ int main(int argc, char *argv[]) {
 	auto start = std::chrono::high_resolution_clock::now();
 
 	// run kernel
-	kernel_gesummv(alpha, beta, A.get_ref(), B.get_ref(), tmp.get_ref(), x.get_ref(), y.get_ref(), *tuning.order1, *tuning.order2);
+	kernel_gesummv(alpha, beta, A.get_ref(), B.get_ref(), tmp.get_ref(), x.get_ref(), y.get_ref(), *tuning.order1);
 
 	auto end = std::chrono::high_resolution_clock::now();
 

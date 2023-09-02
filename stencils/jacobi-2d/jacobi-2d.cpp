@@ -26,25 +26,25 @@ struct tuning {
 
 	NOARR_TUNE_PAR(block_i, noarr::tuning::choice,
 		noarr::bcast<'I'>(noarr::lit<1>),
-		noarr::into_blocks_dynamic<'i', 'I', 'i', 'a'>(noarr::lit<2>),
-		noarr::into_blocks_dynamic<'i', 'I', 'i', 'a'>(noarr::lit<4>),
-		noarr::into_blocks_dynamic<'i', 'I', 'i', 'a'>(noarr::lit<8>),
-		noarr::into_blocks_dynamic<'i', 'I', 'i', 'a'>(noarr::lit<16>),
-		noarr::into_blocks_dynamic<'i', 'I', 'i', 'a'>(noarr::lit<32>),
-		noarr::into_blocks_dynamic<'i', 'I', 'i', 'a'>(noarr::lit<64>));
+		noarr::strip_mine_dynamic<'i', 'I', 'i', 'a'>(noarr::lit<2>),
+		noarr::strip_mine_dynamic<'i', 'I', 'i', 'a'>(noarr::lit<4>),
+		noarr::strip_mine_dynamic<'i', 'I', 'i', 'a'>(noarr::lit<8>),
+		noarr::strip_mine_dynamic<'i', 'I', 'i', 'a'>(noarr::lit<16>),
+		noarr::strip_mine_dynamic<'i', 'I', 'i', 'a'>(noarr::lit<32>),
+		noarr::strip_mine_dynamic<'i', 'I', 'i', 'a'>(noarr::lit<64>));
 
 	NOARR_TUNE_PAR(block_j, noarr::tuning::choice,
 		noarr::bcast<'J'>(noarr::lit<1>),
-		noarr::into_blocks_dynamic<'j', 'J', 'j', 'b'>(noarr::lit<2>),
-		noarr::into_blocks_dynamic<'j', 'J', 'j', 'b'>(noarr::lit<4>),
-		noarr::into_blocks_dynamic<'j', 'J', 'j', 'b'>(noarr::lit<8>),
-		noarr::into_blocks_dynamic<'j', 'J', 'j', 'b'>(noarr::lit<16>),
-		noarr::into_blocks_dynamic<'j', 'J', 'j', 'b'>(noarr::lit<32>),
-		noarr::into_blocks_dynamic<'j', 'J', 'j', 'b'>(noarr::lit<64>));
+		noarr::strip_mine_dynamic<'j', 'J', 'j', 'b'>(noarr::lit<2>),
+		noarr::strip_mine_dynamic<'j', 'J', 'j', 'b'>(noarr::lit<4>),
+		noarr::strip_mine_dynamic<'j', 'J', 'j', 'b'>(noarr::lit<8>),
+		noarr::strip_mine_dynamic<'j', 'J', 'j', 'b'>(noarr::lit<16>),
+		noarr::strip_mine_dynamic<'j', 'J', 'j', 'b'>(noarr::lit<32>),
+		noarr::strip_mine_dynamic<'j', 'J', 'j', 'b'>(noarr::lit<64>));
 
 	NOARR_TUNE_PAR(order, noarr::tuning::choice,
-		*block_i ^ *block_j ^ noarr::hoist<'I'>() ^ noarr::hoist<'J'>(),
-		*block_i ^ *block_j ^ noarr::hoist<'J'>() ^ noarr::hoist<'I'>());
+		*block_i ^ *block_j,
+		*block_i ^ *block_j);
 
 	NOARR_TUNE_END();
 } tuning;

@@ -30,30 +30,30 @@ struct tuning {
 
 	NOARR_TUNE_PAR(block_i, noarr::tuning::choice,
 		noarr::bcast<'I'>(noarr::lit<1>),
-		noarr::strip_mine<'i', 'I', 'i'>(noarr::lit<2>),
-		noarr::strip_mine<'i', 'I', 'i'>(noarr::lit<4>),
-		noarr::strip_mine<'i', 'I', 'i'>(noarr::lit<8>),
-		noarr::strip_mine<'i', 'I', 'i'>(noarr::lit<16>),
-		noarr::strip_mine<'i', 'I', 'i'>(noarr::lit<32>),
-		noarr::strip_mine<'i', 'I', 'i'>(noarr::lit<64>));
+		noarr::strip_mine_dynamic<'i', 'I', 'i', 's'>(noarr::lit<2>),
+		noarr::strip_mine_dynamic<'i', 'I', 'i', 's'>(noarr::lit<4>),
+		noarr::strip_mine_dynamic<'i', 'I', 'i', 's'>(noarr::lit<8>),
+		noarr::strip_mine_dynamic<'i', 'I', 'i', 's'>(noarr::lit<16>),
+		noarr::strip_mine_dynamic<'i', 'I', 'i', 's'>(noarr::lit<32>),
+		noarr::strip_mine_dynamic<'i', 'I', 'i', 's'>(noarr::lit<64>));
 
 	NOARR_TUNE_PAR(block_j, noarr::tuning::choice,
 		noarr::bcast<'J'>(noarr::lit<1>),
-		noarr::strip_mine<'j', 'J', 'j'>(noarr::lit<2>),
-		noarr::strip_mine<'j', 'J', 'j'>(noarr::lit<4>),
-		noarr::strip_mine<'j', 'J', 'j'>(noarr::lit<8>),
-		noarr::strip_mine<'j', 'J', 'j'>(noarr::lit<16>),
-		noarr::strip_mine<'j', 'J', 'j'>(noarr::lit<32>),
-		noarr::strip_mine<'j', 'J', 'j'>(noarr::lit<64>));
+		noarr::strip_mine_dynamic<'j', 'J', 'j', 't'>(noarr::lit<2>),
+		noarr::strip_mine_dynamic<'j', 'J', 'j', 't'>(noarr::lit<4>),
+		noarr::strip_mine_dynamic<'j', 'J', 'j', 't'>(noarr::lit<8>),
+		noarr::strip_mine_dynamic<'j', 'J', 'j', 't'>(noarr::lit<16>),
+		noarr::strip_mine_dynamic<'j', 'J', 'j', 't'>(noarr::lit<32>),
+		noarr::strip_mine_dynamic<'j', 'J', 'j', 't'>(noarr::lit<64>));
 
 	NOARR_TUNE_PAR(block_k, noarr::tuning::choice,
 		noarr::bcast<'K'>(noarr::lit<1>),
-		noarr::strip_mine<'k', 'K', 'k'>(noarr::lit<2>),
-		noarr::strip_mine<'k', 'K', 'k'>(noarr::lit<4>),
-		noarr::strip_mine<'k', 'K', 'k'>(noarr::lit<8>),
-		noarr::strip_mine<'k', 'K', 'k'>(noarr::lit<16>),
-		noarr::strip_mine<'k', 'K', 'k'>(noarr::lit<32>),
-		noarr::strip_mine<'k', 'K', 'k'>(noarr::lit<64>));
+		noarr::strip_mine_dynamic<'k', 'K', 'k', 'u'>(noarr::lit<2>),
+		noarr::strip_mine_dynamic<'k', 'K', 'k', 'u'>(noarr::lit<4>),
+		noarr::strip_mine_dynamic<'k', 'K', 'k', 'u'>(noarr::lit<8>),
+		noarr::strip_mine_dynamic<'k', 'K', 'k', 'u'>(noarr::lit<16>),
+		noarr::strip_mine_dynamic<'k', 'K', 'k', 'u'>(noarr::lit<32>),
+		noarr::strip_mine_dynamic<'k', 'K', 'k', 'u'>(noarr::lit<64>));
 
 	NOARR_TUNE_PAR(order, noarr::tuning::choice,
 		*block_i ^ *block_j ^ *block_k,

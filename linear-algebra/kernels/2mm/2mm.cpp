@@ -26,45 +26,45 @@ constexpr auto l_vec =  noarr::vector<'l'>();
 struct tuning {
 	NOARR_TUNE_BEGIN(opentuner_formatter( \
 		std::cout, \
-		std::make_shared<noarr::tuning::cmake_compile_command_builder>("../..", "build", "gemm", "-DPOLYBENCH_TIME -DPOLYBENCH_DUMP_ARRAYS -DLARGE_DATASET -DDATA_TYPE_IS_DOUBLE -D_POSIX_C_SOURCE=200809L"), \
-		std::make_shared<noarr::tuning::direct_run_command_builder>("build/gemm"), \
+		std::make_shared<noarr::tuning::cmake_compile_command_builder>("../..", "build", "2mm", "-DPOLYBENCH_TIME -DPOLYBENCH_DUMP_ARRAYS -DLARGE_DATASET -DDATA_TYPE_IS_DOUBLE -D_POSIX_C_SOURCE=200809L"), \
+		std::make_shared<noarr::tuning::direct_run_command_builder>("build/2mm"), \
 		"return Result(time=float(run_result['stderr'].split()[0]))"));
 
 	NOARR_TUNE_PAR(block_i1, noarr::tuning::choice,
 		noarr::bcast<'I'>(noarr::lit<1>),
-		noarr::strip_mine<'i', 'I', 'i'>(noarr::lit<2>),
-		noarr::strip_mine<'i', 'I', 'i'>(noarr::lit<4>),
-		noarr::strip_mine<'i', 'I', 'i'>(noarr::lit<8>),
-		noarr::strip_mine<'i', 'I', 'i'>(noarr::lit<16>),
-		noarr::strip_mine<'i', 'I', 'i'>(noarr::lit<32>),
-		noarr::strip_mine<'i', 'I', 'i'>(noarr::lit<64>));
+		noarr::strip_mine_dynamic<'i', 'I', 'i', 's'>(noarr::lit<2>),
+		noarr::strip_mine_dynamic<'i', 'I', 'i', 's'>(noarr::lit<4>),
+		noarr::strip_mine_dynamic<'i', 'I', 'i', 's'>(noarr::lit<8>),
+		noarr::strip_mine_dynamic<'i', 'I', 'i', 's'>(noarr::lit<16>),
+		noarr::strip_mine_dynamic<'i', 'I', 'i', 's'>(noarr::lit<32>),
+		noarr::strip_mine_dynamic<'i', 'I', 'i', 's'>(noarr::lit<64>));
 
 	NOARR_TUNE_PAR(block_j1, noarr::tuning::choice,
 		noarr::bcast<'J'>(noarr::lit<1>),
-		noarr::strip_mine<'j', 'J', 'j'>(noarr::lit<2>),
-		noarr::strip_mine<'j', 'J', 'j'>(noarr::lit<4>),
-		noarr::strip_mine<'j', 'J', 'j'>(noarr::lit<8>),
-		noarr::strip_mine<'j', 'J', 'j'>(noarr::lit<16>),
-		noarr::strip_mine<'j', 'J', 'j'>(noarr::lit<32>),
-		noarr::strip_mine<'j', 'J', 'j'>(noarr::lit<64>));
+		noarr::strip_mine_dynamic<'j', 'J', 'j', 't'>(noarr::lit<2>),
+		noarr::strip_mine_dynamic<'j', 'J', 'j', 't'>(noarr::lit<4>),
+		noarr::strip_mine_dynamic<'j', 'J', 'j', 't'>(noarr::lit<8>),
+		noarr::strip_mine_dynamic<'j', 'J', 'j', 't'>(noarr::lit<16>),
+		noarr::strip_mine_dynamic<'j', 'J', 'j', 't'>(noarr::lit<32>),
+		noarr::strip_mine_dynamic<'j', 'J', 'j', 't'>(noarr::lit<64>));
 
 	NOARR_TUNE_PAR(block_i2, noarr::tuning::choice,
 		noarr::bcast<'I'>(noarr::lit<1>),
-		noarr::strip_mine<'i', 'I', 'i'>(noarr::lit<2>),
-		noarr::strip_mine<'i', 'I', 'i'>(noarr::lit<4>),
-		noarr::strip_mine<'i', 'I', 'i'>(noarr::lit<8>),
-		noarr::strip_mine<'i', 'I', 'i'>(noarr::lit<16>),
-		noarr::strip_mine<'i', 'I', 'i'>(noarr::lit<32>),
-		noarr::strip_mine<'i', 'I', 'i'>(noarr::lit<64>));
+		noarr::strip_mine_dynamic<'i', 'I', 'i', 's'>(noarr::lit<2>),
+		noarr::strip_mine_dynamic<'i', 'I', 'i', 's'>(noarr::lit<4>),
+		noarr::strip_mine_dynamic<'i', 'I', 'i', 's'>(noarr::lit<8>),
+		noarr::strip_mine_dynamic<'i', 'I', 'i', 's'>(noarr::lit<16>),
+		noarr::strip_mine_dynamic<'i', 'I', 'i', 's'>(noarr::lit<32>),
+		noarr::strip_mine_dynamic<'i', 'I', 'i', 's'>(noarr::lit<64>));
 
 	NOARR_TUNE_PAR(block_l2, noarr::tuning::choice,
 		noarr::bcast<'L'>(noarr::lit<1>),
-		noarr::strip_mine<'l', 'L', 'l'>(noarr::lit<2>),
-		noarr::strip_mine<'l', 'L', 'l'>(noarr::lit<4>),
-		noarr::strip_mine<'l', 'L', 'l'>(noarr::lit<8>),
-		noarr::strip_mine<'l', 'L', 'l'>(noarr::lit<16>),
-		noarr::strip_mine<'l', 'L', 'l'>(noarr::lit<32>),
-		noarr::strip_mine<'l', 'L', 'l'>(noarr::lit<64>));
+		noarr::strip_mine_dynamic<'l', 'L', 'l', 't'>(noarr::lit<2>),
+		noarr::strip_mine_dynamic<'l', 'L', 'l', 't'>(noarr::lit<4>),
+		noarr::strip_mine_dynamic<'l', 'L', 'l', 't'>(noarr::lit<8>),
+		noarr::strip_mine_dynamic<'l', 'L', 'l', 't'>(noarr::lit<16>),
+		noarr::strip_mine_dynamic<'l', 'L', 'l', 't'>(noarr::lit<32>),
+		noarr::strip_mine_dynamic<'l', 'L', 'l', 't'>(noarr::lit<64>));
 
 	NOARR_TUNE_PAR(order1, noarr::tuning::choice,
 		*block_i1 ^ *block_j1,
