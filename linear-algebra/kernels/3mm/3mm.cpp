@@ -11,7 +11,7 @@
 #include "3mm.hpp"
 
 // autotuning
-#include "test.hpp"
+#include <noarr/structures/tuning/formatters/opentuner_formatter.hpp>
 
 using num_t = DATA_TYPE;
 
@@ -24,10 +24,10 @@ constexpr auto l_vec =  noarr::vector<'l'>();
 constexpr auto m_vec =  noarr::vector<'m'>();
 
 struct tuning {
-	NOARR_TUNE_BEGIN(opentuner_formatter( \
-		std::cout, \
-		std::make_shared<noarr::tuning::cmake_compile_command_builder>("../..", "build", "3mm", "-DLARGE_DATASET -DDATA_TYPE_IS_DOUBLE"), \
-		std::make_shared<noarr::tuning::direct_run_command_builder>("build/3mm"), \
+	NOARR_TUNE_BEGIN(noarr::tuning::opentuner_formatter(
+		std::cout,
+		std::make_shared<noarr::tuning::cmake_compile_command_builder>("../..", "build", "3mm", "-DLARGE_DATASET -DDATA_TYPE_IS_DOUBLE"),
+		std::make_shared<noarr::tuning::direct_run_command_builder>("build/3mm"),
 		"return Result(time=float(run_result['stderr'].split()[0]))"));
 
 	NOARR_TUNE_PAR(block_i1, noarr::tuning::choice,

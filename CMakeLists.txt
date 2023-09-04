@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 Include(FetchContent)
 
-# set the project name
+# set the project name and version
 project(NoarrPolybench VERSION 0.0.1)
 
 # specify the C++ standard
@@ -17,7 +17,6 @@ FetchContent_MakeAvailable(Noarr)
 
 include_directories(include)
 include_directories(${Noarr_SOURCE_DIR}/include)
-include_directories(${Noarr_SOURCE_DIR}/autotuners/opentuner_test)
 
 # datamining
 add_executable(correlation datamining/correlation/correlation.cpp)

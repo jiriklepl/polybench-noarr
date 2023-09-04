@@ -13,7 +13,7 @@
 #include "noarr/structures/structs/blocks.hpp"
 
 // autotuning
-#include "test.hpp"
+#include <noarr/structures/tuning/formatters/opentuner_formatter.hpp>
 
 using num_t = DATA_TYPE;
 
@@ -24,10 +24,10 @@ constexpr auto j_vec =  noarr::vector<'j'>();
 constexpr auto k_vec =  noarr::vector<'k'>();
 
 struct tuning {
-	NOARR_TUNE_BEGIN(opentuner_formatter( \
-		std::cout, \
-		std::make_shared<noarr::tuning::cmake_compile_command_builder>("../..", "build", "floyd-warshall", "-DLARGE_DATASET -DDATA_TYPE_IS_DOUBLE"), \
-		std::make_shared<noarr::tuning::direct_run_command_builder>("build/floyd-warshall"), \
+	NOARR_TUNE_BEGIN(noarr::tuning::opentuner_formatter(
+		std::cout,
+		std::make_shared<noarr::tuning::cmake_compile_command_builder>("../..", "build", "floyd-warshall", "-DLARGE_DATASET -DDATA_TYPE_IS_DOUBLE"),
+		std::make_shared<noarr::tuning::direct_run_command_builder>("build/floyd-warshall"),
 		"return Result(time=float(run_result['stderr'].split()[0]))"));
 
 	NOARR_TUNE_PAR(block_i, noarr::tuning::choice,
