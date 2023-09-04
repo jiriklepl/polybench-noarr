@@ -12,7 +12,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 FetchContent_Declare(
   Noarr
   GIT_REPOSITORY https://github.com/jiriklepl/noarr-structures.git
-  GIT_TAG        metastructures-planner)
+  GIT_TAG        tuning)
 FetchContent_MakeAvailable(Noarr)
 
 include_directories(include)
