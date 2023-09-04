@@ -25,7 +25,7 @@ constexpr auto s_vec =  noarr::vector<'s'>();
 struct tuning {
 	NOARR_TUNE_BEGIN(opentuner_formatter( \
 		std::cout, \
-		std::make_shared<noarr::tuning::cmake_compile_command_builder>("../..", "build", "doitgen", "-DPOLYBENCH_TIME -DPOLYBENCH_DUMP_ARRAYS -DLARGE_DATASET -DDATA_TYPE_IS_DOUBLE -D_POSIX_C_SOURCE=200809L"), \
+		std::make_shared<noarr::tuning::cmake_compile_command_builder>("../..", "build", "doitgen", "-DLARGE_DATASET -DDATA_TYPE_IS_DOUBLE"), \
 		std::make_shared<noarr::tuning::direct_run_command_builder>("build/doitgen"), \
 		"return Result(time=float(run_result['stderr'].split()[0]))"));
 

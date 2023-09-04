@@ -23,7 +23,7 @@ constexpr auto j_vec =  noarr::vector<'j'>();
 struct tuning {
 	NOARR_TUNE_BEGIN(opentuner_formatter( \
 		std::cout, \
-		std::make_shared<noarr::tuning::cmake_compile_command_builder>("../..", "build", "mvt", "-DPOLYBENCH_TIME -DPOLYBENCH_DUMP_ARRAYS -DLARGE_DATASET -DDATA_TYPE_IS_DOUBLE -D_POSIX_C_SOURCE=200809L"), \
+		std::make_shared<noarr::tuning::cmake_compile_command_builder>("../..", "build", "mvt", "-DLARGE_DATASET -DDATA_TYPE_IS_DOUBLE"), \
 		std::make_shared<noarr::tuning::direct_run_command_builder>("build/mvt"), \
 		"return Result(time=float(run_result['stderr'].split()[0]))"));
 

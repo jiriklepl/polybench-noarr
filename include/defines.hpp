@@ -6,13 +6,15 @@
 # define MINI_DATASET
 #endif
 
-#if !defined(DATA_TYPE_IS_INT) && !defined(DATA_TYPE_IS_FLOAT) && !defined(DATA_TYPE_IS_DOUBLE)
-# error "Please define one of DATA_TYPE_IS_INT, DATA_TYPE_IS_FLOAT, DATA_TYPE_IS_DOUBLE"
+#if !defined(DATA_TYPE_IS_INT) && !defined(DATA_TYPE_IS_LONG) && !defined(DATA_TYPE_IS_FLOAT) && !defined(DATA_TYPE_IS_DOUBLE) && !defined(DATA_TYPE)
+# error "Please define one of DATA_TYPE_IS_INT, DATA_TYPE_IS_LONG, DATA_TYPE_IS_FLOAT, or DATA_TYPE_IS_DOUBLE; or define directly DATA_TYPE to desired type"
 # define DATA_TYPE_IS_FLOAT
 #endif
 
 #ifdef DATA_TYPE_IS_INT
 # define DATA_TYPE int
+#elif defined(DATA_TYPE_IS_LONG)
+# define DATA_TYPE long
 #elif defined(DATA_TYPE_IS_FLOAT)
 # define DATA_TYPE float
 #elif defined(DATA_TYPE_IS_DOUBLE)
