@@ -111,7 +111,7 @@ void kernel_covariance(num_t float_n, auto data, auto cov, auto mean, Order orde
 		.for_each([=](auto state) {
 			cov[state] += data[state] * data_ki[state];
 		})
-		.template for_sections<'i'>([=](auto inner) {
+		.template for_sections<'i'>([](auto inner) {
 			inner
 				.order(noarr::shift<'j'>(noarr::get_index<'i'>(inner.state())))
 				();

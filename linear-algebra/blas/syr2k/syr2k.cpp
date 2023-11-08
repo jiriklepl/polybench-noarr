@@ -116,7 +116,7 @@ void kernel_syr2k(num_t alpha, num_t beta, auto C, auto A, auto B, Order order =
 		.for_each([=](auto state) {
 			C[state] += A_renamed[state] * alpha * B[state] + B_renamed[state] * alpha * A[state];
 		})
-		.template for_sections<'i'>([=](auto inner) {
+		.template for_sections<'i'>([](auto inner) {
 			auto state = inner.state();
 
 			inner

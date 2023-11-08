@@ -110,7 +110,7 @@ void kernel_syrk(num_t alpha, num_t beta, auto C, auto A, Order order = {}) {
 		.for_each([=](auto state) {
 			C[state] += alpha * A[state] * A_renamed[state];
 		})
-		.template for_sections<'i'>([=](auto inner) {
+		.template for_sections<'i'>([](auto inner) {
 			auto state = inner.state();
 
 			inner
