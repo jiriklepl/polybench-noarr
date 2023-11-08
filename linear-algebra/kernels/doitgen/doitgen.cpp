@@ -107,16 +107,17 @@ void kernel_doitgen(auto A, auto C4, auto sum, Order order = {}) {
 				})
 				();
 			})
+			.order(noarr::hoist<'p'>())
 			();
 
 			inner
-				.order(noarr::reorder<'p'>())
-				.for_each([=](auto state) {
+				.template for_sections<'p'>([=](auto inner) {
+					auto state = inner.state();
 					A[state] = sum[state];
 				})
+				.order(noarr::hoist<'p'>())
 				();
 		})
-		.order(noarr::hoist<'p'>())
 		.order(noarr::hoist<'q'>())
 		.order(noarr::hoist<'r'>())
 		.order(order)
