@@ -62,7 +62,7 @@ struct tuning {
 } tuning;
 
 // initialization function
-void init_array(num_t &alpha, num_t &beta, auto C, auto A) {
+void init_array(num_t &alpha, num_t &beta, auto C, auto A) noexcept {
 	// C: i x j
 	// A: i x k
 
@@ -73,14 +73,14 @@ void init_array(num_t &alpha, num_t &beta, auto C, auto A) {
 	auto nk = A | noarr::get_length<'k'>();
 
 	noarr::traverser(A)
-		.for_each([=](auto state) {
+		.for_each([=](auto state) constexpr noexcept {
 			auto [i, k] = noarr::get_indices<'i', 'k'>(state);
 
 			A[state] = (num_t)((i * k + 1) % ni) / ni;
 		});
 
 	noarr::traverser(C)
-		.for_each([=](auto state) {
+		.for_each([=](auto state) constexpr noexcept {
 			auto [i, j] = noarr::get_indices<'i', 'j'>(state);
 
 			C[state] = (num_t)((i * j + 2) % nk) / nk;
@@ -89,28 +89,29 @@ void init_array(num_t &alpha, num_t &beta, auto C, auto A) {
 
 // computation kernel
 template<class Order = noarr::neutral_proto>
-void kernel_syrk(num_t alpha, num_t beta, auto C, auto A, Order order = {}) {
+[[gnu::flatten, gnu::noinline]]
+void kernel_syrk(num_t alpha, num_t beta, auto C, auto A, Order order = {}) noexcept {
 	// C: i x j
 	// A: i x k
 
 	auto A_renamed = A ^ noarr::rename<'i', 'j'>();
 
 	noarr::traverser(C)
-		.template for_dims<'i'>([=](auto inner) {
+		.template for_dims<'i'>([=](auto inner) constexpr noexcept {
 			auto state = inner.state();
 
 			inner
 				.order(noarr::slice<'j'>(0, noarr::get_index<'i'>(state) + 1))
-				.for_each([=](auto state) {
+				.for_each([=](auto state) constexpr noexcept {
 					C[state] *= beta;
 				});
 		});
 
 	noarr::planner(C, A)
-		.for_each([=](auto state) {
+		.for_each([=](auto state) constexpr noexcept {
 			C[state] += alpha * A[state] * A_renamed[state];
 		})
-		.template for_sections<'i'>([](auto inner) {
+		.template for_sections<'i'>([](auto inner) constexpr noexcept {
 			auto state = inner.state();
 
 			inner

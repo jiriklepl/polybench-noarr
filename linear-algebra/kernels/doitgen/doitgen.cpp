@@ -67,20 +67,20 @@ struct tuning {
 } tuning;
 
 // initialization function
-void init_array(auto A, auto C4) {
+void init_array(auto A, auto C4) noexcept {
 	// A: r x q x p
 	// C4: s x p
 
 	auto np = A | noarr::get_length<'p'>();
 
 	noarr::traverser(A)
-		.for_each([=](auto state) {
+		.for_each([=](auto state) constexpr noexcept {
 			auto [r, q, p] = noarr::get_indices<'r', 'q', 'p'>(state);
 			A[state] = (num_t)((r * q + p) % np) / np;
 		});
 
 	noarr::traverser(C4)
-		.for_each([=](auto state) {
+		.for_each([=](auto state) constexpr noexcept {
 			auto [s, p] = noarr::get_indices<'s', 'p'>(state);
 			C4[state] = (num_t)(s * p % np) / np;
 		});
@@ -88,7 +88,8 @@ void init_array(auto A, auto C4) {
 
 // computation kernel
 template<class Order = noarr::neutral_proto>
-void kernel_doitgen(auto A, auto C4, auto sum, Order order = {}) {
+[[gnu::flatten, gnu::noinline]]
+void kernel_doitgen(auto A, auto C4, auto sum, Order order = {}) noexcept {
 	// A: r x q x p
 	// C4: s x p
 	// sum: p
@@ -96,13 +97,13 @@ void kernel_doitgen(auto A, auto C4, auto sum, Order order = {}) {
 	auto A_rqs = A ^ noarr::rename<'p', 's'>();
 
 	noarr::planner(A, C4, sum)
-		.template for_sections<'r', 'q'>([=](auto inner) {
-			inner.template for_sections<'p'>([=](auto inner) {
+		.template for_sections<'r', 'q'>([=](auto inner) constexpr noexcept {
+			inner.template for_sections<'p'>([=](auto inner) constexpr noexcept {
 				auto state = inner.state();
 
 				sum[state] = 0;
 
-				inner.for_each([=](auto state) {
+				inner.for_each([=](auto state) constexpr noexcept {
 					sum[state] += A_rqs[state] * C4[state];
 				})
 				();
@@ -111,7 +112,7 @@ void kernel_doitgen(auto A, auto C4, auto sum, Order order = {}) {
 			();
 
 			inner
-				.template for_sections<'p'>([=](auto inner) {
+				.template for_sections<'p'>([=](auto inner) constexpr noexcept {
 					auto state = inner.state();
 					A[state] = sum[state];
 				})

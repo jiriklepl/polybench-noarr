@@ -61,7 +61,7 @@ struct tuning {
 } tuning;
 
 // initialization function
-void init_array(num_t &alpha, num_t &beta, auto A, auto B, auto x) {
+void init_array(num_t &alpha, num_t &beta, auto A, auto B, auto x) noexcept {
 	// A: i x j
 	// B: i x j
 	// x: j
@@ -72,14 +72,14 @@ void init_array(num_t &alpha, num_t &beta, auto A, auto B, auto x) {
 	auto n = A | noarr::get_length<'i'>();
 
 	noarr::traverser(A, B, x)
-		.template for_dims<'i'>([=](auto inner) {
+		.template for_dims<'i'>([=](auto inner) constexpr noexcept {
 			auto state = inner.state();
 
 			auto i = noarr::get_index<'i'>(state);
 
 			x[noarr::idx<'j'>(i)] = (num_t)(i % n) / n;
 
-			inner.for_each([=](auto state) {
+			inner.for_each([=](auto state) constexpr noexcept {
 				auto j = noarr::get_index<'j'>(state);
 
 				A[state] = (num_t)((i * j + 1) % n) / n;
@@ -90,27 +90,28 @@ void init_array(num_t &alpha, num_t &beta, auto A, auto B, auto x) {
 
 // computation kernel
 template<class Order1 = noarr::neutral_proto>
-void kernel_gesummv(num_t alpha, num_t beta, auto A, auto B, auto tmp, auto x, auto y, Order1 order1 = {}) {
+[[gnu::flatten, gnu::noinline]]
+void kernel_gesummv(num_t alpha, num_t beta, auto A, auto B, auto tmp, auto x, auto y, Order1 order1 = {}) noexcept {
 	// A: i x j
 	// B: i x j
 	// tmp: i
 	// x: j
 	// y: i
 
-	noarr::traverser(A, B, tmp, x, y).for_each([=](auto state) {
+	noarr::traverser(A, B, tmp, x, y).for_each([=](auto state) constexpr noexcept {
 		tmp[state] = 0;
 		y[state] = 0;
 	});
 
 	noarr::traverser(A, B, tmp, x, y)
 		.order(order1)
-		.for_each([=](auto state) {
+		.for_each([=](auto state) constexpr noexcept {
 			tmp[state] += A[state] * x[state];
 			y[state] += B[state] * x[state];
 		});
 
 	noarr::traverser(y, tmp)
-		.for_each([=](auto state) {
+		.for_each([=](auto state) constexpr noexcept {
 			y[state] = alpha * tmp[state] + beta * y[state];
 		});
 }

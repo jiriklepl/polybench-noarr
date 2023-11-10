@@ -96,7 +96,7 @@ struct tuning {
 } tuning;
 
 // initialization function
-void init_array(num_t &alpha, num_t &beta, auto A, auto u1, auto v1, auto u2, auto v2, auto w, auto x, auto y, auto z) {
+void init_array(num_t &alpha, num_t &beta, auto A, auto u1, auto v1, auto u2, auto v2, auto w, auto x, auto y, auto z) noexcept {
 	// A: i x j
 	// u1: i
 	// v1: j
@@ -117,7 +117,7 @@ void init_array(num_t &alpha, num_t &beta, auto A, auto u1, auto v1, auto u2, au
 	num_t fn = A | noarr::get_length<'i'>();
 
 	noarr::traverser(A, u1, u2, v1_i, v2_i, y_i, z, x, w)
-		.template for_dims<'i'>([=](auto inner) {
+		.template for_dims<'i'>([=](auto inner) constexpr noexcept {
 			auto state = inner.state();
 
 
@@ -132,7 +132,7 @@ void init_array(num_t &alpha, num_t &beta, auto A, auto u1, auto v1, auto u2, au
 			x[state] = 0.0;
 			w[state] = 0.0;
 
-			inner.for_each([=](auto state) {
+			inner.for_each([=](auto state) constexpr noexcept {
 				auto j = noarr::get_index<'j'>(state);
 
 				A[state] = (num_t)(j * i % (A | noarr::get_length<'i'>())) / (A | noarr::get_length<'i'>());
@@ -142,11 +142,12 @@ void init_array(num_t &alpha, num_t &beta, auto A, auto u1, auto v1, auto u2, au
 
 // computation kernel
 template<class Order1 = noarr::neutral_proto, class Order2 = noarr::neutral_proto, class Order3 = noarr::neutral_proto>
+[[gnu::flatten, gnu::noinline]]
 void kernel_gemver(num_t alpha, num_t beta, auto A,
 	auto u1, auto v1,
 	auto u2, auto v2,
 	auto w, auto x, auto y, auto z,
-	Order1 order1 = {}, Order2 order2 = {}, Order3 order3 = {}) {
+	Order1 order1 = {}, Order2 order2 = {}, Order3 order3 = {}) noexcept {
 	// A: i x j
 	// u1: i
 	// v1: j
@@ -162,24 +163,24 @@ void kernel_gemver(num_t alpha, num_t beta, auto A,
 
 	noarr::traverser(A, u1, u2, v1, v2)
 		.order(order1)
-		.for_each([=](auto state) {
+		.for_each([=](auto state) constexpr noexcept {
 			A[state] = A[state] + u1[state] * v1[state] + u2[state] * v2[state];
 		});
 
 	noarr::traverser(x, A_ji, y)
 		.order(order2)
-		.for_each([=](auto state) {
+		.for_each([=](auto state) constexpr noexcept {
 			x[state] = x[state] + beta * A_ji[state] * y[state];
 		});
 	
 	noarr::traverser(x, z)
-		.for_each([=](auto state) {
+		.for_each([=](auto state) constexpr noexcept {
 			x[state] = x[state] + z[state];
 		});
 
 	noarr::traverser(A, w, x_j)
 		.order(order3)
-		.for_each([=](auto state) {
+		.for_each([=](auto state) constexpr noexcept {
 		   w[state] = w[state] + alpha * A[state] * x_j[state];
 		});
 }

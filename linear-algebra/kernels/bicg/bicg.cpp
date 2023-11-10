@@ -15,7 +15,7 @@ using num_t = DATA_TYPE;
 namespace {
 
 // initialization function
-void init_array(auto A, auto r, auto p) {
+void init_array(auto A, auto r, auto p) noexcept {
 	// A: i x j
 	// r: i
 	// p: j
@@ -23,20 +23,20 @@ void init_array(auto A, auto r, auto p) {
 	auto ni = A | noarr::get_length<'i'>();
 	auto nj = A | noarr::get_length<'j'>();
 
-	noarr::traverser(p).for_each([=](auto state) {
+	noarr::traverser(p).for_each([=](auto state) constexpr noexcept {
 		auto j = noarr::get_index<'j'>(state);
 		p[state] = (num_t)(j % nj) / nj;
 	});
 
 	noarr::traverser(A, r)
-		.template for_dims<'i'>([=](auto inner) {
+		.template for_dims<'i'>([=](auto inner) constexpr noexcept {
 			auto state = inner.state();
 
 			auto i = noarr::get_index<'i'>(state);
 
 			r[state] = (num_t)(i % ni) / ni;
 
-			inner.for_each([=](auto state) {
+			inner.for_each([=](auto state) constexpr noexcept {
 				auto j = noarr::get_index<'j'>(state);
 
 				A[state] = (num_t)(i * (j + 1) % ni) / ni;
@@ -46,7 +46,8 @@ void init_array(auto A, auto r, auto p) {
 
 // computation kernel
 template<class Order = noarr::neutral_proto>
-void kernel_bicg(auto A, auto s, auto q, auto p, auto r, Order order = {}) {
+[[gnu::flatten, gnu::noinline]]
+void kernel_bicg(auto A, auto s, auto q, auto p, auto r, Order order = {}) noexcept {
 	// A: i x j
 	// s: j
 	// q: i
@@ -54,16 +55,16 @@ void kernel_bicg(auto A, auto s, auto q, auto p, auto r, Order order = {}) {
 	// r: i
 
 	noarr::traverser(s)
-		.for_each([=](auto state) {
+		.for_each([=](auto state) constexpr noexcept {
 			s[state] = 0;
 		});
 
 	noarr::planner(A, s, q, p, r)
-		.for_each_elem([](auto &&A, auto &&s, auto &&q, auto &&p, auto &&r) {
+		.for_each_elem([](auto &&A, auto &&s, auto &&q, auto &&p, auto &&r) constexpr noexcept {
 			s += A * r;
 			q += A * p;
 		})
-		.template for_sections<'i'>([=](auto inner) {
+		.template for_sections<'i'>([=](auto inner) constexpr noexcept {
 			auto state = inner.state();
 
 			q[state] = 0;

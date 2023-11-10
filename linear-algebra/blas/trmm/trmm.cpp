@@ -62,7 +62,7 @@ struct tuning {
 } tuning;
 
 // initialization function
-void init_array(num_t &alpha, auto A, auto B) {
+void init_array(num_t &alpha, auto A, auto B) noexcept {
 	// A: k x i
 	// B: i x j
 
@@ -72,13 +72,13 @@ void init_array(num_t &alpha, auto A, auto B) {
 	auto nj = B | noarr::get_length<'j'>();
 
 	noarr::traverser(A)
-		.template for_dims<'k'>([=](auto inner) {
+		.template for_dims<'k'>([=](auto inner) constexpr noexcept {
 			auto state = inner.state();
 
 			auto k = noarr::get_index<'k'>(state);
 
 			inner.order(noarr::slice<'i'>(0, k))
-				.for_each([=](auto state) {
+				.for_each([=](auto state) constexpr noexcept {
 					auto i = noarr::get_index<'i'>(state);
 					A[state] = (num_t)((k + i) % ni) / ni;
 				});
@@ -86,7 +86,7 @@ void init_array(num_t &alpha, auto A, auto B) {
 			A[state & noarr::idx<'i'>(k)] = 1.0;
 		});
 
-	noarr::traverser(B).for_each([=](auto state) {
+	noarr::traverser(B).for_each([=](auto state) constexpr noexcept {
 		auto [i, j] = noarr::get_indices<'i', 'j'>(state);
 
 		B[state] = (num_t)((nj + (i - j)) % nj) / nj;
@@ -95,17 +95,18 @@ void init_array(num_t &alpha, auto A, auto B) {
 
 // computation kernel
 template<class Order = noarr::neutral_proto>
-void kernel_trmm(num_t alpha, auto A, auto B, Order order = {}) {
+[[gnu::flatten, gnu::noinline]]
+void kernel_trmm(num_t alpha, auto A, auto B, Order order = {}) noexcept {
 	// A: k x i
 	// B: i x j
 
 	auto B_renamed = B ^ noarr::rename<'i', 'k'>();
 
 	noarr::planner(A, B, B_renamed)
-		.for_each_elem([](auto &&A, auto &&B, auto &&B_renamed) {
+		.for_each_elem([](auto &&A, auto &&B, auto &&B_renamed) constexpr noexcept {
 			B += A * B_renamed;
 		})
-		.template for_sections<'i', 'j'>([=](auto inner) {
+		.template for_sections<'i', 'j'>([=](auto inner) constexpr noexcept {
 			auto state = inner.state();
 
 			inner

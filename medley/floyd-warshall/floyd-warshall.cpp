@@ -73,11 +73,11 @@ struct tuning {
 } tuning;
 
 // initialization function
-void init_array(auto path) {
+void init_array(auto path) noexcept {
 	// path: i x j
 
 	noarr::traverser(path)
-		.for_each([=](auto state) {
+		.for_each([=](auto state) constexpr noexcept {
 			auto [i, j] = noarr::get_indices<'i', 'j'>(state);
 
 			path[state] = i * j % 7 + 1;
@@ -90,7 +90,8 @@ void init_array(auto path) {
 
 // computation kernel
 template<class Order = noarr::neutral_proto>
-void kernel_floyd_warshall(auto path, Order order = {}) {
+[[gnu::flatten, gnu::noinline]]
+void kernel_floyd_warshall(auto path, Order order = {}) noexcept {
 	// path: i x j
 
 	auto path_start_k = path ^ noarr::rename<'i', 'k'>();
@@ -99,7 +100,7 @@ void kernel_floyd_warshall(auto path, Order order = {}) {
 	noarr::traverser(path, path_start_k, path_end_k)
 		.order(noarr::hoist<'k'>())
 		.order(order)
-		.for_each([=](auto state) {
+		.for_each([=](auto state) constexpr noexcept {
 			path[state] = std::min(path_start_k[state] + path_end_k[state], path[state]);
 		});
 }

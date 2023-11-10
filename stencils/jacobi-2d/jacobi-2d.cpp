@@ -51,15 +51,14 @@ struct tuning {
 
 
 // initialization function
-[[gnu::cold]]
-void init_array(auto A, auto B) {
+void init_array(auto A, auto B) noexcept {
 	// A: i x j
 	// B: i x j
 
 	auto n = A | noarr::get_length<'i'>();
 
 	noarr::traverser(A, B)
-		.for_each([=](auto state) {
+		.for_each([=](auto state) constexpr noexcept {
 			auto [i, j] = noarr::get_indices<'i', 'j'>(state);
 
 			A[state] = ((num_t)i * (j + 2) + 2) / n;
@@ -70,7 +69,7 @@ void init_array(auto A, auto B) {
 
 // computation kernel
 template<class Order = noarr::neutral_proto>
-[[gnu::hot]]
+[[gnu::flatten, gnu::noinline]]
 void kernel_jacobi_2d(std::size_t steps, auto A, auto B, Order order = {}) noexcept {
 	// A: i x j
 	// B: i x j
@@ -80,8 +79,8 @@ void kernel_jacobi_2d(std::size_t steps, auto A, auto B, Order order = {}) noexc
 	traverser
 		.order(noarr::symmetric_spans<'i', 'j'>(traverser.top_struct(), 1, 1))
 		.order(order)
-		.template for_dims<'t'>([=](auto inner) noexcept {
-			inner.for_each([=](auto state) {
+		.template for_dims<'t'>([=](auto inner) constexpr noexcept {
+			inner.for_each([=](auto state) constexpr noexcept {
 				B[state] = (num_t).2 * (
 					A[state] +
 					A[neighbor<'j'>(state, -1)] +
@@ -90,7 +89,7 @@ void kernel_jacobi_2d(std::size_t steps, auto A, auto B, Order order = {}) noexc
 					A[neighbor<'i'>(state, -1)]);
 			});
 
-			inner.for_each([=](auto state) noexcept {
+			inner.for_each([=](auto state) constexpr noexcept {
 				A[state] = (num_t).2 * (
 					B[state] +
 					B[neighbor<'j'>(state, -1)] +

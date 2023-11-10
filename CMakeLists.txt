@@ -2,17 +2,25 @@ cmake_minimum_required(VERSION 3.10)
 Include(FetchContent)
 
 # set the project name and version
-project(NoarrPolybench VERSION 0.0.1)
+project(
+  NoarrPolybench VERSION 0.0.1
+  DESCRIPTION "Polybench kernels implemented using Noarr Structures"
+  LANGUAGES CXX
+)
 
 # specify the C++ standard
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
+if(NOT DEFINED NOARR_STRUCTURES_BRANCH)
+  set(NOARR_STRUCTURES_BRANCH tuning)
+endif()
+
 # download Noarr
 FetchContent_Declare(
   Noarr
   GIT_REPOSITORY https://github.com/jiriklepl/noarr-structures.git
-  GIT_TAG        tuning)
+  GIT_TAG        ${NOARR_STRUCTURES_BRANCH})
 FetchContent_MakeAvailable(Noarr)
 
 include_directories(include)
@@ -74,13 +82,17 @@ target_compile_definitions(gemver_autotune PRIVATE NOARR_TUNE)
 add_executable(mvt_autotune linear-algebra/kernels/mvt/mvt.cpp)
 target_compile_definitions(mvt_autotune PRIVATE NOARR_TUNE)
 
-# TODO: fix 2mm autotuning (it takes too long)
-# add_executable(2mm_autotune linear-algebra/kernels/2mm/2mm.cpp)
-# target_compile_definitions(2mm_autotune PRIVATE NOARR_TUNE)
+add_executable(2mm_autotune linear-algebra/kernels/2mm/2mm.cpp)
+target_compile_definitions(2mm_autotune PRIVATE NOARR_TUNE)
 
-# TODO: fix 3mm autotuning (it takes too long)
-# add_executable(3mm_autotune linear-algebra/kernels/3mm/3mm.cpp)
-# target_compile_definitions(3mm_autotune PRIVATE NOARR_TUNE)
+add_executable(3mm_autotune linear-algebra/kernels/3mm/3mm.cpp)
+target_compile_definitions(3mm_autotune PRIVATE NOARR_TUNE)
+
+add_executable(symm_autotune linear-algebra/blas/symm/symm.cpp)
+target_compile_definitions(symm_autotune PRIVATE NOARR_TUNE)
+
+add_executable(trmm_autotune linear-algebra/blas/trmm/trmm.cpp)
+target_compile_definitions(trmm_autotune PRIVATE NOARR_TUNE)
 
 add_executable(doitgen_autotune linear-algebra/kernels/doitgen/doitgen.cpp)
 target_compile_definitions(doitgen_autotune PRIVATE NOARR_TUNE)
@@ -94,9 +106,8 @@ target_compile_definitions(jacobi-2d_autotune PRIVATE NOARR_TUNE)
 add_executable(atax_autotune linear-algebra/kernels/atax/atax.cpp)
 target_compile_definitions(atax_autotune PRIVATE NOARR_TUNE)
 
-# TODO: add autotuning for correlation
-# add_executable(correlation_autotune datamining/correlation/correlation.cpp)
-# target_compile_definitions(correlation_autotune PRIVATE NOARR_TUNE)
+add_executable(correlation_autotune datamining/correlation/correlation.cpp)
+target_compile_definitions(correlation_autotune PRIVATE NOARR_TUNE)
 
 add_executable(covariance_autotune datamining/covariance/covariance.cpp)
 target_compile_definitions(covariance_autotune PRIVATE NOARR_TUNE)

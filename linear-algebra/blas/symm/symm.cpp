@@ -66,7 +66,7 @@ struct tuning {
 } tuning;
 
 // initialization function
-void init_array(num_t &alpha, num_t &beta, auto C, auto A, auto B) {
+void init_array(num_t &alpha, num_t &beta, auto C, auto A, auto B) noexcept {
 	// C: i x j
 	// A: i x k
 	// B: i x j
@@ -78,24 +78,24 @@ void init_array(num_t &alpha, num_t &beta, auto C, auto A, auto B) {
 	auto nj = C | noarr::get_length<'j'>();
 
 	noarr::traverser(C)
-		.for_each([=](auto state) {
+		.for_each([=](auto state) constexpr noexcept {
 			auto [i, j] = noarr::get_indices<'i', 'j'>(state);
 			C[state] = (num_t)((i + j) % 100) / ni;
 			B[state] = (num_t)((nj + i - j) % 100) / ni;
 		});
 
 	noarr::traverser(A)
-		.template for_dims<'i'>([=](auto inner) {
+		.template for_dims<'i'>([=](auto inner) constexpr noexcept {
 			auto state = inner.state();
 			
 			inner.order(noarr::slice<'k'>(0, noarr::get_index<'i'>(state) + 1))
-				.for_each([=](auto state) {
+				.for_each([=](auto state) constexpr noexcept {
 					auto [i, k] = noarr::get_indices<'i', 'k'>(state);
 					A[state] = (num_t)((i + k) % 100) / ni;
 				});
 			
 			inner.order(noarr::shift<'k'>(noarr::get_index<'i'>(state) + 1))
-				.for_each([=](auto state) {
+				.for_each([=](auto state) constexpr noexcept {
 					A[state] = -999;
 				});
 		});
@@ -103,7 +103,8 @@ void init_array(num_t &alpha, num_t &beta, auto C, auto A, auto B) {
 
 // computation kernel
 template<class Order = noarr::neutral_proto>
-void kernel_symm(num_t alpha, num_t beta, auto C, auto A, auto B, Order order = {}) {
+[[gnu::flatten, gnu::noinline]]
+void kernel_symm(num_t alpha, num_t beta, auto C, auto A, auto B, Order order = {}) noexcept {
 	// C: i x j
 	// A: i x k
 	// B: i x j
@@ -112,13 +113,13 @@ void kernel_symm(num_t alpha, num_t beta, auto C, auto A, auto B, Order order = 
 	auto B_renamed = B ^ noarr::rename<'i', 'k'>();
 
 	noarr::planner(C, A, B)
-		.template for_sections<'i', 'j'>([=](auto inner) {
+		.template for_sections<'i', 'j'>([=](auto inner) constexpr noexcept {
 			num_t temp = 0;
 			auto state = inner.state();
 
 			inner
 				.order(noarr::slice<'k'>(0, noarr::get_index<'i'>(state)))
-				.for_each([=, &temp](auto state) {
+				.for_each([=, &temp](auto state) constexpr noexcept {
 					C_renamed[state] += alpha * B[state] * A[state];
 					temp += B_renamed[state] * A[state];
 				})

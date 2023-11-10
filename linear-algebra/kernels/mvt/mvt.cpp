@@ -79,7 +79,7 @@ struct tuning {
 } tuning;
 
 // initialization function
-void init_array(auto x1, auto x2, auto y1, auto y2, auto A) {
+void init_array(auto x1, auto x2, auto y1, auto y2, auto A) noexcept {
 	// x1: i
 	// x2: i
 	// y1: j
@@ -92,7 +92,7 @@ void init_array(auto x1, auto x2, auto y1, auto y2, auto A) {
 	auto y2_i = y2 ^ noarr::rename<'j', 'i'>();
 
 	noarr::traverser(x1, x2, y1_i, y2_i, A)
-		.template for_dims<'i'>([=](auto inner) {
+		.template for_dims<'i'>([=](auto inner) constexpr noexcept {
 			auto state = inner.state();
 			auto i = noarr::get_index<'i'>(state);
 			
@@ -101,7 +101,7 @@ void init_array(auto x1, auto x2, auto y1, auto y2, auto A) {
 			y1_i[state] = (num_t)((i + 3) % n) / n;
 			y2_i[state] = (num_t)((i + 4) % n) / n;
 
-			inner.for_each([=](auto state) {
+			inner.for_each([=](auto state) constexpr noexcept {
 				auto j = noarr::get_index<'j'>(state);
 
 				A[state] = (num_t)(i * j % n) / n;
@@ -111,7 +111,8 @@ void init_array(auto x1, auto x2, auto y1, auto y2, auto A) {
 
 // computation kernel
 template<class Order1 = noarr::neutral_proto, class Order2 = noarr::neutral_proto>
-void kernel_mvt(auto x1, auto x2, auto y1, auto y2, auto A, Order1 order1 = {}, Order2 order2 = {}) {
+[[gnu::flatten, gnu::noinline]]
+void kernel_mvt(auto x1, auto x2, auto y1, auto y2, auto A, Order1 order1 = {}, Order2 order2 = {}) noexcept {
 	// x1: i
 	// x2: i
 	// y1: j
@@ -122,13 +123,13 @@ void kernel_mvt(auto x1, auto x2, auto y1, auto y2, auto A, Order1 order1 = {}, 
 
 	noarr::traverser(x1, A, y1)
 		.order(order1)
-		.for_each([=](auto state) {
+		.for_each([=](auto state) constexpr noexcept {
 			x1[state] += A[state] * y1[state];
 		});
 
 	noarr::traverser(x2, A_ji, y2)
 		.order(order2)
-		.for_each([=](auto state) {
+		.for_each([=](auto state) constexpr noexcept {
 			x2[state] += A_ji[state] * y2[state];
 		});
 }

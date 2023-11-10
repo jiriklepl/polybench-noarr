@@ -35,14 +35,26 @@ find build -maxdepth 1 -executable -type f \
 
 		echo "Comparing $filename"
 
-		printf "Noarr: " >&2
+		printf "Noarr:             " >&2
 		"build/$filename" > "$dirname/cpp"
 
-		printf "C:     " >&2
+		if [ -f "autotuned/$filename" ]; then
+			printf "Noarr (autotuned): " >&2
+			"autotuned/$filename" > "$dirname/cpp-autotuned"
+		fi
+
+		printf "C:                 " >&2
 		"$POLYBENCH_C_DIR/build/$filename" 1>&2 2> "$dirname/c"
 
 		diff -y --suppress-common-lines \
 			<(grep -oE '[0-9]+(\.[0-9]+)?' "$dirname/cpp" | cat -n) \
 			<(grep -oE '[0-9]+\.[0-9]+' "$dirname/c" | cat -n) || \
 				printf "Different output on %s\n" "$filename" >&2
+
+		if [ -f "autotuned/$filename" ]; then
+			diff -y --suppress-common-lines \
+				<(grep -oE '[0-9]+(\.[0-9]+)?' "$dirname/cpp-autotuned" | cat -n) \
+				<(grep -oE '[0-9]+\.[0-9]+' "$dirname/c" | cat -n) || \
+					printf "Different output on %s (autotuned)\n" "$filename" >&2
+		fi
 	done

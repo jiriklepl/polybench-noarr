@@ -128,7 +128,7 @@ struct tuning {
 } tuning;
 
 // initialization function
-void init_array(auto A, auto B, auto C, auto D) {
+void init_array(auto A, auto B, auto C, auto D) noexcept {
 	// A: i x k
 	// B: k x j
 	// C: j x m
@@ -140,25 +140,25 @@ void init_array(auto A, auto B, auto C, auto D) {
 	auto nl = D | noarr::get_length<'l'>();
 
 	noarr::traverser(A)
-		.for_each([=](auto state) {
+		.for_each([=](auto state) constexpr noexcept {
 			auto [i, k] = noarr::get_indices<'i', 'k'>(state);
 			A[state] = (num_t)((i * k + 1) % ni) / (5 * ni);
 		});
 
 	noarr::traverser(B)
-		.for_each([=](auto state) {
+		.for_each([=](auto state) constexpr noexcept {
 			auto [k, j] = noarr::get_indices<'k', 'j'>(state);
 			B[state] = (num_t)((k * (j + 1) + 2) % nj) / (5 * nj);
 		});
 
 	noarr::traverser(C)
-		.for_each([=](auto state) {
+		.for_each([=](auto state) constexpr noexcept {
 			auto [j, m] = noarr::get_indices<'j', 'm'>(state);
 			C[state] = (num_t)(j * (m + 3) % nl) / (5 * nl);
 		});
 
 	noarr::traverser(D)
-		.for_each([=](auto state) {
+		.for_each([=](auto state) constexpr noexcept {
 			auto [m, l] = noarr::get_indices<'m', 'l'>(state);
 			D[state] = (num_t)((m * (l + 2) + 2) % nk) / (5 * nk);
 		});
@@ -166,7 +166,8 @@ void init_array(auto A, auto B, auto C, auto D) {
 
 // computation kernel
 template<class Order1 = noarr::neutral_proto, class Order2 = noarr::neutral_proto, class Order3 = noarr::neutral_proto>
-void kernel_3mm(auto E, auto A, auto B, auto F, auto C, auto D, auto G, Order1 order1 = {}, Order2 order2 = {}, Order3 order3 = {}) {
+[[gnu::flatten, gnu::noinline]]
+void kernel_3mm(auto E, auto A, auto B, auto F, auto C, auto D, auto G, Order1 order1 = {}, Order2 order2 = {}, Order3 order3 = {}) noexcept {
 	// E: i x j
 	// A: i x k
 	// B: k x j
@@ -175,13 +176,13 @@ void kernel_3mm(auto E, auto A, auto B, auto F, auto C, auto D, auto G, Order1 o
 	// D: m x l
 	// G: i x l
 
-	constexpr auto madd = [](auto &&m, auto &&l, auto &&r) {
+	constexpr auto madd = [](auto &&m, auto &&l, auto &&r) constexpr noexcept {
 		m += l * r;
 	};
 
 	noarr::planner(E, A, B)
 		.for_each_elem(madd)
-		.template for_sections<'i', 'j'>([=](auto inner) {
+		.template for_sections<'i', 'j'>([=](auto inner) constexpr noexcept {
 			E[inner.state()] = 0;
 			inner();
 		})
@@ -193,7 +194,7 @@ void kernel_3mm(auto E, auto A, auto B, auto F, auto C, auto D, auto G, Order1 o
 
 	noarr::planner(F, C, D)
 		.for_each_elem(madd)
-		.template for_sections<'j', 'l'>([=](auto inner) {
+		.template for_sections<'j', 'l'>([=](auto inner) constexpr noexcept {
 			F[inner.state()] = 0;
 			inner();
 		})
@@ -205,7 +206,7 @@ void kernel_3mm(auto E, auto A, auto B, auto F, auto C, auto D, auto G, Order1 o
 
 	noarr::planner(G, E, F)
 		.for_each_elem(madd)
-		.template for_sections<'i', 'l'>([=](auto inner) {
+		.template for_sections<'i', 'l'>([=](auto inner) constexpr noexcept {
 			G[inner.state()] = 0;
 			inner();
 		})

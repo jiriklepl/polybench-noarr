@@ -80,19 +80,19 @@ struct tuning {
 } tuning;
 
 // initialization function
-void init_array(auto A, auto x) {
+void init_array(auto A, auto x) noexcept {
 	// A: i x j
 	// x: j
 
 	auto ni = A | noarr::get_length<'i'>();
 	auto nj = A | noarr::get_length<'j'>();
 
-	noarr::traverser(x).for_each([=](auto state) {
+	noarr::traverser(x).for_each([=](auto state) constexpr noexcept {
 		auto j = noarr::get_index<'j'>(state);
 		x[state] = 1 + j / (num_t)nj;
 	});
 
-	noarr::traverser(A).for_each([=](auto state) {
+	noarr::traverser(A).for_each([=](auto state) constexpr noexcept {
 		auto [i, j] = noarr::get_indices<'i', 'j'>(state);
 		A[state] = (num_t)((i + j) % nj) / (5 * ni);
 	});
@@ -100,29 +100,30 @@ void init_array(auto A, auto x) {
 
 // computation kernel
 template<class Order1 = noarr::neutral_proto, class Order2 = noarr::neutral_proto>
-void kernel_atax(auto A, auto x, auto y, auto tmp, Order1 order1 = {}, Order2 order2 = {}) {
+[[gnu::flatten, gnu::noinline]]
+void kernel_atax(auto A, auto x, auto y, auto tmp, Order1 order1 = {}, Order2 order2 = {}) noexcept {
 	// A: i x j
 	// x: j
 	// y: j
 	// tmp: i
 
-	noarr::traverser(y).for_each([=](auto state) {
+	noarr::traverser(y).for_each([=](auto state) constexpr noexcept {
 		y[state] = 0;
 	});
 
-	noarr::traverser(tmp).for_each([=](auto state) {
+	noarr::traverser(tmp).for_each([=](auto state) constexpr noexcept {
 		tmp[state] = 0;
 	});
 
 	noarr::traverser(tmp, A, x)
 		.order(order1)
-		.for_each([=](auto state) {
+		.for_each([=](auto state) constexpr noexcept {
 			tmp[state] += A[state] * x[state];
 		});
 
 	noarr::traverser(y, A, tmp)
 		.order(order2)
-		.for_each([=](auto state) {
+		.for_each([=](auto state) constexpr noexcept {
 			y[state] += A[state] * tmp[state];
 		});
 }

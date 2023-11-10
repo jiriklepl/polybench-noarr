@@ -9,7 +9,6 @@
 
 #include "defines.hpp"
 #include "2mm.hpp"
-#include "noarr/structures/structs/blocks.hpp"
 
 // autotuning
 #include <noarr/structures/tuning/formatters/opentuner_formatter.hpp>
@@ -98,7 +97,7 @@ struct tuning {
 } tuning;
 
 // initialization function
-void init_array(num_t &alpha, num_t &beta, auto A, auto B, auto C, auto D) {
+void init_array(num_t &alpha, num_t &beta, auto A, auto B, auto C, auto D) noexcept {
 	// tmp: i x j
 	// A: i x k
 	// B: k x j
@@ -114,25 +113,25 @@ void init_array(num_t &alpha, num_t &beta, auto A, auto B, auto C, auto D) {
 	auto nl = C | noarr::get_length<'l'>();
 
 	noarr::traverser(A)
-		.for_each([=](auto state) {
+		.for_each([=](auto state) constexpr noexcept {
 			auto [i, k] = noarr::get_indices<'i', 'k'>(state);
 			A[state] = (num_t)((i * k + 1) % ni) / ni;
 		});
 
 	noarr::traverser(B)
-		.for_each([=](auto state) {
+		.for_each([=](auto state) constexpr noexcept {
 			auto [k, j] = noarr::get_indices<'k', 'j'>(state);
 			B[state] = (num_t)(k * (j + 1) % nj) / nj;
 		});
 
 	noarr::traverser(C)
-		.for_each([=](auto state) {
+		.for_each([=](auto state) constexpr noexcept {
 			auto [j, l] = noarr::get_indices<'j', 'l'>(state);
 			C[state] = (num_t)((j * (l + 3) + 1) % nl) / nl;
 		});
 
 	noarr::traverser(D)
-		.for_each([=](auto state) {
+		.for_each([=](auto state) constexpr noexcept {
 			auto [i, l] = noarr::get_indices<'i', 'l'>(state);
 			D[state] = (num_t)(i * (l + 2) % nk) / nk;
 		});
@@ -140,7 +139,8 @@ void init_array(num_t &alpha, num_t &beta, auto A, auto B, auto C, auto D) {
 
 // computation kernel
 template<class Order1 = noarr::neutral_proto, class Order2 = noarr::neutral_proto>
-void kernel_2mm(num_t alpha, num_t beta, auto tmp, auto A, auto B, auto C, auto D, Order1 order1 = {}, Order2 order2 = {}) {
+[[gnu::flatten, gnu::noinline]]
+void kernel_2mm(num_t alpha, num_t beta, auto tmp, auto A, auto B, auto C, auto D, Order1 order1 = {}, Order2 order2 = {}) noexcept {
 	// tmp: i x j
 	// A: i x k
 	// B: k x j
@@ -148,34 +148,32 @@ void kernel_2mm(num_t alpha, num_t beta, auto tmp, auto A, auto B, auto C, auto 
 	// D: i x l
 
 	noarr::planner(tmp, A, B)
-		.for_each_elem([alpha](auto &&tmp, auto &&A, auto &&B) {
+		.for_each_elem([alpha](auto &&tmp, auto &&A, auto &&B) constexpr noexcept {
 			tmp += alpha * A * B;
 		})
-		.template for_sections<'i', 'j'>([=](auto inner) {
+		.template for_sections<'i', 'j'>([tmp](auto inner) constexpr noexcept {
 			auto state = inner.state();
 
 			tmp[state] = 0;
 
 			inner();
 		})
-		.order(noarr::hoist<'k'>())
 		.order(noarr::hoist<'j'>())
 		.order(noarr::hoist<'i'>())
 		.order(order1)
 		();
 
 	noarr::planner(D, tmp, C)
-		.for_each_elem([](auto &&D, auto &&tmp, auto &&C) {
+		.for_each_elem([](auto &&D, auto &&tmp, auto &&C) constexpr noexcept {
 			D += tmp * C;
 		})
-		.template for_sections<'i', 'l'>([=](auto inner) {
+		.template for_sections<'i', 'l'>([D, beta](auto inner) constexpr noexcept {
 			auto state = inner.state();
 
 			D[state] *= beta;
 
 			inner();
 		})
-		.order(noarr::hoist<'j'>())
 		.order(noarr::hoist<'l'>())
 		.order(noarr::hoist<'i'>())
 		.order(order2)

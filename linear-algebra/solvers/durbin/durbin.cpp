@@ -15,20 +15,21 @@ using num_t = DATA_TYPE;
 namespace {
 
 // initialization function
-void init_array(auto r) {
+void init_array(auto r) noexcept {
 	// r: i
 
 	auto n = r | noarr::get_length<'i'>();
 
 	noarr::traverser(r)
-		.for_each([=](auto state) {
+		.for_each([=](auto state) constexpr noexcept {
 			auto i = noarr::get_index<'i'>(state);
 			r[state] = n + 1 - i;
 		});
 }
 
 // computation kernel
-void kernel_durbin(auto r, auto y) {
+[[gnu::flatten, gnu::noinline]]
+void kernel_durbin(auto r, auto y) noexcept {
 	// r: i
 	// y: i
 
@@ -47,7 +48,7 @@ void kernel_durbin(auto r, auto y) {
 
 	noarr::traverser(r, y, r_k, y_k)
 		.order(noarr::shift<'k'>(1))
-		.template for_dims<'k'>([=, &alpha, &beta, &sum, z = z.get_ref()](auto inner) {
+		.template for_dims<'k'>([=, &alpha, &beta, &sum, z = z.get_ref()](auto inner) constexpr noexcept {
 			auto state = inner.state();
 
 			beta = (1 - alpha * alpha) * beta;
@@ -56,7 +57,7 @@ void kernel_durbin(auto r, auto y) {
 			auto traverser = inner
 				.order(noarr::slice<'i'>(0, noarr::get_index<'k'>(state)));
 
-			traverser.for_each([=, &sum](auto state) {
+			traverser.for_each([=, &sum](auto state) constexpr noexcept {
 				auto [i, k] = noarr::get_indices<'i', 'k'>(state);
 				// sum += r_k[noarr::neighbor<'k'>(state, -i - 1)] * y[state];
 				sum += r[noarr::idx<'i'>(k - i - 1)] * y[state];
@@ -64,13 +65,13 @@ void kernel_durbin(auto r, auto y) {
 
 			alpha = -(r_k[state] + sum) / beta;
 
-			traverser.for_each([=, &alpha](auto state) {
+			traverser.for_each([=, &alpha](auto state) constexpr noexcept {
 				auto [i, k] = noarr::get_indices<'i', 'k'>(state);
 				// z[state] = y[state] + alpha * y_k[noarr::neighbor<'k'>(state, -i - 1)];
 				z[state] = y[state] + alpha * y[noarr::idx<'i'>(k - i - 1)];
 			});
 
-			traverser.for_each([=](auto state) {
+			traverser.for_each([=](auto state) constexpr noexcept {
 				y[state] = z[state];
 			});
 
