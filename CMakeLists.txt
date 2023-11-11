@@ -106,9 +106,6 @@ target_compile_definitions(jacobi-2d_autotune PRIVATE NOARR_TUNE)
 add_executable(atax_autotune linear-algebra/kernels/atax/atax.cpp)
 target_compile_definitions(atax_autotune PRIVATE NOARR_TUNE)
 
-add_executable(correlation_autotune datamining/correlation/correlation.cpp)
-target_compile_definitions(correlation_autotune PRIVATE NOARR_TUNE)
-
 add_executable(covariance_autotune datamining/covariance/covariance.cpp)
 target_compile_definitions(covariance_autotune PRIVATE NOARR_TUNE)
 

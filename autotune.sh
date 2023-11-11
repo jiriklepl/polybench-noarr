@@ -1,18 +1,14 @@
 #!/bin/bash -ex
 
-NUM_RUNS=100
+NUM_RUNS=25
 
 mkdir -p build
 
-SET_CONFIG="-DEXTRALARGE_DATASET -DDATA_TYPE_IS_FLOAT"
+DATASET_SIZE=${DATASET_SIZE:-EXTRALARGE}
+DATA_TYPE=${DATA_TYPE:-FLOAT}
+NOARR_STRUCTURES_BRANCH=${NOARR_STRUCTURES_BRANCH:-tuning}
 
-(
-	cd build
-
-	# Build autotuners
-	cmake -DCMAKE_BUILD_TYPE=Release .. -DCMAKE_CXX_FLAGS="$SET_CONFIG "
-	cmake --build . -j"$(nproc)"
-)
+./build.sh || exit 1
 
 mkdir -p autotuned
 
@@ -32,10 +28,15 @@ for file in build/*_autotune; do
 		# transform the configuration into a list of defines
 		config=$(grep -oE '"\w+"\s*:\s*[^,}]+' ../build/mmm_final_config.json | sed -E 's/"|://g' | awk '{printf("%s", "-DNOARR_PARAMETER_VALUE_" $1 "=" $2 " ")}END{print ""}')
 
-		echo "$config" > "$filename-config"
+		mv "../build/mmm_final_config.json" "$filename.config.json"
+		echo "$config" > "$filename.config.txt"
 
 		# build the autotuned version of the program
-		cmake -DCMAKE_BUILD_TYPE=Release .. -DCMAKE_CXX_FLAGS="$SET_CONFIG -DNOARR_PASS_BY_DEFINE $config"
+		cmake -DCMAKE_BUILD_TYPE=Release \
+			-DNOARR_STRUCTURES_BRANCH="$NOARR_STRUCTURES_BRANCH" \
+			-DCMAKE_CXX_FLAGS="-D${DATASET_SIZE}_DATASET -DDATA_TYPE_IS_$DATA_TYPE -DNOARR_PASS_BY_DEFINE $config" \
+			..
+
 		cmake --build . -j"$(nproc)" -t "$(echo "$filename" | sed -E 's/_autotune//')"
 	)
 done

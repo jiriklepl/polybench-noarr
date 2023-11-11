@@ -45,8 +45,6 @@
 **These require a slight reimplementation to support tiling:**
 
 - atax
-- correlation (upper triangular)
-  - can be transformed similarly to covariance
 - covariance (upper triangular)
   - consists of multiple independent traversals
   - the penultimate traversal supports tiling of `i` and `k`, but not `j`
@@ -77,6 +75,7 @@
 - lu (triangular)
 - ludcmp (triangular)
 - nussinov (upper triangular)
+- correlation (upper triangular)
 
 - seidel-2d - this one is *hardcore*
 

@@ -31,7 +31,8 @@ find build -maxdepth 1 -executable -type f \
 				;;
 		esac
 
-		grep -vE '^\s*#|^\s*$' compare-ignore.txt | grep "^$filename\$" > /dev/null && continue
+		# Uncomment the following line to compare only the subset of benchmarks that are autotuned
+		# [ ! -f "autotuned/$filename" ] && continue
 
 		echo "Comparing $filename"
 
@@ -46,15 +47,44 @@ find build -maxdepth 1 -executable -type f \
 		printf "C:                 " >&2
 		"$POLYBENCH_C_DIR/build/$filename" 1>&2 2> "$dirname/c"
 
-		diff -y --suppress-common-lines \
-			<(grep -oE '[0-9]+(\.[0-9]+)?' "$dirname/cpp" | cat -n) \
-			<(grep -oE '[0-9]+\.[0-9]+' "$dirname/c" | cat -n) || \
-				printf "Different output on %s\n" "$filename" >&2
-
 		if [ -f "autotuned/$filename" ]; then
-			diff -y --suppress-common-lines \
-				<(grep -oE '[0-9]+(\.[0-9]+)?' "$dirname/cpp-autotuned" | cat -n) \
-				<(grep -oE '[0-9]+\.[0-9]+' "$dirname/c" | cat -n) || \
-					printf "Different output on %s (autotuned)\n" "$filename" >&2
-		fi
+			paste <(grep -oE '[0-9]+\.[0-9]+' "$dirname/c") <(grep -oE '[0-9]+(\.[0-9]+)?' "$dirname/cpp") <(grep -oE '[0-9]+(\.[0-9]+)?' "$dirname/cpp-autotuned")
+		else 
+			paste <(grep -oE '[0-9]+\.[0-9]+' "$dirname/c") <(grep -oE '[0-9]+(\.[0-9]+)?' "$dirname/cpp")
+		fi | awk "BEGIN {
+			different = 0
+			n = 0
+			changes = 0
+			autotune_changes = 0
+			outputs = \"$([ -f "autotuned/$filename" ] && echo 3 || echo 2)\"
+		}
+
+		NF == outputs {
+			n++
+			if (\$1 != \$2 && changes < 10) {
+				print \"baseline\", n, \$1
+				print \"   noarr\", n, \$2
+				changes++
+				different = 1
+			}
+			if (outputs == 3 && \$1 != \$3 && autotune_changes < 10) {
+				print \"baseline\", n, \$1
+				print \"autotune\", n, \$3
+				autotune_changes++
+				different = 1
+			}
+
+			if (changes >= 10 && (outputs == 2 || autotune_changes >= 10))
+				nextfile
+			next
+		}
+
+		{ different = 1; nextfile }
+
+		END {
+			if (different) {
+				printf \"Different output on %s \n\", \"$filename\"
+				exit 1
+			}
+		}" >&2
 	done
