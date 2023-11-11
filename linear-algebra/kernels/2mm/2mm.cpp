@@ -25,7 +25,7 @@ constexpr auto l_vec =  noarr::vector<'l'>();
 struct tuning {
 	NOARR_TUNE_BEGIN(noarr::tuning::opentuner_formatter(
 		std::cout,
-		std::make_shared<noarr::tuning::cmake_compile_command_builder>("../..", "build", "2mm", "-DLARGE_DATASET -DDATA_TYPE_IS_DOUBLE"),
+		std::make_shared<noarr::tuning::cmake_compile_command_builder>("../..", "build", "2mm", "-D" STRINGIFY(DATASET_SIZE) " -D" STRINGIFY(DATA_TYPE_CHOICE)),
 		std::make_shared<noarr::tuning::direct_run_command_builder>("build/2mm"),
 		"return Result(time=float(run_result['stderr'].split()[0]))"));
 

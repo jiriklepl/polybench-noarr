@@ -1,9 +1,24 @@
 #ifndef DEFINES_HPP
 #define DEFINES_HPP
 
+#define STRINGIFY_DETAIL(x) #x
+#define STRINGIFY(x) STRINGIFY_DETAIL(x)
+
 #if !defined(MINI_DATASET) && !defined(SMALL_DATASET) && !defined(MEDIUM_DATASET) && !defined(LARGE_DATASET) && !defined(EXTRALARGE_DATASET)
 # error "Please define one of MINI_DATASET, SMALL_DATASET, MEDIUM_DATASET, LARGE_DATASET, EXTRALARGE_DATASET"
 # define MINI_DATASET
+#endif
+
+#ifdef MINI_DATASET
+# define DATASET_SIZE "MINI_DATASET"
+#elif defined(SMALL_DATASET)
+# define DATASET_SIZE "SMALL_DATASET"
+#elif defined(MEDIUM_DATASET)
+# define DATASET_SIZE "MEDIUM_DATASET"
+#elif defined(LARGE_DATASET)
+# define DATASET_SIZE "LARGE_DATASET"
+#elif defined(EXTRALARGE_DATASET)
+# define DATASET_SIZE "EXTRALARGE_DATASET"
 #endif
 
 #if !defined(DATA_TYPE_IS_INT) && !defined(DATA_TYPE_IS_LONG) && !defined(DATA_TYPE_IS_FLOAT) && !defined(DATA_TYPE_IS_DOUBLE) && !defined(DATA_TYPE)
@@ -13,12 +28,16 @@
 
 #ifdef DATA_TYPE_IS_INT
 # define DATA_TYPE int
+# define DATA_TYPE_CHOICE "DATA_TYPE_IS_INT"
 #elif defined(DATA_TYPE_IS_LONG)
 # define DATA_TYPE long
+# define DATA_TYPE_CHOICE "DATA_TYPE_IS_LONG"
 #elif defined(DATA_TYPE_IS_FLOAT)
 # define DATA_TYPE float
+# define DATA_TYPE_CHOICE "DATA_TYPE_IS_FLOAT"
 #elif defined(DATA_TYPE_IS_DOUBLE)
 # define DATA_TYPE double
+# define DATA_TYPE_CHOICE "DATA_TYPE_IS_DOUBLE"
 #endif
 
 #endif // DEFINES_HPP

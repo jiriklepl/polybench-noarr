@@ -24,7 +24,7 @@ constexpr auto k_vec =  noarr::vector<'k'>();
 struct tuning {
 	NOARR_TUNE_BEGIN(noarr::tuning::opentuner_formatter(
 		std::cout,
-		std::make_shared<noarr::tuning::cmake_compile_command_builder>("../..", "build", "syr2k", "-DLARGE_DATASET -DDATA_TYPE_IS_DOUBLE"),
+		std::make_shared<noarr::tuning::cmake_compile_command_builder>("../..", "build", "syr2k", "-D" STRINGIFY(DATASET_SIZE) " -D" STRINGIFY(DATA_TYPE_CHOICE)),
 		std::make_shared<noarr::tuning::direct_run_command_builder>("build/syr2k"),
 		"return Result(time=float(run_result['stderr'].split()[0]))"));
 
