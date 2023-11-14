@@ -1,0 +1,295 @@
++ cmake -E make_directory build
++ cd build
++ DATASET_SIZE=LARGE
++ DATA_TYPE=FLOAT
++ cmake -DCMAKE_BUILD_TYPE=Release '-DCMAKE_C_FLAGS=-DPOLYBENCH_TIME -DPOLYBENCH_DUMP_ARRAYS -DLARGE_DATASET -DDATA_TYPE_IS_FLOAT -D_POSIX_C_SOURCE=200809L ' ..
+-- Configuring done (0.0s)
+-- Generating done (0.1s)
+-- Build files have been written to: /home/jirka/PolyBenchC-4.2.1/build
+++ nproc
++ NPROC=12
++ cmake --build . --config Release -j12
+[  7%] Building C object CMakeFiles/syr2k.dir/linear-algebra/blas/syr2k/syr2k.c.o
+[  7%] Building C object CMakeFiles/trisolv.dir/linear-algebra/solvers/trisolv/trisolv.c.o
+[  7%] Building C object CMakeFiles/correlation.dir/datamining/correlation/correlation.c.o
+[  7%] Building C object CMakeFiles/cholesky.dir/linear-algebra/solvers/cholesky/cholesky.c.o
+[ 11%] Building C object CMakeFiles/gramschmidt.dir/linear-algebra/solvers/gramschmidt/gramschmidt.c.o
+[  7%] Building C object CMakeFiles/ludcmp.dir/linear-algebra/solvers/ludcmp/ludcmp.c.o
+[  7%] Building C object CMakeFiles/gemver.dir/linear-algebra/blas/gemver/gemver.c.o
+[  7%] Building C object CMakeFiles/lu.dir/linear-algebra/solvers/lu/lu.c.o
+[ 12%] Building C object CMakeFiles/covariance.dir/datamining/covariance/covariance.c.o
+[ 12%] Building C object CMakeFiles/durbin.dir/linear-algebra/solvers/durbin/durbin.c.o
+[ 13%] Building C object CMakeFiles/syrk.dir/linear-algebra/blas/syrk/syrk.c.o
+[ 13%] Building C object CMakeFiles/gemm.dir/linear-algebra/blas/gemm/gemm.c.o
+[ 17%] Building C object CMakeFiles/trisolv.dir/utilities/polybench.c.o
+[ 17%] Building C object CMakeFiles/gemver.dir/utilities/polybench.c.o
+[ 17%] Building C object CMakeFiles/correlation.dir/utilities/polybench.c.o
+[ 17%] Building C object CMakeFiles/covariance.dir/utilities/polybench.c.o
+[ 18%] Building C object CMakeFiles/durbin.dir/utilities/polybench.c.o
+[ 20%] Building C object CMakeFiles/gemm.dir/utilities/polybench.c.o
+[ 21%] Building C object CMakeFiles/syrk.dir/utilities/polybench.c.o
+[ 22%] Building C object CMakeFiles/lu.dir/utilities/polybench.c.o
+[ 23%] Building C object CMakeFiles/gramschmidt.dir/utilities/polybench.c.o
+[ 24%] Building C object CMakeFiles/syr2k.dir/utilities/polybench.c.o
+[ 25%] Building C object CMakeFiles/cholesky.dir/utilities/polybench.c.o
+[ 26%] Linking C executable correlation
+[ 27%] Linking C executable covariance
+[ 30%] Building C object CMakeFiles/ludcmp.dir/utilities/polybench.c.o
+[ 30%] Linking C executable trisolv
+[ 31%] Linking C executable durbin
+[ 34%] Linking C executable syrk
+[ 34%] Linking C executable gemver
+[ 34%] Linking C executable lu
+[ 35%] Linking C executable gramschmidt
+[ 36%] Linking C executable gemm
+[ 37%] Linking C executable cholesky
+[ 38%] Linking C executable syr2k
+[ 40%] Linking C executable ludcmp
+[ 40%] Built target syrk
+[ 40%] Built target covariance
+[ 40%] Built target durbin
+[ 40%] Built target trisolv
+[ 40%] Built target lu
+[ 40%] Built target gemver
+[ 40%] Built target correlation
+[ 40%] Built target syr2k
+[ 40%] Built target gemm
+[ 40%] Built target gramschmidt
+[ 42%] Building C object CMakeFiles/symm.dir/linear-algebra/blas/symm/symm.c.o
+[ 42%] Building C object CMakeFiles/gesummv.dir/linear-algebra/blas/gesummv/gesummv.c.o
+[ 43%] Building C object CMakeFiles/mvt.dir/linear-algebra/kernels/mvt/mvt.c.o
+[ 44%] Building C object CMakeFiles/trmm.dir/linear-algebra/blas/trmm/trmm.c.o
+[ 45%] Building C object CMakeFiles/gesummv.dir/utilities/polybench.c.o
+[ 45%] Built target cholesky
+[ 46%] Building C object CMakeFiles/bicg.dir/linear-algebra/kernels/bicg/bicg.c.o
+[ 47%] Building C object CMakeFiles/atax.dir/linear-algebra/kernels/atax/atax.c.o
+[ 48%] Building C object CMakeFiles/symm.dir/utilities/polybench.c.o
+[ 50%] Building C object CMakeFiles/doitgen.dir/linear-algebra/kernels/doitgen/doitgen.c.o
+[ 50%] Built target ludcmp
+[ 51%] Building C object CMakeFiles/3mm.dir/linear-algebra/kernels/3mm/3mm.c.o
+[ 52%] Building C object CMakeFiles/2mm.dir/linear-algebra/kernels/2mm/2mm.c.o
+[ 53%] Building C object CMakeFiles/mvt.dir/utilities/polybench.c.o
+[ 54%] Building C object CMakeFiles/nussinov.dir/medley/nussinov/nussinov.c.o
+[ 55%] Building C object CMakeFiles/bicg.dir/utilities/polybench.c.o
+[ 56%] Linking C executable gesummv
+[ 57%] Building C object CMakeFiles/atax.dir/utilities/polybench.c.o
+[ 58%] Building C object CMakeFiles/nussinov.dir/utilities/polybench.c.o
+[ 60%] Building C object CMakeFiles/trmm.dir/utilities/polybench.c.o
+[ 61%] Building C object CMakeFiles/2mm.dir/utilities/polybench.c.o
+[ 62%] Linking C executable symm
+[ 63%] Building C object CMakeFiles/3mm.dir/utilities/polybench.c.o
+[ 64%] Linking C executable mvt
+[ 65%] Building C object CMakeFiles/doitgen.dir/utilities/polybench.c.o
+[ 66%] Linking C executable atax
+[ 67%] Linking C executable bicg
+[ 68%] Linking C executable nussinov
+[ 70%] Building C object CMakeFiles/floyd-warshall.dir/medley/floyd-warshall/floyd-warshall.c.o
+[ 71%] Linking C executable 2mm
+[ 72%] Linking C executable trmm
+[ 74%] Building C object CMakeFiles/deriche.dir/medley/deriche/deriche.c.o
+[ 74%] Linking C executable 3mm
+[ 75%] Linking C executable doitgen
+[ 75%] Built target gesummv
+[ 75%] Built target atax
+[ 75%] Built target symm
+[ 76%] Building C object CMakeFiles/jacobi-1d.dir/stencils/jacobi-1d/jacobi-1d.c.o
+[ 76%] Built target mvt
+[ 77%] Building C object CMakeFiles/deriche.dir/utilities/polybench.c.o
+[ 78%] Building C object CMakeFiles/jacobi-1d.dir/utilities/polybench.c.o
+[ 80%] Building C object CMakeFiles/floyd-warshall.dir/utilities/polybench.c.o
+[ 81%] Building C object CMakeFiles/jacobi-2d.dir/stencils/jacobi-2d/jacobi-2d.c.o
+[ 82%] Building C object CMakeFiles/fdtd-2d.dir/stencils/fdtd-2d/fdtd-2d.c.o
+[ 82%] Built target nussinov
+[ 82%] Built target bicg
+[ 82%] Built target trmm
+[ 83%] Building C object CMakeFiles/seidel-2d.dir/stencils/seidel-2d/seidel-2d.c.o
+[ 84%] Building C object CMakeFiles/heat-3d.dir/stencils/heat-3d/heat-3d.c.o
+[ 86%] Linking C executable deriche
+[ 85%] Building C object CMakeFiles/jacobi-2d.dir/utilities/polybench.c.o
+[ 87%] Linking C executable floyd-warshall
+[ 88%] Linking C executable jacobi-1d
+[ 88%] Built target 3mm
+[ 90%] Building C object CMakeFiles/adi.dir/stencils/adi/adi.c.o
+[ 90%] Built target doitgen
+[ 90%] Built target 2mm
+[ 91%] Building C object CMakeFiles/adi.dir/utilities/polybench.c.o
+[ 92%] Building C object CMakeFiles/seidel-2d.dir/utilities/polybench.c.o
+[ 93%] Building C object CMakeFiles/heat-3d.dir/utilities/polybench.c.o
+[ 94%] Building C object CMakeFiles/fdtd-2d.dir/utilities/polybench.c.o
+[ 95%] Linking C executable jacobi-2d
+[ 96%] Linking C executable seidel-2d
+[ 97%] Linking C executable adi
+[ 98%] Linking C executable fdtd-2d
+[ 98%] Built target deriche
+[100%] Linking C executable heat-3d
+[100%] Built target jacobi-1d
+[100%] Built target floyd-warshall
+[100%] Built target seidel-2d
+[100%] Built target jacobi-2d
+[100%] Built target fdtd-2d
+[100%] Built target adi
+[100%] Built target heat-3d
++ cmake -E make_directory build
++ cd build
++ DATASET_SIZE=LARGE
++ DATA_TYPE=FLOAT
++ NOARR_STRUCTURES_BRANCH=tuning
++ cmake -DCMAKE_BUILD_TYPE=Release -DNOARR_STRUCTURES_BRANCH=tuning '-DCMAKE_CXX_FLAGS=-DLARGE_DATASET -DDATA_TYPE_IS_FLOAT' ..
+-- Configuring done (1.6s)
+-- Generating done (0.1s)
+-- Build files have been written to: /home/jirka/noarr-polybench/build
+++ nproc
++ NPROC=12
++ cmake --build . --config Release -j12
+[  8%] Built target correlation
+[  8%] Built target gemver
+[  8%] Built target covariance
+[  8%] Built target syr2k
+[ 10%] Built target trmm
+[ 13%] Built target syrk
+[ 15%] Built target gesummv
+[ 17%] Built target 2mm
+[ 21%] Built target symm
+[ 21%] Built target 3mm
+[ 23%] Built target gemm
+[ 26%] Built target atax
+[ 32%] Built target mvt
+[ 32%] Built target doitgen
+[ 32%] Built target bicg
+[ 34%] Built target durbin
+[ 36%] Built target ludcmp
+[ 39%] Built target nussinov
+[ 41%] Built target cholesky
+[ 43%] Built target trisolv
+[ 45%] Built target floyd-warshall
+[ 47%] Built target lu
+[ 50%] Built target gramschmidt
+[ 52%] Built target deriche
+[ 54%] Built target heat-3d
+[ 56%] Built target fdtd-2d
+[ 58%] Built target jacobi-1d
+[ 60%] Built target jacobi-2d
+[ 63%] Built target seidel-2d
+[ 67%] Built target gemm_autotune
+[ 65%] Built target 2mm_autotune
+[ 69%] Built target adi
+[ 71%] Built target mvt_autotune
+[ 73%] Built target floyd-warshall_autotune
+[ 76%] Built target gemver_autotune
+[ 78%] Built target 3mm_autotune
+[ 82%] Built target doitgen_autotune
+[ 82%] Built target jacobi-2d_autotune
+[ 84%] Built target symm_autotune
+[ 86%] Built target heat-3d_autotune
+[ 89%] Built target covariance_autotune
+[ 91%] Built target trmm_autotune
+[ 95%] Built target atax_autotune
+[ 95%] Built target gesummv_autotune
+[ 97%] Built target syrk_autotune
+[100%] Built target syr2k_autotune
+Comparing lu
+Noarr:             2.37209
+C:                 1.920173
+Comparing jacobi-1d
+Noarr:             0.000519552
+C:                 0.000562
+Comparing syr2k
+Noarr:             0.474498
+Noarr (autotuned): 0.117927
+C:                 0.825575
+Comparing gemm
+Noarr:             0.143927
+Noarr (autotuned): 0.105734
+C:                 0.169418
+Comparing cholesky
+Noarr:             1.29736
+C:                 0.963064
+Comparing gemver
+Noarr:             0.00499373
+Noarr (autotuned): 0.00680389
+C:                 0.008630
+Comparing gramschmidt
+Noarr:             0.598735
+C:                 1.411660
+Comparing bicg
+Noarr:             0.0121754
+C:                 0.011917
+Comparing fdtd-2d
+Noarr:             0.391661
+C:                 0.359770
+Comparing mvt
+Noarr:             0.00352795
+Noarr (autotuned): 0.00288944
+C:                 0.006957
+Comparing nussinov
+Noarr:             1.42579
+C:                 2.638338
+Comparing covariance
+Noarr:             0.704215
+Noarr (autotuned): 0.523129
+C:                 0.989327
+Comparing atax
+Noarr:             0.00463637
+Noarr (autotuned): 0.00352619
+C:                 0.003235
+Comparing 3mm
+Noarr:             1.9195
+Noarr (autotuned): 1.88811
+C:                 1.965672
+Comparing correlation
+Noarr:             0.708247
+C:                 0.986183
+Comparing doitgen
+Noarr:             0.34128
+Noarr (autotuned): 0.314824
+C:                 0.331959
+Comparing syrk
+Noarr:             0.367223
+Noarr (autotuned): 0.0606071
+C:                 0.339695
+Comparing gesummv
+Noarr:             0.000805166
+Noarr (autotuned): 0.00163426
+C:                 0.004859
+Comparing trmm
+Noarr:             0.442983
+Noarr (autotuned): 0.42279
+C:                 0.618167
+Comparing 2mm
+Noarr:             1.20013
+Noarr (autotuned): 1.14827
+C:                 1.318395
+Comparing durbin
+Noarr:             0.00184003
+C:                 0.001812
+Comparing floyd-warshall
+Noarr:             9.79391
+Noarr (autotuned): 8.361
+C:                 11.828787
+Comparing jacobi-2d
+Noarr:             0.414012
+Noarr (autotuned): 0.412913
+C:                 0.419374
+Comparing deriche
+Noarr:             0.209792
+C:                 0.131663
+Comparing seidel-2d
+Noarr:             17.6192
+C:                 13.295538
+Comparing heat-3d
+Noarr:             0.732143
+Noarr (autotuned): 0.747305
+C:                 0.698870
+Comparing trisolv
+Noarr:             0.00202691
+C:                 0.001582
+Comparing adi
+Noarr:             11.3626
+C:                 7.745425
+Comparing symm
+Noarr:             0.519459
+Noarr (autotuned): 0.42516
+C:                 0.693202
+Comparing ludcmp
+Noarr:             1.96165
+C:                 1.928068

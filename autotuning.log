@@ -1,0 +1,712 @@
++ NUM_RUNS=25
++ mkdir -p build
++ DATASET_SIZE=LARGE
++ DATA_TYPE=FLOAT
++ NOARR_STRUCTURES_BRANCH=tuning
++ ./build.sh
++ cmake -E make_directory build
++ cd build
++ DATASET_SIZE=LARGE
++ DATA_TYPE=FLOAT
++ NOARR_STRUCTURES_BRANCH=tuning
++ cmake -DCMAKE_BUILD_TYPE=Release -DNOARR_STRUCTURES_BRANCH=tuning '-DCMAKE_CXX_FLAGS=-DLARGE_DATASET -DDATA_TYPE_IS_FLOAT' ..
+-- Configuring done (0.6s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/jirka/noarr-polybench/build
+++ nproc
++ NPROC=12
++ cmake --build . --config Release -j12
+[  6%] Building CXX object CMakeFiles/syr2k.dir/linear-algebra/blas/syr2k/syr2k.cpp.o
+[  6%] Building CXX object CMakeFiles/gemm.dir/linear-algebra/blas/gemm/gemm.cpp.o
+[  6%] Building CXX object CMakeFiles/trmm.dir/linear-algebra/blas/trmm/trmm.cpp.o
+[  7%] Building CXX object CMakeFiles/correlation.dir/datamining/correlation/correlation.cpp.o
+[  7%] Building CXX object CMakeFiles/covariance.dir/datamining/covariance/covariance.cpp.o
+[  6%] Building CXX object CMakeFiles/syrk.dir/linear-algebra/blas/syrk/syrk.cpp.o
+[  6%] Building CXX object CMakeFiles/symm.dir/linear-algebra/blas/symm/symm.cpp.o
+[  8%] Building CXX object CMakeFiles/gesummv.dir/linear-algebra/blas/gesummv/gesummv.cpp.o
+[  9%] Building CXX object CMakeFiles/2mm.dir/linear-algebra/kernels/2mm/2mm.cpp.o
+[ 10%] Building CXX object CMakeFiles/atax.dir/linear-algebra/kernels/atax/atax.cpp.o
+[ 11%] Building CXX object CMakeFiles/3mm.dir/linear-algebra/kernels/3mm/3mm.cpp.o
+[ 13%] Building CXX object CMakeFiles/gemver.dir/linear-algebra/blas/gemver/gemver.cpp.o
+[ 14%] Linking CXX executable correlation
+[ 15%] Linking CXX executable atax
+[ 16%] Linking CXX executable gesummv
+[ 17%] Linking CXX executable gemver
+[ 17%] Built target correlation
+[ 18%] Building CXX object CMakeFiles/bicg.dir/linear-algebra/kernels/bicg/bicg.cpp.o
+[ 18%] Built target atax
+[ 19%] Building CXX object CMakeFiles/doitgen.dir/linear-algebra/kernels/doitgen/doitgen.cpp.o
+[ 19%] Built target gesummv
+[ 20%] Building CXX object CMakeFiles/mvt.dir/linear-algebra/kernels/mvt/mvt.cpp.o
+[ 20%] Built target gemver
+[ 21%] Building CXX object CMakeFiles/cholesky.dir/linear-algebra/solvers/cholesky/cholesky.cpp.o
+[ 22%] Linking CXX executable syr2k
+[ 23%] Linking CXX executable gemm
+[ 25%] Linking CXX executable symm
+[ 26%] Linking CXX executable syrk
+[ 26%] Built target syr2k
+[ 27%] Building CXX object CMakeFiles/durbin.dir/linear-algebra/solvers/durbin/durbin.cpp.o
+[ 28%] Linking CXX executable trmm
+[ 28%] Built target gemm
+[ 29%] Building CXX object CMakeFiles/gramschmidt.dir/linear-algebra/solvers/gramschmidt/gramschmidt.cpp.o
+[ 29%] Built target symm
+[ 30%] Building CXX object CMakeFiles/lu.dir/linear-algebra/solvers/lu/lu.cpp.o
+[ 30%] Built target syrk
+[ 31%] Building CXX object CMakeFiles/ludcmp.dir/linear-algebra/solvers/ludcmp/ludcmp.cpp.o
+[ 31%] Built target trmm
+[ 32%] Building CXX object CMakeFiles/trisolv.dir/linear-algebra/solvers/trisolv/trisolv.cpp.o
+[ 33%] Linking CXX executable covariance
+[ 33%] Built target covariance
+[ 34%] Building CXX object CMakeFiles/deriche.dir/medley/deriche/deriche.cpp.o
+[ 35%] Linking CXX executable bicg
+[ 36%] Linking CXX executable durbin
+[ 36%] Built target bicg
+[ 38%] Building CXX object CMakeFiles/floyd-warshall.dir/medley/floyd-warshall/floyd-warshall.cpp.o
+[ 38%] Built target durbin
+[ 39%] Building CXX object CMakeFiles/nussinov.dir/medley/nussinov/nussinov.cpp.o
+[ 40%] Linking CXX executable trisolv
+[ 41%] Linking CXX executable mvt
+[ 42%] Linking CXX executable 2mm
+[ 43%] Linking CXX executable cholesky
+[ 43%] Built target trisolv
+[ 44%] Building CXX object CMakeFiles/adi.dir/stencils/adi/adi.cpp.o
+[ 45%] Linking CXX executable gramschmidt
+[ 45%] Built target mvt
+[ 46%] Building CXX object CMakeFiles/fdtd-2d.dir/stencils/fdtd-2d/fdtd-2d.cpp.o
+[ 46%] Built target 2mm
+[ 46%] Built target cholesky
+[ 47%] Building CXX object CMakeFiles/heat-3d.dir/stencils/heat-3d/heat-3d.cpp.o
+[ 48%] Linking CXX executable lu
+[ 50%] Building CXX object CMakeFiles/jacobi-1d.dir/stencils/jacobi-1d/jacobi-1d.cpp.o
+[ 51%] Built target gramschmidt
+[ 51%] Linking CXX executable deriche
+[ 52%] Building CXX object CMakeFiles/jacobi-2d.dir/stencils/jacobi-2d/jacobi-2d.cpp.o
+[ 52%] Built target lu
+[ 52%] Built target deriche
+[ 53%] Building CXX object CMakeFiles/seidel-2d.dir/stencils/seidel-2d/seidel-2d.cpp.o
+[ 54%] Building CXX object CMakeFiles/floyd-warshall_autotune.dir/medley/floyd-warshall/floyd-warshall.cpp.o
+[ 55%] Linking CXX executable ludcmp
+[ 55%] Built target ludcmp
+[ 56%] Building CXX object CMakeFiles/gemm_autotune.dir/linear-algebra/blas/gemm/gemm.cpp.o
+[ 57%] Linking CXX executable doitgen
+[ 57%] Built target doitgen
+[ 58%] Building CXX object CMakeFiles/gemver_autotune.dir/linear-algebra/blas/gemver/gemver.cpp.o
+[ 59%] Linking CXX executable jacobi-1d
+[ 60%] Linking CXX executable nussinov
+[ 60%] Built target jacobi-1d
+[ 61%] Building CXX object CMakeFiles/mvt_autotune.dir/linear-algebra/kernels/mvt/mvt.cpp.o
+[ 63%] Linking CXX executable floyd-warshall
+[ 63%] Built target nussinov
+[ 64%] Building CXX object CMakeFiles/2mm_autotune.dir/linear-algebra/kernels/2mm/2mm.cpp.o
+[ 64%] Built target floyd-warshall
+[ 65%] Building CXX object CMakeFiles/3mm_autotune.dir/linear-algebra/kernels/3mm/3mm.cpp.o
+[ 66%] Linking CXX executable adi
+[ 66%] Built target adi
+[ 67%] Building CXX object CMakeFiles/symm_autotune.dir/linear-algebra/blas/symm/symm.cpp.o
+[ 69%] Linking CXX executable fdtd-2d
+[ 69%] Linking CXX executable seidel-2d
+[ 69%] Built target fdtd-2d
+[ 69%] Built target seidel-2d
+[ 70%] Building CXX object CMakeFiles/trmm_autotune.dir/linear-algebra/blas/trmm/trmm.cpp.o
+[ 71%] Building CXX object CMakeFiles/doitgen_autotune.dir/linear-algebra/kernels/doitgen/doitgen.cpp.o
+[ 72%] Linking CXX executable jacobi-2d
+[ 72%] Built target jacobi-2d
+[ 73%] Building CXX object CMakeFiles/heat-3d_autotune.dir/stencils/heat-3d/heat-3d.cpp.o
+[ 75%] Linking CXX executable 3mm
+[ 76%] Linking CXX executable floyd-warshall_autotune
+[ 76%] Built target 3mm
+[ 77%] Building CXX object CMakeFiles/jacobi-2d_autotune.dir/stencils/jacobi-2d/jacobi-2d.cpp.o
+[ 77%] Built target floyd-warshall_autotune
+[ 78%] Building CXX object CMakeFiles/atax_autotune.dir/linear-algebra/kernels/atax/atax.cpp.o
+[ 79%] Linking CXX executable heat-3d
+[ 79%] Built target heat-3d
+[ 80%] Building CXX object CMakeFiles/covariance_autotune.dir/datamining/covariance/covariance.cpp.o
+[ 81%] Linking CXX executable gemm_autotune
+[ 82%] Linking CXX executable gemver_autotune
+[ 82%] Built target gemm_autotune
+[ 83%] Building CXX object CMakeFiles/gesummv_autotune.dir/linear-algebra/blas/gesummv/gesummv.cpp.o
+[ 83%] Built target gemver_autotune
+[ 84%] Building CXX object CMakeFiles/syr2k_autotune.dir/linear-algebra/blas/syr2k/syr2k.cpp.o
+[ 85%] Linking CXX executable mvt_autotune
+[ 85%] Built target mvt_autotune
+[ 86%] Building CXX object CMakeFiles/syrk_autotune.dir/linear-algebra/blas/syrk/syrk.cpp.o
+[ 88%] Linking CXX executable symm_autotune
+[ 88%] Built target symm_autotune
+[ 89%] Linking CXX executable trmm_autotune
+[ 89%] Built target trmm_autotune
+[ 90%] Linking CXX executable jacobi-2d_autotune
+[ 90%] Built target jacobi-2d_autotune
+[ 91%] Linking CXX executable doitgen_autotune
+[ 92%] Linking CXX executable atax_autotune
+[ 92%] Built target doitgen_autotune
+[ 92%] Built target atax_autotune
+[ 93%] Linking CXX executable heat-3d_autotune
+[ 93%] Built target heat-3d_autotune
+[ 94%] Linking CXX executable 2mm_autotune
+[ 94%] Built target 2mm_autotune
+[ 95%] Linking CXX executable gesummv_autotune
+[ 95%] Built target gesummv_autotune
+[ 96%] Linking CXX executable covariance_autotune
+[ 96%] Built target covariance_autotune
+[ 97%] Linking CXX executable syr2k_autotune
+[ 97%] Built target syr2k_autotune
+[ 98%] Linking CXX executable syrk_autotune
+[ 98%] Built target syrk_autotune
+[100%] Linking CXX executable 3mm_autotune
+[100%] Built target 3mm_autotune
++ mkdir -p autotuned
++ for file in build/*_autotune
+++ basename build/2mm_autotune
++ filename=2mm_autotune
++ cd build
++ python /dev/fd/63 --test-limit=25 --no-dups
+++ ./2mm_autotune
+/home/jirka/.local/lib/python3.11/site-packages/opentuner/search/driver.py:183: SAWarning: Object of type <DesiredResult> not in session, add operation along 'TuningRun.desired_results' will not proceed
+  self.session.flush()  # populate configuration_id
+[    25s]    INFO opentuner.search.plugin.DisplayPlugin: tests=4, best #784, cost time=1.1713, found by DifferentialEvolutionAlt
+[    25s] WARNING opentuner.search.simplextechniques: only 1 point in simplex, will not use RandomNelderMead
+[    46s]    INFO opentuner.search.plugin.DisplayPlugin: tests=8, best #816, cost time=1.1595, found by UniformGreedyMutation
+[    70s]    INFO opentuner.search.plugin.DisplayPlugin: tests=12, best #816, cost time=1.1595, found by UniformGreedyMutation
+[    92s]    INFO opentuner.search.plugin.DisplayPlugin: tests=16, best #823, cost time=1.1535, found by UniformGreedyMutation
+[   114s]    INFO opentuner.search.plugin.DisplayPlugin: tests=20, best #825, cost time=1.1430, found by UniformGreedyMutation
+[   136s]    INFO opentuner.search.plugin.DisplayPlugin: tests=24, best #825, cost time=1.1430, found by UniformGreedyMutation
+[   159s]    INFO opentuner.search.plugin.DisplayPlugin: tests=28, best #825, cost time=1.1430, found by UniformGreedyMutation
+[   159s]    INFO opentuner.search.plugin.DisplayPlugin: tests=28, best #825, cost time=1.1430, found by UniformGreedyMutation
++ cd autotuned
+++ grep -oE '"\w+"\s*:\s*[^,}]+' ../build/mmm_final_config.json
+++ sed -E 's/"|://g'
+++ awk '{printf("%s", "-DNOARR_PARAMETER_VALUE_" $1 "=" $2 " ")}END{print ""}'
++ config='-DNOARR_PARAMETER_VALUE_block_i1=4 -DNOARR_PARAMETER_VALUE_block_j1=3 -DNOARR_PARAMETER_VALUE_block_i2=3 -DNOARR_PARAMETER_VALUE_block_l2=5 -DNOARR_PARAMETER_VALUE_order1=0 -DNOARR_PARAMETER_VALUE_order2=1 -DNOARR_PARAMETER_VALUE_tmp_layout=1 -DNOARR_PARAMETER_VALUE_a_layout=1 -DNOARR_PARAMETER_VALUE_b_layout=0 -DNOARR_PARAMETER_VALUE_c_layout=0 -DNOARR_PARAMETER_VALUE_d_layout=1 '
++ mv ../build/mmm_final_config.json 2mm_autotune.config.json
++ echo '-DNOARR_PARAMETER_VALUE_block_i1=4 -DNOARR_PARAMETER_VALUE_block_j1=3 -DNOARR_PARAMETER_VALUE_block_i2=3 -DNOARR_PARAMETER_VALUE_block_l2=5 -DNOARR_PARAMETER_VALUE_order1=0 -DNOARR_PARAMETER_VALUE_order2=1 -DNOARR_PARAMETER_VALUE_tmp_layout=1 -DNOARR_PARAMETER_VALUE_a_layout=1 -DNOARR_PARAMETER_VALUE_b_layout=0 -DNOARR_PARAMETER_VALUE_c_layout=0 -DNOARR_PARAMETER_VALUE_d_layout=1 '
++ cmake -DCMAKE_BUILD_TYPE=Release -DNOARR_STRUCTURES_BRANCH=tuning '-DCMAKE_CXX_FLAGS=-DLARGE_DATASET -DDATA_TYPE_IS_FLOAT -DNOARR_PASS_BY_DEFINE -DNOARR_PARAMETER_VALUE_block_i1=4 -DNOARR_PARAMETER_VALUE_block_j1=3 -DNOARR_PARAMETER_VALUE_block_i2=3 -DNOARR_PARAMETER_VALUE_block_l2=5 -DNOARR_PARAMETER_VALUE_order1=0 -DNOARR_PARAMETER_VALUE_order2=1 -DNOARR_PARAMETER_VALUE_tmp_layout=1 -DNOARR_PARAMETER_VALUE_a_layout=1 -DNOARR_PARAMETER_VALUE_b_layout=0 -DNOARR_PARAMETER_VALUE_c_layout=0 -DNOARR_PARAMETER_VALUE_d_layout=1 ' ..
+-- Configuring done (0.6s)
+-- Generating done (0.1s)
+-- Build files have been written to: /home/jirka/noarr-polybench/autotuned
+++ nproc
+++ echo 2mm_autotune
+++ sed -E s/_autotune//
++ cmake --build . -j12 -t 2mm
+[ 50%] Building CXX object CMakeFiles/2mm.dir/linear-algebra/kernels/2mm/2mm.cpp.o
+[100%] Linking CXX executable 2mm
+[100%] Built target 2mm
++ for file in build/*_autotune
+++ basename build/3mm_autotune
++ filename=3mm_autotune
++ cd build
++ python /dev/fd/63 --test-limit=25 --no-dups
+++ ./3mm_autotune
+/home/jirka/.local/lib/python3.11/site-packages/opentuner/search/driver.py:183: SAWarning: Object of type <DesiredResult> not in session, add operation along 'TuningRun.desired_results' will not proceed
+  self.session.flush()  # populate configuration_id
+[     0s] WARNING opentuner.search.simplextechniques: only 1 point in simplex, will not use RandomNelderMead
+[    47s]    INFO opentuner.search.plugin.DisplayPlugin: tests=4, best #837, cost time=2.1374, found by NormalGreedyMutation
+[    91s]    INFO opentuner.search.plugin.DisplayPlugin: tests=8, best #840, cost time=1.9291, found by DifferentialEvolutionAlt
+[   132s]    INFO opentuner.search.plugin.DisplayPlugin: tests=12, best #840, cost time=1.9291, found by DifferentialEvolutionAlt
+[   173s]    INFO opentuner.search.plugin.DisplayPlugin: tests=16, best #875, cost time=1.8985, found by NormalGreedyMutation
+[   213s]    INFO opentuner.search.plugin.DisplayPlugin: tests=20, best #880, cost time=1.8928, found by NormalGreedyMutation
+[   250s]    INFO opentuner.search.plugin.DisplayPlugin: tests=24, best #880, cost time=1.8928, found by NormalGreedyMutation
+[   291s]    INFO opentuner.search.plugin.DisplayPlugin: tests=28, best #880, cost time=1.8928, found by NormalGreedyMutation
+[   291s]    INFO opentuner.search.plugin.DisplayPlugin: tests=28, best #880, cost time=1.8928, found by NormalGreedyMutation
++ cd autotuned
+++ grep -oE '"\w+"\s*:\s*[^,}]+' ../build/mmm_final_config.json
+++ sed -E 's/"|://g'
+++ awk '{printf("%s", "-DNOARR_PARAMETER_VALUE_" $1 "=" $2 " ")}END{print ""}'
++ config='-DNOARR_PARAMETER_VALUE_c_layout=1 -DNOARR_PARAMETER_VALUE_block_j2=5 -DNOARR_PARAMETER_VALUE_g_layout=0 -DNOARR_PARAMETER_VALUE_f_layout=1 -DNOARR_PARAMETER_VALUE_order3=0 -DNOARR_PARAMETER_VALUE_block_j1=5 -DNOARR_PARAMETER_VALUE_block_l3=4 -DNOARR_PARAMETER_VALUE_d_layout=0 -DNOARR_PARAMETER_VALUE_a_layout=1 -DNOARR_PARAMETER_VALUE_e_layout=1 -DNOARR_PARAMETER_VALUE_block_i1=2 -DNOARR_PARAMETER_VALUE_order1=0 -DNOARR_PARAMETER_VALUE_order2=0 -DNOARR_PARAMETER_VALUE_block_l2=5 -DNOARR_PARAMETER_VALUE_block_i3=2 -DNOARR_PARAMETER_VALUE_b_layout=0 '
++ mv ../build/mmm_final_config.json 3mm_autotune.config.json
++ echo '-DNOARR_PARAMETER_VALUE_c_layout=1 -DNOARR_PARAMETER_VALUE_block_j2=5 -DNOARR_PARAMETER_VALUE_g_layout=0 -DNOARR_PARAMETER_VALUE_f_layout=1 -DNOARR_PARAMETER_VALUE_order3=0 -DNOARR_PARAMETER_VALUE_block_j1=5 -DNOARR_PARAMETER_VALUE_block_l3=4 -DNOARR_PARAMETER_VALUE_d_layout=0 -DNOARR_PARAMETER_VALUE_a_layout=1 -DNOARR_PARAMETER_VALUE_e_layout=1 -DNOARR_PARAMETER_VALUE_block_i1=2 -DNOARR_PARAMETER_VALUE_order1=0 -DNOARR_PARAMETER_VALUE_order2=0 -DNOARR_PARAMETER_VALUE_block_l2=5 -DNOARR_PARAMETER_VALUE_block_i3=2 -DNOARR_PARAMETER_VALUE_b_layout=0 '
++ cmake -DCMAKE_BUILD_TYPE=Release -DNOARR_STRUCTURES_BRANCH=tuning '-DCMAKE_CXX_FLAGS=-DLARGE_DATASET -DDATA_TYPE_IS_FLOAT -DNOARR_PASS_BY_DEFINE -DNOARR_PARAMETER_VALUE_c_layout=1 -DNOARR_PARAMETER_VALUE_block_j2=5 -DNOARR_PARAMETER_VALUE_g_layout=0 -DNOARR_PARAMETER_VALUE_f_layout=1 -DNOARR_PARAMETER_VALUE_order3=0 -DNOARR_PARAMETER_VALUE_block_j1=5 -DNOARR_PARAMETER_VALUE_block_l3=4 -DNOARR_PARAMETER_VALUE_d_layout=0 -DNOARR_PARAMETER_VALUE_a_layout=1 -DNOARR_PARAMETER_VALUE_e_layout=1 -DNOARR_PARAMETER_VALUE_block_i1=2 -DNOARR_PARAMETER_VALUE_order1=0 -DNOARR_PARAMETER_VALUE_order2=0 -DNOARR_PARAMETER_VALUE_block_l2=5 -DNOARR_PARAMETER_VALUE_block_i3=2 -DNOARR_PARAMETER_VALUE_b_layout=0 ' ..
+-- Configuring done (0.6s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/jirka/noarr-polybench/autotuned
+++ nproc
+++ sed -E s/_autotune//
+++ echo 3mm_autotune
++ cmake --build . -j12 -t 3mm
+[ 50%] Building CXX object CMakeFiles/3mm.dir/linear-algebra/kernels/3mm/3mm.cpp.o
+[100%] Linking CXX executable 3mm
+[100%] Built target 3mm
++ for file in build/*_autotune
+++ basename build/atax_autotune
++ filename=atax_autotune
++ cd build
++ python /dev/fd/63 --test-limit=25 --no-dups
+++ ./atax_autotune
+/home/jirka/.local/lib/python3.11/site-packages/opentuner/search/driver.py:183: SAWarning: Object of type <DesiredResult> not in session, add operation along 'TuningRun.desired_results' will not proceed
+  self.session.flush()  # populate configuration_id
+[    11s]    INFO opentuner.search.plugin.DisplayPlugin: tests=4, best #886, cost time=0.0030, found by UniformGreedyMutation
+[    11s] WARNING opentuner.search.simplextechniques: only 1 point in simplex, will not use RandomNelderMead
+[    22s]    INFO opentuner.search.plugin.DisplayPlugin: tests=8, best #886, cost time=0.0030, found by UniformGreedyMutation
+[    42s]    INFO opentuner.search.plugin.DisplayPlugin: tests=16, best #923, cost time=0.0029, found by UniformGreedyMutation
+[    52s]    INFO opentuner.search.plugin.DisplayPlugin: tests=20, best #923, cost time=0.0029, found by UniformGreedyMutation
+[    63s]    INFO opentuner.search.plugin.DisplayPlugin: tests=24, best #923, cost time=0.0029, found by UniformGreedyMutation
+[    74s]    INFO opentuner.search.plugin.DisplayPlugin: tests=28, best #923, cost time=0.0029, found by UniformGreedyMutation
+[    74s]    INFO opentuner.search.plugin.DisplayPlugin: tests=28, best #923, cost time=0.0029, found by UniformGreedyMutation
++ cd autotuned
+++ grep -oE '"\w+"\s*:\s*[^,}]+' ../build/mmm_final_config.json
+++ sed -E 's/"|://g'
+++ awk '{printf("%s", "-DNOARR_PARAMETER_VALUE_" $1 "=" $2 " ")}END{print ""}'
++ config='-DNOARR_PARAMETER_VALUE_block_i1=3 -DNOARR_PARAMETER_VALUE_block_j1=5 -DNOARR_PARAMETER_VALUE_order1=1 -DNOARR_PARAMETER_VALUE_block_i2=1 -DNOARR_PARAMETER_VALUE_block_j2=0 -DNOARR_PARAMETER_VALUE_order2=1 -DNOARR_PARAMETER_VALUE_c_layout=1 '
++ mv ../build/mmm_final_config.json atax_autotune.config.json
++ echo '-DNOARR_PARAMETER_VALUE_block_i1=3 -DNOARR_PARAMETER_VALUE_block_j1=5 -DNOARR_PARAMETER_VALUE_order1=1 -DNOARR_PARAMETER_VALUE_block_i2=1 -DNOARR_PARAMETER_VALUE_block_j2=0 -DNOARR_PARAMETER_VALUE_order2=1 -DNOARR_PARAMETER_VALUE_c_layout=1 '
++ cmake -DCMAKE_BUILD_TYPE=Release -DNOARR_STRUCTURES_BRANCH=tuning '-DCMAKE_CXX_FLAGS=-DLARGE_DATASET -DDATA_TYPE_IS_FLOAT -DNOARR_PASS_BY_DEFINE -DNOARR_PARAMETER_VALUE_block_i1=3 -DNOARR_PARAMETER_VALUE_block_j1=5 -DNOARR_PARAMETER_VALUE_order1=1 -DNOARR_PARAMETER_VALUE_block_i2=1 -DNOARR_PARAMETER_VALUE_block_j2=0 -DNOARR_PARAMETER_VALUE_order2=1 -DNOARR_PARAMETER_VALUE_c_layout=1 ' ..
+-- Configuring done (0.6s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/jirka/noarr-polybench/autotuned
+++ nproc
+++ sed -E s/_autotune//
+++ echo atax_autotune
++ cmake --build . -j12 -t atax
+[ 50%] Building CXX object CMakeFiles/atax.dir/linear-algebra/kernels/atax/atax.cpp.o
+[100%] Linking CXX executable atax
+[100%] Built target atax
++ for file in build/*_autotune
+++ basename build/covariance_autotune
++ filename=covariance_autotune
++ cd build
++ python /dev/fd/63 --test-limit=25 --no-dups
+++ ./covariance_autotune
+[     0s] WARNING opentuner.search.simplextechniques: only 1 point in simplex, will not use RandomNelderMead
+/home/jirka/.local/lib/python3.11/site-packages/opentuner/search/driver.py:183: SAWarning: Object of type <DesiredResult> not in session, add operation along 'TuningRun.desired_results' will not proceed
+  self.session.flush()  # populate configuration_id
+[    20s]    INFO opentuner.search.plugin.DisplayPlugin: tests=4, best {'block_i': 5, 'block_k': 0, 'order': 1, 'data_layout': 0, 'cov_layout': 0}, cost time=0.7090, found by DifferentialEvolutionAlt
+[    41s]    INFO opentuner.search.plugin.DisplayPlugin: tests=8, best {'block_i': 5, 'block_k': 0, 'order': 1, 'data_layout': 0, 'cov_layout': 0}, cost time=0.7090, found by DifferentialEvolutionAlt
+[    58s]    INFO opentuner.search.plugin.DisplayPlugin: tests=12, best {'block_i': 5, 'block_k': 0, 'order': 1, 'data_layout': 0, 'cov_layout': 0}, cost time=0.7090, found by DifferentialEvolutionAlt
+[    76s]    INFO opentuner.search.plugin.DisplayPlugin: tests=16, best {'block_i': 5, 'block_k': 0, 'order': 1, 'data_layout': 0, 'cov_layout': 0}, cost time=0.7081, found by DifferentialEvolutionAlt
+[    98s]    INFO opentuner.search.plugin.DisplayPlugin: tests=20, best {'block_i': 5, 'block_k': 0, 'order': 1, 'data_layout': 0, 'cov_layout': 0}, cost time=0.7081, found by DifferentialEvolutionAlt
+[   118s]    INFO opentuner.search.plugin.DisplayPlugin: tests=24, best {'block_i': 1, 'block_k': 2, 'order': 1, 'data_layout': 0, 'cov_layout': 1}, cost time=0.5543, found by DifferentialEvolutionAlt
+[   139s]    INFO opentuner.search.plugin.DisplayPlugin: tests=28, best {'block_i': 1, 'block_k': 2, 'order': 1, 'data_layout': 0, 'cov_layout': 1}, cost time=0.5543, found by DifferentialEvolutionAlt
+[   139s]    INFO opentuner.search.plugin.DisplayPlugin: tests=28, best {'block_i': 1, 'block_k': 2, 'order': 1, 'data_layout': 0, 'cov_layout': 1}, cost time=0.5543, found by DifferentialEvolutionAlt
++ cd autotuned
+++ grep -oE '"\w+"\s*:\s*[^,}]+' ../build/mmm_final_config.json
+++ sed -E 's/"|://g'
+++ awk '{printf("%s", "-DNOARR_PARAMETER_VALUE_" $1 "=" $2 " ")}END{print ""}'
++ config='-DNOARR_PARAMETER_VALUE_block_i=1 -DNOARR_PARAMETER_VALUE_block_k=2 -DNOARR_PARAMETER_VALUE_order=1 -DNOARR_PARAMETER_VALUE_data_layout=0 -DNOARR_PARAMETER_VALUE_cov_layout=1 '
++ mv ../build/mmm_final_config.json covariance_autotune.config.json
++ echo '-DNOARR_PARAMETER_VALUE_block_i=1 -DNOARR_PARAMETER_VALUE_block_k=2 -DNOARR_PARAMETER_VALUE_order=1 -DNOARR_PARAMETER_VALUE_data_layout=0 -DNOARR_PARAMETER_VALUE_cov_layout=1 '
++ cmake -DCMAKE_BUILD_TYPE=Release -DNOARR_STRUCTURES_BRANCH=tuning '-DCMAKE_CXX_FLAGS=-DLARGE_DATASET -DDATA_TYPE_IS_FLOAT -DNOARR_PASS_BY_DEFINE -DNOARR_PARAMETER_VALUE_block_i=1 -DNOARR_PARAMETER_VALUE_block_k=2 -DNOARR_PARAMETER_VALUE_order=1 -DNOARR_PARAMETER_VALUE_data_layout=0 -DNOARR_PARAMETER_VALUE_cov_layout=1 ' ..
+-- Configuring done (0.6s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/jirka/noarr-polybench/autotuned
+++ nproc
+++ echo covariance_autotune
+++ sed -E s/_autotune//
++ cmake --build . -j12 -t covariance
+[ 50%] Building CXX object CMakeFiles/covariance.dir/datamining/covariance/covariance.cpp.o
+[100%] Linking CXX executable covariance
+[100%] Built target covariance
++ for file in build/*_autotune
+++ basename build/doitgen_autotune
++ filename=doitgen_autotune
++ cd build
++ python /dev/fd/63 --test-limit=25 --no-dups
+++ ./doitgen_autotune
+/home/jirka/.local/lib/python3.11/site-packages/opentuner/search/driver.py:183: SAWarning: Object of type <DesiredResult> not in session, add operation along 'TuningRun.desired_results' will not proceed
+  self.session.flush()  # populate configuration_id
+[     0s] WARNING opentuner.search.simplextechniques: only 1 point in simplex, will not use RandomNelderMead
+[    19s]    INFO opentuner.search.plugin.DisplayPlugin: tests=4, best {'block_q': 0, 'a_layout': 5, 'c4_layout': 1, 'block_r': 0, 'order': 1}, cost time=0.3288, found by NormalGreedyMutation
+[    36s]    INFO opentuner.search.plugin.DisplayPlugin: tests=8, best {'block_q': 0, 'a_layout': 5, 'c4_layout': 1, 'block_r': 0, 'order': 1}, cost time=0.3288, found by NormalGreedyMutation
+[    54s]    INFO opentuner.search.plugin.DisplayPlugin: tests=12, best {'block_q': 0, 'a_layout': 5, 'c4_layout': 1, 'block_r': 0, 'order': 1}, cost time=0.3288, found by NormalGreedyMutation
+[    72s]    INFO opentuner.search.plugin.DisplayPlugin: tests=16, best {'block_q': 0, 'a_layout': 5, 'c4_layout': 1, 'block_r': 0, 'order': 1}, cost time=0.3288, found by NormalGreedyMutation
+[    90s]    INFO opentuner.search.plugin.DisplayPlugin: tests=20, best {'block_q': 0, 'a_layout': 5, 'c4_layout': 1, 'block_r': 0, 'order': 1}, cost time=0.3288, found by NormalGreedyMutation
+[   108s]    INFO opentuner.search.plugin.DisplayPlugin: tests=24, best {'block_q': 0, 'a_layout': 5, 'c4_layout': 0, 'block_r': 0, 'order': 1}, cost time=0.3216, found by NormalGreedyMutation
+[   126s]    INFO opentuner.search.plugin.DisplayPlugin: tests=28, best {'block_q': 0, 'a_layout': 5, 'c4_layout': 0, 'block_r': 0, 'order': 1}, cost time=0.3216, found by NormalGreedyMutation
+[   126s]    INFO opentuner.search.plugin.DisplayPlugin: tests=28, best {'block_q': 0, 'a_layout': 5, 'c4_layout': 0, 'block_r': 0, 'order': 1}, cost time=0.3216, found by NormalGreedyMutation
++ cd autotuned
+++ grep -oE '"\w+"\s*:\s*[^,}]+' ../build/mmm_final_config.json
+++ sed -E 's/"|://g'
+++ awk '{printf("%s", "-DNOARR_PARAMETER_VALUE_" $1 "=" $2 " ")}END{print ""}'
++ config='-DNOARR_PARAMETER_VALUE_block_q=0 -DNOARR_PARAMETER_VALUE_a_layout=5 -DNOARR_PARAMETER_VALUE_c4_layout=0 -DNOARR_PARAMETER_VALUE_block_r=0 -DNOARR_PARAMETER_VALUE_order=1 '
++ mv ../build/mmm_final_config.json doitgen_autotune.config.json
++ echo '-DNOARR_PARAMETER_VALUE_block_q=0 -DNOARR_PARAMETER_VALUE_a_layout=5 -DNOARR_PARAMETER_VALUE_c4_layout=0 -DNOARR_PARAMETER_VALUE_block_r=0 -DNOARR_PARAMETER_VALUE_order=1 '
++ cmake -DCMAKE_BUILD_TYPE=Release -DNOARR_STRUCTURES_BRANCH=tuning '-DCMAKE_CXX_FLAGS=-DLARGE_DATASET -DDATA_TYPE_IS_FLOAT -DNOARR_PASS_BY_DEFINE -DNOARR_PARAMETER_VALUE_block_q=0 -DNOARR_PARAMETER_VALUE_a_layout=5 -DNOARR_PARAMETER_VALUE_c4_layout=0 -DNOARR_PARAMETER_VALUE_block_r=0 -DNOARR_PARAMETER_VALUE_order=1 ' ..
+-- Configuring done (0.6s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/jirka/noarr-polybench/autotuned
+++ nproc
+++ echo doitgen_autotune
+++ sed -E s/_autotune//
++ cmake --build . -j12 -t doitgen
+[ 50%] Building CXX object CMakeFiles/doitgen.dir/linear-algebra/kernels/doitgen/doitgen.cpp.o
+[100%] Linking CXX executable doitgen
+[100%] Built target doitgen
++ for file in build/*_autotune
+++ basename build/floyd-warshall_autotune
++ filename=floyd-warshall_autotune
++ cd build
++ python /dev/fd/63 --test-limit=25 --no-dups
+++ ./floyd-warshall_autotune
+/home/jirka/.local/lib/python3.11/site-packages/opentuner/search/driver.py:183: SAWarning: Object of type <DesiredResult> not in session, add operation along 'TuningRun.desired_results' will not proceed
+  self.session.flush()  # populate configuration_id
+[     0s] WARNING opentuner.search.simplextechniques: only 1 point in simplex, will not use RandomNelderMead
+[    65s]    INFO opentuner.search.plugin.DisplayPlugin: tests=4, best {'block_k': 0, 'path_layout': 0, 'order': 0, 'block_j': 2, 'block_i': 3}, cost time=9.6104, found by NormalGreedyMutation
+[   124s]    INFO opentuner.search.plugin.DisplayPlugin: tests=8, best {'block_k': 0, 'path_layout': 1, 'order': 1, 'block_j': 2, 'block_i': 3}, cost time=8.8781, found by UniformGreedyMutation
+[   201s]    INFO opentuner.search.plugin.DisplayPlugin: tests=12, best {'block_k': 0, 'path_layout': 1, 'order': 1, 'block_j': 2, 'block_i': 3}, cost time=8.8781, found by UniformGreedyMutation
+[   264s]    INFO opentuner.search.plugin.DisplayPlugin: tests=16, best {'block_k': 0, 'path_layout': 1, 'order': 1, 'block_j': 2, 'block_i': 6}, cost time=8.8294, found by UniformGreedyMutation
+[   319s]    INFO opentuner.search.plugin.DisplayPlugin: tests=20, best {'block_k': 0, 'path_layout': 1, 'order': 5, 'block_j': 2, 'block_i': 6}, cost time=8.6305, found by UniformGreedyMutation
+[   374s]    INFO opentuner.search.plugin.DisplayPlugin: tests=24, best {'block_k': 0, 'path_layout': 1, 'order': 1, 'block_j': 2, 'block_i': 6}, cost time=8.6145, found by UniformGreedyMutation
+[   437s]    INFO opentuner.search.plugin.DisplayPlugin: tests=28, best {'block_k': 0, 'path_layout': 1, 'order': 1, 'block_j': 2, 'block_i': 6}, cost time=8.6145, found by UniformGreedyMutation
+[   437s]    INFO opentuner.search.plugin.DisplayPlugin: tests=28, best {'block_k': 0, 'path_layout': 1, 'order': 1, 'block_j': 2, 'block_i': 6}, cost time=8.6145, found by UniformGreedyMutation
++ cd autotuned
+++ grep -oE '"\w+"\s*:\s*[^,}]+' ../build/mmm_final_config.json
+++ sed -E 's/"|://g'
+++ awk '{printf("%s", "-DNOARR_PARAMETER_VALUE_" $1 "=" $2 " ")}END{print ""}'
++ config='-DNOARR_PARAMETER_VALUE_block_k=0 -DNOARR_PARAMETER_VALUE_path_layout=1 -DNOARR_PARAMETER_VALUE_order=1 -DNOARR_PARAMETER_VALUE_block_j=2 -DNOARR_PARAMETER_VALUE_block_i=6 '
++ mv ../build/mmm_final_config.json floyd-warshall_autotune.config.json
++ echo '-DNOARR_PARAMETER_VALUE_block_k=0 -DNOARR_PARAMETER_VALUE_path_layout=1 -DNOARR_PARAMETER_VALUE_order=1 -DNOARR_PARAMETER_VALUE_block_j=2 -DNOARR_PARAMETER_VALUE_block_i=6 '
++ cmake -DCMAKE_BUILD_TYPE=Release -DNOARR_STRUCTURES_BRANCH=tuning '-DCMAKE_CXX_FLAGS=-DLARGE_DATASET -DDATA_TYPE_IS_FLOAT -DNOARR_PASS_BY_DEFINE -DNOARR_PARAMETER_VALUE_block_k=0 -DNOARR_PARAMETER_VALUE_path_layout=1 -DNOARR_PARAMETER_VALUE_order=1 -DNOARR_PARAMETER_VALUE_block_j=2 -DNOARR_PARAMETER_VALUE_block_i=6 ' ..
+-- Configuring done (0.6s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/jirka/noarr-polybench/autotuned
+++ nproc
+++ echo floyd-warshall_autotune
+++ sed -E s/_autotune//
++ cmake --build . -j12 -t floyd-warshall
+[ 50%] Building CXX object CMakeFiles/floyd-warshall.dir/medley/floyd-warshall/floyd-warshall.cpp.o
+[100%] Linking CXX executable floyd-warshall
+[100%] Built target floyd-warshall
++ for file in build/*_autotune
+++ basename build/gemm_autotune
++ filename=gemm_autotune
++ cd build
++ python /dev/fd/63 --test-limit=25 --no-dups
+++ ./gemm_autotune
+[     0s] WARNING opentuner.search.simplextechniques: only 1 point in simplex, will not use RandomNelderMead
+/home/jirka/.local/lib/python3.11/site-packages/opentuner/search/driver.py:183: SAWarning: Object of type <DesiredResult> not in session, add operation along 'TuningRun.desired_results' will not proceed
+  self.session.flush()  # populate configuration_id
+[    17s]    INFO opentuner.search.plugin.DisplayPlugin: tests=4, best {'block_i': 2, 'block_j': 4, 'block_k': 5, 'order': 1, 'c_layout': 1, 'a_layout': 1, 'b_layout': 1}, cost time=0.5909, found by NormalGreedyMutation
+[    33s]    INFO opentuner.search.plugin.DisplayPlugin: tests=8, best {'block_i': 2, 'block_j': 4, 'block_k': 0, 'order': 1, 'c_layout': 1, 'a_layout': 1, 'b_layout': 1}, cost time=0.5717, found by UniformGreedyMutation
+[    49s]    INFO opentuner.search.plugin.DisplayPlugin: tests=12, best {'block_i': 2, 'block_j': 4, 'block_k': 0, 'order': 1, 'c_layout': 1, 'a_layout': 1, 'b_layout': 1}, cost time=0.5717, found by UniformGreedyMutation
+[    66s]    INFO opentuner.search.plugin.DisplayPlugin: tests=16, best {'block_i': 2, 'block_j': 4, 'block_k': 0, 'order': 1, 'c_layout': 1, 'a_layout': 1, 'b_layout': 1}, cost time=0.5717, found by UniformGreedyMutation
+[    83s]    INFO opentuner.search.plugin.DisplayPlugin: tests=20, best {'block_i': 2, 'block_j': 4, 'block_k': 0, 'order': 1, 'c_layout': 1, 'a_layout': 1, 'b_layout': 1}, cost time=0.5717, found by UniformGreedyMutation
+[    99s]    INFO opentuner.search.plugin.DisplayPlugin: tests=24, best {'block_i': 2, 'block_j': 4, 'block_k': 0, 'order': 1, 'c_layout': 1, 'a_layout': 1, 'b_layout': 1}, cost time=0.5717, found by UniformGreedyMutation
+[   114s]    INFO opentuner.search.plugin.DisplayPlugin: tests=28, best {'block_i': 2, 'block_j': 0, 'block_k': 0, 'order': 1, 'c_layout': 1, 'a_layout': 1, 'b_layout': 1}, cost time=0.1070, found by NormalGreedyMutation
+[   114s]    INFO opentuner.search.plugin.DisplayPlugin: tests=28, best {'block_i': 2, 'block_j': 0, 'block_k': 0, 'order': 1, 'c_layout': 1, 'a_layout': 1, 'b_layout': 1}, cost time=0.1070, found by NormalGreedyMutation
++ cd autotuned
+++ grep -oE '"\w+"\s*:\s*[^,}]+' ../build/mmm_final_config.json
+++ sed -E 's/"|://g'
+++ awk '{printf("%s", "-DNOARR_PARAMETER_VALUE_" $1 "=" $2 " ")}END{print ""}'
++ config='-DNOARR_PARAMETER_VALUE_block_i=2 -DNOARR_PARAMETER_VALUE_block_j=0 -DNOARR_PARAMETER_VALUE_block_k=0 -DNOARR_PARAMETER_VALUE_order=1 -DNOARR_PARAMETER_VALUE_c_layout=1 -DNOARR_PARAMETER_VALUE_a_layout=1 -DNOARR_PARAMETER_VALUE_b_layout=1 '
++ mv ../build/mmm_final_config.json gemm_autotune.config.json
++ echo '-DNOARR_PARAMETER_VALUE_block_i=2 -DNOARR_PARAMETER_VALUE_block_j=0 -DNOARR_PARAMETER_VALUE_block_k=0 -DNOARR_PARAMETER_VALUE_order=1 -DNOARR_PARAMETER_VALUE_c_layout=1 -DNOARR_PARAMETER_VALUE_a_layout=1 -DNOARR_PARAMETER_VALUE_b_layout=1 '
++ cmake -DCMAKE_BUILD_TYPE=Release -DNOARR_STRUCTURES_BRANCH=tuning '-DCMAKE_CXX_FLAGS=-DLARGE_DATASET -DDATA_TYPE_IS_FLOAT -DNOARR_PASS_BY_DEFINE -DNOARR_PARAMETER_VALUE_block_i=2 -DNOARR_PARAMETER_VALUE_block_j=0 -DNOARR_PARAMETER_VALUE_block_k=0 -DNOARR_PARAMETER_VALUE_order=1 -DNOARR_PARAMETER_VALUE_c_layout=1 -DNOARR_PARAMETER_VALUE_a_layout=1 -DNOARR_PARAMETER_VALUE_b_layout=1 ' ..
+-- Configuring done (0.6s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/jirka/noarr-polybench/autotuned
+++ nproc
+++ sed -E s/_autotune//
+++ echo gemm_autotune
++ cmake --build . -j12 -t gemm
+[ 50%] Building CXX object CMakeFiles/gemm.dir/linear-algebra/blas/gemm/gemm.cpp.o
+[100%] Linking CXX executable gemm
+[100%] Built target gemm
++ for file in build/*_autotune
+++ basename build/gemver_autotune
++ filename=gemver_autotune
++ cd build
++ python /dev/fd/63 --test-limit=25 --no-dups
+++ ./gemver_autotune
+/home/jirka/.local/lib/python3.11/site-packages/opentuner/search/driver.py:183: SAWarning: Object of type <DesiredResult> not in session, add operation along 'TuningRun.desired_results' will not proceed
+  self.session.flush()  # populate configuration_id
+[     0s] WARNING opentuner.search.simplextechniques: only 1 point in simplex, will not use RandomNelderMead
+[    13s]    INFO opentuner.search.plugin.DisplayPlugin: tests=4, best #1113, cost time=0.0070, found by DifferentialEvolutionAlt
+[    25s]    INFO opentuner.search.plugin.DisplayPlugin: tests=8, best #1143, cost time=0.0065, found by UniformGreedyMutation
+[    38s]    INFO opentuner.search.plugin.DisplayPlugin: tests=12, best #1115, cost time=0.0060, found by DifferentialEvolutionAlt
+[    50s]    INFO opentuner.search.plugin.DisplayPlugin: tests=16, best #1115, cost time=0.0060, found by DifferentialEvolutionAlt
+[    63s]    INFO opentuner.search.plugin.DisplayPlugin: tests=20, best #1115, cost time=0.0060, found by DifferentialEvolutionAlt
+[    75s]    INFO opentuner.search.plugin.DisplayPlugin: tests=24, best #1115, cost time=0.0060, found by DifferentialEvolutionAlt
+[    88s]    INFO opentuner.search.plugin.DisplayPlugin: tests=28, best #1115, cost time=0.0060, found by DifferentialEvolutionAlt
+[    88s]    INFO opentuner.search.plugin.DisplayPlugin: tests=28, best #1115, cost time=0.0060, found by DifferentialEvolutionAlt
++ cd autotuned
+++ grep -oE '"\w+"\s*:\s*[^,}]+' ../build/mmm_final_config.json
+++ sed -E 's/"|://g'
+++ awk '{printf("%s", "-DNOARR_PARAMETER_VALUE_" $1 "=" $2 " ")}END{print ""}'
++ config='-DNOARR_PARAMETER_VALUE_block_i1=3 -DNOARR_PARAMETER_VALUE_block_j1=0 -DNOARR_PARAMETER_VALUE_order1=0 -DNOARR_PARAMETER_VALUE_block_i2=1 -DNOARR_PARAMETER_VALUE_block_j2=2 -DNOARR_PARAMETER_VALUE_order2=0 -DNOARR_PARAMETER_VALUE_block_i3=5 -DNOARR_PARAMETER_VALUE_block_j3=2 -DNOARR_PARAMETER_VALUE_order3=1 -DNOARR_PARAMETER_VALUE_a_layout=1 '
++ mv ../build/mmm_final_config.json gemver_autotune.config.json
++ echo '-DNOARR_PARAMETER_VALUE_block_i1=3 -DNOARR_PARAMETER_VALUE_block_j1=0 -DNOARR_PARAMETER_VALUE_order1=0 -DNOARR_PARAMETER_VALUE_block_i2=1 -DNOARR_PARAMETER_VALUE_block_j2=2 -DNOARR_PARAMETER_VALUE_order2=0 -DNOARR_PARAMETER_VALUE_block_i3=5 -DNOARR_PARAMETER_VALUE_block_j3=2 -DNOARR_PARAMETER_VALUE_order3=1 -DNOARR_PARAMETER_VALUE_a_layout=1 '
++ cmake -DCMAKE_BUILD_TYPE=Release -DNOARR_STRUCTURES_BRANCH=tuning '-DCMAKE_CXX_FLAGS=-DLARGE_DATASET -DDATA_TYPE_IS_FLOAT -DNOARR_PASS_BY_DEFINE -DNOARR_PARAMETER_VALUE_block_i1=3 -DNOARR_PARAMETER_VALUE_block_j1=0 -DNOARR_PARAMETER_VALUE_order1=0 -DNOARR_PARAMETER_VALUE_block_i2=1 -DNOARR_PARAMETER_VALUE_block_j2=2 -DNOARR_PARAMETER_VALUE_order2=0 -DNOARR_PARAMETER_VALUE_block_i3=5 -DNOARR_PARAMETER_VALUE_block_j3=2 -DNOARR_PARAMETER_VALUE_order3=1 -DNOARR_PARAMETER_VALUE_a_layout=1 ' ..
+-- Configuring done (0.6s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/jirka/noarr-polybench/autotuned
+++ nproc
+++ echo gemver_autotune
+++ sed -E s/_autotune//
++ cmake --build . -j12 -t gemver
+[ 50%] Building CXX object CMakeFiles/gemver.dir/linear-algebra/blas/gemver/gemver.cpp.o
+[100%] Linking CXX executable gemver
+[100%] Built target gemver
++ for file in build/*_autotune
+++ basename build/gesummv_autotune
++ filename=gesummv_autotune
++ cd build
++ python /dev/fd/63 --test-limit=25 --no-dups
+++ ./gesummv_autotune
+/home/jirka/.local/lib/python3.11/site-packages/opentuner/search/driver.py:183: SAWarning: Object of type <DesiredResult> not in session, add operation along 'TuningRun.desired_results' will not proceed
+  self.session.flush()  # populate configuration_id
+[    10s] WARNING opentuner.search.simplextechniques: only 1 point in simplex, will not use RandomNelderMead
+[    20s]    INFO opentuner.search.plugin.DisplayPlugin: tests=8, best {'a_layout': 0, 'b_layout': 0, 'block_j1': 3, 'block_i1': 2, 'order1': 0}, cost time=0.0018, found by DifferentialEvolutionAlt
+[    40s]    INFO opentuner.search.plugin.DisplayPlugin: tests=16, best {'a_layout': 0, 'b_layout': 0, 'block_j1': 3, 'block_i1': 2, 'order1': 0}, cost time=0.0018, found by DifferentialEvolutionAlt
+[    60s]    INFO opentuner.search.plugin.DisplayPlugin: tests=24, best {'a_layout': 0, 'b_layout': 0, 'block_j1': 3, 'block_i1': 2, 'order1': 0}, cost time=0.0018, found by DifferentialEvolutionAlt
+[    69s]    INFO opentuner.search.plugin.DisplayPlugin: tests=28, best {'a_layout': 0, 'b_layout': 0, 'block_j1': 1, 'block_i1': 2, 'order1': 0}, cost time=0.0017, found by UniformGreedyMutation
++ cd autotuned
+++ grep -oE '"\w+"\s*:\s*[^,}]+' ../build/mmm_final_config.json
+++ sed -E 's/"|://g'
+++ awk '{printf("%s", "-DNOARR_PARAMETER_VALUE_" $1 "=" $2 " ")}END{print ""}'
++ config='-DNOARR_PARAMETER_VALUE_a_layout=0 -DNOARR_PARAMETER_VALUE_b_layout=0 -DNOARR_PARAMETER_VALUE_block_j1=1 -DNOARR_PARAMETER_VALUE_block_i1=2 -DNOARR_PARAMETER_VALUE_order1=0 '
++ mv ../build/mmm_final_config.json gesummv_autotune.config.json
++ echo '-DNOARR_PARAMETER_VALUE_a_layout=0 -DNOARR_PARAMETER_VALUE_b_layout=0 -DNOARR_PARAMETER_VALUE_block_j1=1 -DNOARR_PARAMETER_VALUE_block_i1=2 -DNOARR_PARAMETER_VALUE_order1=0 '
++ cmake -DCMAKE_BUILD_TYPE=Release -DNOARR_STRUCTURES_BRANCH=tuning '-DCMAKE_CXX_FLAGS=-DLARGE_DATASET -DDATA_TYPE_IS_FLOAT -DNOARR_PASS_BY_DEFINE -DNOARR_PARAMETER_VALUE_a_layout=0 -DNOARR_PARAMETER_VALUE_b_layout=0 -DNOARR_PARAMETER_VALUE_block_j1=1 -DNOARR_PARAMETER_VALUE_block_i1=2 -DNOARR_PARAMETER_VALUE_order1=0 ' ..
+-- Configuring done (0.6s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/jirka/noarr-polybench/autotuned
+++ nproc
+++ echo gesummv_autotune
+++ sed -E s/_autotune//
++ cmake --build . -j12 -t gesummv
+[ 50%] Building CXX object CMakeFiles/gesummv.dir/linear-algebra/blas/gesummv/gesummv.cpp.o
+[100%] Linking CXX executable gesummv
+[100%] Built target gesummv
++ for file in build/*_autotune
+++ basename build/heat-3d_autotune
++ filename=heat-3d_autotune
++ cd build
++ python /dev/fd/63 --test-limit=25 --no-dups
+++ ./heat-3d_autotune
+/home/jirka/.local/lib/python3.11/site-packages/opentuner/search/driver.py:183: SAWarning: Object of type <DesiredResult> not in session, add operation along 'TuningRun.desired_results' will not proceed
+  self.session.flush()  # populate configuration_id
+[     0s] WARNING opentuner.search.simplextechniques: only 1 point in simplex, will not use RandomNelderMead
+[    33s]    INFO opentuner.search.plugin.DisplayPlugin: tests=4, best {'block_i': 5, 'block_j': 2, 'block_k': 3, 'order': 0, 'a_layout': 3, 'b_layout': 0}, cost time=2.8557, found by DifferentialEvolutionAlt
+[    69s]    INFO opentuner.search.plugin.DisplayPlugin: tests=8, best {'block_i': 5, 'block_j': 2, 'block_k': 3, 'order': 0, 'a_layout': 3, 'b_layout': 0}, cost time=2.8557, found by DifferentialEvolutionAlt
+[    99s]    INFO opentuner.search.plugin.DisplayPlugin: tests=12, best {'block_i': 6, 'block_j': 6, 'block_k': 2, 'order': 2, 'a_layout': 1, 'b_layout': 0}, cost time=2.4671, found by DifferentialEvolutionAlt
+[   126s]    INFO opentuner.search.plugin.DisplayPlugin: tests=16, best {'block_i': 6, 'block_j': 6, 'block_k': 2, 'order': 2, 'a_layout': 0, 'b_layout': 0}, cost time=2.4583, found by UniformGreedyMutation
+[   160s]    INFO opentuner.search.plugin.DisplayPlugin: tests=20, best {'block_i': 6, 'block_j': 6, 'block_k': 2, 'order': 2, 'a_layout': 0, 'b_layout': 0}, cost time=2.4583, found by UniformGreedyMutation
+[   187s]    INFO opentuner.search.plugin.DisplayPlugin: tests=24, best {'block_i': 0, 'block_j': 6, 'block_k': 2, 'order': 2, 'a_layout': 0, 'b_layout': 0}, cost time=0.8579, found by UniformGreedyMutation
+[   217s]    INFO opentuner.search.plugin.DisplayPlugin: tests=28, best {'block_i': 0, 'block_j': 6, 'block_k': 2, 'order': 2, 'a_layout': 0, 'b_layout': 0}, cost time=0.8579, found by UniformGreedyMutation
+[   217s]    INFO opentuner.search.plugin.DisplayPlugin: tests=28, best {'block_i': 0, 'block_j': 6, 'block_k': 2, 'order': 2, 'a_layout': 0, 'b_layout': 0}, cost time=0.8579, found by UniformGreedyMutation
++ cd autotuned
+++ grep -oE '"\w+"\s*:\s*[^,}]+' ../build/mmm_final_config.json
+++ sed -E 's/"|://g'
+++ awk '{printf("%s", "-DNOARR_PARAMETER_VALUE_" $1 "=" $2 " ")}END{print ""}'
++ config='-DNOARR_PARAMETER_VALUE_block_i=0 -DNOARR_PARAMETER_VALUE_block_j=6 -DNOARR_PARAMETER_VALUE_block_k=2 -DNOARR_PARAMETER_VALUE_order=2 -DNOARR_PARAMETER_VALUE_a_layout=0 -DNOARR_PARAMETER_VALUE_b_layout=0 '
++ mv ../build/mmm_final_config.json heat-3d_autotune.config.json
++ echo '-DNOARR_PARAMETER_VALUE_block_i=0 -DNOARR_PARAMETER_VALUE_block_j=6 -DNOARR_PARAMETER_VALUE_block_k=2 -DNOARR_PARAMETER_VALUE_order=2 -DNOARR_PARAMETER_VALUE_a_layout=0 -DNOARR_PARAMETER_VALUE_b_layout=0 '
++ cmake -DCMAKE_BUILD_TYPE=Release -DNOARR_STRUCTURES_BRANCH=tuning '-DCMAKE_CXX_FLAGS=-DLARGE_DATASET -DDATA_TYPE_IS_FLOAT -DNOARR_PASS_BY_DEFINE -DNOARR_PARAMETER_VALUE_block_i=0 -DNOARR_PARAMETER_VALUE_block_j=6 -DNOARR_PARAMETER_VALUE_block_k=2 -DNOARR_PARAMETER_VALUE_order=2 -DNOARR_PARAMETER_VALUE_a_layout=0 -DNOARR_PARAMETER_VALUE_b_layout=0 ' ..
+-- Configuring done (0.6s)
+-- Generating done (0.1s)
+-- Build files have been written to: /home/jirka/noarr-polybench/autotuned
+++ nproc
+++ echo heat-3d_autotune
+++ sed -E s/_autotune//
++ cmake --build . -j12 -t heat-3d
+[ 50%] Building CXX object CMakeFiles/heat-3d.dir/stencils/heat-3d/heat-3d.cpp.o
+[100%] Linking CXX executable heat-3d
+[100%] Built target heat-3d
++ for file in build/*_autotune
+++ basename build/jacobi-2d_autotune
++ filename=jacobi-2d_autotune
++ cd build
++ python /dev/fd/63 --test-limit=25 --no-dups
+++ ./jacobi-2d_autotune
+/home/jirka/.local/lib/python3.11/site-packages/opentuner/search/driver.py:183: SAWarning: Object of type <DesiredResult> not in session, add operation along 'TuningRun.desired_results' will not proceed
+  self.session.flush()  # populate configuration_id
+[     0s] WARNING opentuner.search.simplextechniques: only 1 point in simplex, will not use RandomNelderMead
+[    19s]    INFO opentuner.search.plugin.DisplayPlugin: tests=4, best {'block_i': 3, 'order': 0, 'block_j': 3}, cost time=1.2533, found by UniformGreedyMutation
+[    37s]    INFO opentuner.search.plugin.DisplayPlugin: tests=8, best {'block_i': 3, 'order': 0, 'block_j': 3}, cost time=1.2533, found by UniformGreedyMutation
+[    54s]    INFO opentuner.search.plugin.DisplayPlugin: tests=12, best {'block_i': 0, 'order': 0, 'block_j': 3}, cost time=0.5236, found by UniformGreedyMutation
+[    68s]    INFO opentuner.search.plugin.DisplayPlugin: tests=16, best {'block_i': 0, 'order': 0, 'block_j': 3}, cost time=0.5236, found by UniformGreedyMutation
+[    85s]    INFO opentuner.search.plugin.DisplayPlugin: tests=20, best {'block_i': 0, 'block_j': 3, 'order': 1}, cost time=0.5190, found by UniformGreedyMutation
+[   100s]    INFO opentuner.search.plugin.DisplayPlugin: tests=24, best {'block_i': 0, 'block_j': 3, 'order': 1}, cost time=0.5190, found by UniformGreedyMutation
+[   115s]    INFO opentuner.search.plugin.DisplayPlugin: tests=28, best {'block_i': 0, 'block_j': 3, 'order': 1}, cost time=0.5190, found by UniformGreedyMutation
+[   115s]    INFO opentuner.search.plugin.DisplayPlugin: tests=28, best {'block_i': 0, 'block_j': 3, 'order': 1}, cost time=0.5190, found by UniformGreedyMutation
++ cd autotuned
+++ grep -oE '"\w+"\s*:\s*[^,}]+' ../build/mmm_final_config.json
+++ sed -E 's/"|://g'
+++ awk '{printf("%s", "-DNOARR_PARAMETER_VALUE_" $1 "=" $2 " ")}END{print ""}'
++ config='-DNOARR_PARAMETER_VALUE_block_i=0 -DNOARR_PARAMETER_VALUE_block_j=3 -DNOARR_PARAMETER_VALUE_order=1 '
++ mv ../build/mmm_final_config.json jacobi-2d_autotune.config.json
++ echo '-DNOARR_PARAMETER_VALUE_block_i=0 -DNOARR_PARAMETER_VALUE_block_j=3 -DNOARR_PARAMETER_VALUE_order=1 '
++ cmake -DCMAKE_BUILD_TYPE=Release -DNOARR_STRUCTURES_BRANCH=tuning '-DCMAKE_CXX_FLAGS=-DLARGE_DATASET -DDATA_TYPE_IS_FLOAT -DNOARR_PASS_BY_DEFINE -DNOARR_PARAMETER_VALUE_block_i=0 -DNOARR_PARAMETER_VALUE_block_j=3 -DNOARR_PARAMETER_VALUE_order=1 ' ..
+-- Configuring done (0.6s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/jirka/noarr-polybench/autotuned
+++ nproc
+++ echo jacobi-2d_autotune
+++ sed -E s/_autotune//
++ cmake --build . -j12 -t jacobi-2d
+[ 50%] Building CXX object CMakeFiles/jacobi-2d.dir/stencils/jacobi-2d/jacobi-2d.cpp.o
+[100%] Linking CXX executable jacobi-2d
+[100%] Built target jacobi-2d
++ for file in build/*_autotune
+++ basename build/mvt_autotune
++ filename=mvt_autotune
++ cd build
++ python /dev/fd/63 --test-limit=25 --no-dups
+++ ./mvt_autotune
+/home/jirka/.local/lib/python3.11/site-packages/opentuner/search/driver.py:183: SAWarning: Object of type <DesiredResult> not in session, add operation along 'TuningRun.desired_results' will not proceed
+  self.session.flush()  # populate configuration_id
+[     0s] WARNING opentuner.search.simplextechniques: only 1 point in simplex, will not use RandomNelderMead
+[    11s]    INFO opentuner.search.plugin.DisplayPlugin: tests=4, best #1299, cost time=0.0045, found by UniformGreedyMutation
+[    22s]    INFO opentuner.search.plugin.DisplayPlugin: tests=8, best #1302, cost time=0.0029, found by UniformGreedyMutation
+[    32s]    INFO opentuner.search.plugin.DisplayPlugin: tests=12, best #1302, cost time=0.0029, found by UniformGreedyMutation
+[    43s]    INFO opentuner.search.plugin.DisplayPlugin: tests=16, best #1302, cost time=0.0029, found by UniformGreedyMutation
+[    54s]    INFO opentuner.search.plugin.DisplayPlugin: tests=20, best #1302, cost time=0.0029, found by UniformGreedyMutation
+[    65s]    INFO opentuner.search.plugin.DisplayPlugin: tests=24, best #1311, cost time=0.0028, found by NormalGreedyMutation
+[    75s]    INFO opentuner.search.plugin.DisplayPlugin: tests=28, best #1315, cost time=0.0028, found by NormalGreedyMutation
+[    75s]    INFO opentuner.search.plugin.DisplayPlugin: tests=28, best #1315, cost time=0.0028, found by NormalGreedyMutation
++ cd autotuned
+++ grep -oE '"\w+"\s*:\s*[^,}]+' ../build/mmm_final_config.json
+++ sed -E 's/"|://g'
+++ awk '{printf("%s", "-DNOARR_PARAMETER_VALUE_" $1 "=" $2 " ")}END{print ""}'
++ config='-DNOARR_PARAMETER_VALUE_block_i1=3 -DNOARR_PARAMETER_VALUE_block_j1=1 -DNOARR_PARAMETER_VALUE_block_i2=0 -DNOARR_PARAMETER_VALUE_block_j2=0 -DNOARR_PARAMETER_VALUE_order1=1 -DNOARR_PARAMETER_VALUE_order2=1 -DNOARR_PARAMETER_VALUE_a_layout=1 '
++ mv ../build/mmm_final_config.json mvt_autotune.config.json
++ echo '-DNOARR_PARAMETER_VALUE_block_i1=3 -DNOARR_PARAMETER_VALUE_block_j1=1 -DNOARR_PARAMETER_VALUE_block_i2=0 -DNOARR_PARAMETER_VALUE_block_j2=0 -DNOARR_PARAMETER_VALUE_order1=1 -DNOARR_PARAMETER_VALUE_order2=1 -DNOARR_PARAMETER_VALUE_a_layout=1 '
++ cmake -DCMAKE_BUILD_TYPE=Release -DNOARR_STRUCTURES_BRANCH=tuning '-DCMAKE_CXX_FLAGS=-DLARGE_DATASET -DDATA_TYPE_IS_FLOAT -DNOARR_PASS_BY_DEFINE -DNOARR_PARAMETER_VALUE_block_i1=3 -DNOARR_PARAMETER_VALUE_block_j1=1 -DNOARR_PARAMETER_VALUE_block_i2=0 -DNOARR_PARAMETER_VALUE_block_j2=0 -DNOARR_PARAMETER_VALUE_order1=1 -DNOARR_PARAMETER_VALUE_order2=1 -DNOARR_PARAMETER_VALUE_a_layout=1 ' ..
+-- Configuring done (0.6s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/jirka/noarr-polybench/autotuned
+++ nproc
+++ echo mvt_autotune
+++ sed -E s/_autotune//
++ cmake --build . -j12 -t mvt
+[ 50%] Building CXX object CMakeFiles/mvt.dir/linear-algebra/kernels/mvt/mvt.cpp.o
+[100%] Linking CXX executable mvt
+[100%] Built target mvt
++ for file in build/*_autotune
+++ basename build/symm_autotune
++ filename=symm_autotune
++ cd build
++ python /dev/fd/63 --test-limit=25 --no-dups
+++ ./symm_autotune
+[     0s] WARNING opentuner.search.simplextechniques: only 1 point in simplex, will not use RandomNelderMead
+/home/jirka/.local/lib/python3.11/site-packages/opentuner/search/driver.py:183: SAWarning: Object of type <DesiredResult> not in session, add operation along 'TuningRun.desired_results' will not proceed
+  self.session.flush()  # populate configuration_id
+[    20s]    INFO opentuner.search.plugin.DisplayPlugin: tests=4, best {'order': 1, 'b_layout': 1, 'block_i': 4, 'block_j': 4, 'a_layout': 1, 'c_layout': 0}, cost time=0.4570, found by DifferentialEvolutionAlt
+[    37s]    INFO opentuner.search.plugin.DisplayPlugin: tests=8, best {'order': 1, 'b_layout': 1, 'block_i': 6, 'block_j': 4, 'a_layout': 1, 'c_layout': 0}, cost time=0.4448, found by UniformGreedyMutation
+[    53s]    INFO opentuner.search.plugin.DisplayPlugin: tests=12, best {'order': 1, 'b_layout': 0, 'block_i': 2, 'block_j': 4, 'a_layout': 1, 'c_layout': 0}, cost time=0.4438, found by DifferentialEvolutionAlt
+[    68s]    INFO opentuner.search.plugin.DisplayPlugin: tests=16, best {'order': 1, 'b_layout': 0, 'block_i': 0, 'block_j': 2, 'a_layout': 1, 'c_layout': 0}, cost time=0.4245, found by NormalGreedyMutation
+[    82s]    INFO opentuner.search.plugin.DisplayPlugin: tests=20, best {'order': 1, 'b_layout': 0, 'block_i': 0, 'block_j': 2, 'a_layout': 1, 'c_layout': 0}, cost time=0.4245, found by NormalGreedyMutation
+[   101s]    INFO opentuner.search.plugin.DisplayPlugin: tests=24, best {'order': 1, 'b_layout': 0, 'block_i': 0, 'block_j': 2, 'a_layout': 1, 'c_layout': 0}, cost time=0.4245, found by NormalGreedyMutation
+[   117s]    INFO opentuner.search.plugin.DisplayPlugin: tests=28, best {'order': 1, 'b_layout': 0, 'block_i': 0, 'block_j': 2, 'a_layout': 1, 'c_layout': 0}, cost time=0.4245, found by NormalGreedyMutation
+[   117s]    INFO opentuner.search.plugin.DisplayPlugin: tests=28, best {'order': 1, 'b_layout': 0, 'block_i': 0, 'block_j': 2, 'a_layout': 1, 'c_layout': 0}, cost time=0.4245, found by NormalGreedyMutation
++ cd autotuned
+++ grep -oE '"\w+"\s*:\s*[^,}]+' ../build/mmm_final_config.json
+++ sed -E 's/"|://g'
+++ awk '{printf("%s", "-DNOARR_PARAMETER_VALUE_" $1 "=" $2 " ")}END{print ""}'
++ config='-DNOARR_PARAMETER_VALUE_order=1 -DNOARR_PARAMETER_VALUE_b_layout=0 -DNOARR_PARAMETER_VALUE_block_i=0 -DNOARR_PARAMETER_VALUE_block_j=2 -DNOARR_PARAMETER_VALUE_a_layout=1 -DNOARR_PARAMETER_VALUE_c_layout=0 '
++ mv ../build/mmm_final_config.json symm_autotune.config.json
++ echo '-DNOARR_PARAMETER_VALUE_order=1 -DNOARR_PARAMETER_VALUE_b_layout=0 -DNOARR_PARAMETER_VALUE_block_i=0 -DNOARR_PARAMETER_VALUE_block_j=2 -DNOARR_PARAMETER_VALUE_a_layout=1 -DNOARR_PARAMETER_VALUE_c_layout=0 '
++ cmake -DCMAKE_BUILD_TYPE=Release -DNOARR_STRUCTURES_BRANCH=tuning '-DCMAKE_CXX_FLAGS=-DLARGE_DATASET -DDATA_TYPE_IS_FLOAT -DNOARR_PASS_BY_DEFINE -DNOARR_PARAMETER_VALUE_order=1 -DNOARR_PARAMETER_VALUE_b_layout=0 -DNOARR_PARAMETER_VALUE_block_i=0 -DNOARR_PARAMETER_VALUE_block_j=2 -DNOARR_PARAMETER_VALUE_a_layout=1 -DNOARR_PARAMETER_VALUE_c_layout=0 ' ..
+-- Configuring done (0.6s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/jirka/noarr-polybench/autotuned
+++ nproc
+++ echo symm_autotune
+++ sed -E s/_autotune//
++ cmake --build . -j12 -t symm
+[ 50%] Building CXX object CMakeFiles/symm.dir/linear-algebra/blas/symm/symm.cpp.o
+[100%] Linking CXX executable symm
+[100%] Built target symm
++ for file in build/*_autotune
+++ basename build/syr2k_autotune
++ filename=syr2k_autotune
++ cd build
++ python /dev/fd/63 --test-limit=25 --no-dups
+++ ./syr2k_autotune
+[     0s] WARNING opentuner.search.simplextechniques: only 1 point in simplex, will not use RandomNelderMead
+/home/jirka/.local/lib/python3.11/site-packages/opentuner/search/driver.py:183: SAWarning: Object of type <DesiredResult> not in session, add operation along 'TuningRun.desired_results' will not proceed
+  self.session.flush()  # populate configuration_id
+[    16s]    INFO opentuner.search.plugin.DisplayPlugin: tests=4, best {'a_layout': 0, 'block_i': 3, 'c_layout': 1, 'order': 0, 'b_layout': 0, 'block_k': 2}, cost time=0.1287, found by UniformGreedyMutation
+[    30s]    INFO opentuner.search.plugin.DisplayPlugin: tests=8, best {'a_layout': 0, 'block_i': 3, 'c_layout': 1, 'order': 0, 'b_layout': 0, 'block_k': 2}, cost time=0.1287, found by UniformGreedyMutation
+[    45s]    INFO opentuner.search.plugin.DisplayPlugin: tests=12, best {'a_layout': 0, 'block_i': 2, 'c_layout': 1, 'order': 0, 'b_layout': 0, 'block_k': 2}, cost time=0.1203, found by NormalGreedyMutation
+[    61s]    INFO opentuner.search.plugin.DisplayPlugin: tests=16, best {'a_layout': 0, 'block_i': 2, 'c_layout': 1, 'order': 0, 'b_layout': 0, 'block_k': 2}, cost time=0.1203, found by NormalGreedyMutation
+[    76s]    INFO opentuner.search.plugin.DisplayPlugin: tests=20, best {'a_layout': 0, 'block_i': 2, 'c_layout': 1, 'order': 0, 'b_layout': 0, 'block_k': 2}, cost time=0.1203, found by NormalGreedyMutation
+[    92s]    INFO opentuner.search.plugin.DisplayPlugin: tests=24, best {'a_layout': 0, 'block_i': 2, 'c_layout': 1, 'order': 0, 'b_layout': 0, 'block_k': 2}, cost time=0.1203, found by NormalGreedyMutation
+[   107s]    INFO opentuner.search.plugin.DisplayPlugin: tests=28, best {'a_layout': 0, 'block_i': 2, 'c_layout': 1, 'order': 0, 'b_layout': 0, 'block_k': 2}, cost time=0.1203, found by NormalGreedyMutation
+[   107s]    INFO opentuner.search.plugin.DisplayPlugin: tests=28, best {'a_layout': 0, 'block_i': 2, 'c_layout': 1, 'order': 0, 'b_layout': 0, 'block_k': 2}, cost time=0.1203, found by NormalGreedyMutation
++ cd autotuned
+++ grep -oE '"\w+"\s*:\s*[^,}]+' ../build/mmm_final_config.json
+++ sed -E 's/"|://g'
+++ awk '{printf("%s", "-DNOARR_PARAMETER_VALUE_" $1 "=" $2 " ")}END{print ""}'
++ config='-DNOARR_PARAMETER_VALUE_a_layout=0 -DNOARR_PARAMETER_VALUE_block_i=2 -DNOARR_PARAMETER_VALUE_c_layout=1 -DNOARR_PARAMETER_VALUE_order=0 -DNOARR_PARAMETER_VALUE_b_layout=0 -DNOARR_PARAMETER_VALUE_block_k=2 '
++ mv ../build/mmm_final_config.json syr2k_autotune.config.json
++ echo '-DNOARR_PARAMETER_VALUE_a_layout=0 -DNOARR_PARAMETER_VALUE_block_i=2 -DNOARR_PARAMETER_VALUE_c_layout=1 -DNOARR_PARAMETER_VALUE_order=0 -DNOARR_PARAMETER_VALUE_b_layout=0 -DNOARR_PARAMETER_VALUE_block_k=2 '
++ cmake -DCMAKE_BUILD_TYPE=Release -DNOARR_STRUCTURES_BRANCH=tuning '-DCMAKE_CXX_FLAGS=-DLARGE_DATASET -DDATA_TYPE_IS_FLOAT -DNOARR_PASS_BY_DEFINE -DNOARR_PARAMETER_VALUE_a_layout=0 -DNOARR_PARAMETER_VALUE_block_i=2 -DNOARR_PARAMETER_VALUE_c_layout=1 -DNOARR_PARAMETER_VALUE_order=0 -DNOARR_PARAMETER_VALUE_b_layout=0 -DNOARR_PARAMETER_VALUE_block_k=2 ' ..
+-- Configuring done (0.6s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/jirka/noarr-polybench/autotuned
+++ nproc
+++ echo syr2k_autotune
+++ sed -E s/_autotune//
++ cmake --build . -j12 -t syr2k
+[ 50%] Building CXX object CMakeFiles/syr2k.dir/linear-algebra/blas/syr2k/syr2k.cpp.o
+[100%] Linking CXX executable syr2k
+[100%] Built target syr2k
++ for file in build/*_autotune
+++ basename build/syrk_autotune
++ filename=syrk_autotune
++ cd build
++ python /dev/fd/63 --test-limit=25 --no-dups
+++ ./syrk_autotune
+/home/jirka/.local/lib/python3.11/site-packages/opentuner/search/driver.py:183: SAWarning: Object of type <DesiredResult> not in session, add operation along 'TuningRun.desired_results' will not proceed
+  self.session.flush()  # populate configuration_id
+[     0s] WARNING opentuner.search.simplextechniques: only 1 point in simplex, will not use RandomNelderMead
+[    15s]    INFO opentuner.search.plugin.DisplayPlugin: tests=4, best {'block_i': 6, 'block_k': 3, 'order': 0, 'c_layout': 1, 'a_layout': 0}, cost time=0.0657, found by DifferentialEvolutionAlt
+[    29s]    INFO opentuner.search.plugin.DisplayPlugin: tests=8, best {'block_i': 6, 'block_k': 3, 'order': 0, 'c_layout': 1, 'a_layout': 0}, cost time=0.0657, found by DifferentialEvolutionAlt
+[    43s]    INFO opentuner.search.plugin.DisplayPlugin: tests=12, best {'block_i': 3, 'block_k': 5, 'order': 0, 'c_layout': 1, 'a_layout': 0}, cost time=0.0622, found by DifferentialEvolutionAlt
+[    59s]    INFO opentuner.search.plugin.DisplayPlugin: tests=16, best {'block_i': 3, 'block_k': 5, 'order': 0, 'c_layout': 1, 'a_layout': 0}, cost time=0.0622, found by DifferentialEvolutionAlt
+[    73s]    INFO opentuner.search.plugin.DisplayPlugin: tests=20, best {'block_i': 3, 'block_k': 5, 'order': 0, 'c_layout': 1, 'a_layout': 0}, cost time=0.0622, found by DifferentialEvolutionAlt
+[    88s]    INFO opentuner.search.plugin.DisplayPlugin: tests=24, best {'block_i': 0, 'block_k': 5, 'order': 1, 'c_layout': 1, 'a_layout': 0}, cost time=0.0611, found by DifferentialEvolutionAlt
+[   102s]    INFO opentuner.search.plugin.DisplayPlugin: tests=28, best {'block_i': 0, 'block_k': 5, 'order': 1, 'c_layout': 1, 'a_layout': 0}, cost time=0.0611, found by DifferentialEvolutionAlt
+[   102s]    INFO opentuner.search.plugin.DisplayPlugin: tests=28, best {'block_i': 0, 'block_k': 5, 'order': 1, 'c_layout': 1, 'a_layout': 0}, cost time=0.0611, found by DifferentialEvolutionAlt
++ cd autotuned
+++ grep -oE '"\w+"\s*:\s*[^,}]+' ../build/mmm_final_config.json
+++ sed -E 's/"|://g'
+++ awk '{printf("%s", "-DNOARR_PARAMETER_VALUE_" $1 "=" $2 " ")}END{print ""}'
++ config='-DNOARR_PARAMETER_VALUE_block_i=0 -DNOARR_PARAMETER_VALUE_block_k=5 -DNOARR_PARAMETER_VALUE_order=1 -DNOARR_PARAMETER_VALUE_c_layout=1 -DNOARR_PARAMETER_VALUE_a_layout=0 '
++ mv ../build/mmm_final_config.json syrk_autotune.config.json
++ echo '-DNOARR_PARAMETER_VALUE_block_i=0 -DNOARR_PARAMETER_VALUE_block_k=5 -DNOARR_PARAMETER_VALUE_order=1 -DNOARR_PARAMETER_VALUE_c_layout=1 -DNOARR_PARAMETER_VALUE_a_layout=0 '
++ cmake -DCMAKE_BUILD_TYPE=Release -DNOARR_STRUCTURES_BRANCH=tuning '-DCMAKE_CXX_FLAGS=-DLARGE_DATASET -DDATA_TYPE_IS_FLOAT -DNOARR_PASS_BY_DEFINE -DNOARR_PARAMETER_VALUE_block_i=0 -DNOARR_PARAMETER_VALUE_block_k=5 -DNOARR_PARAMETER_VALUE_order=1 -DNOARR_PARAMETER_VALUE_c_layout=1 -DNOARR_PARAMETER_VALUE_a_layout=0 ' ..
+-- Configuring done (0.6s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/jirka/noarr-polybench/autotuned
+++ nproc
+++ echo syrk_autotune
+++ sed -E s/_autotune//
++ cmake --build . -j12 -t syrk
+[ 50%] Building CXX object CMakeFiles/syrk.dir/linear-algebra/blas/syrk/syrk.cpp.o
+[100%] Linking CXX executable syrk
+[100%] Built target syrk
++ for file in build/*_autotune
+++ basename build/trmm_autotune
++ filename=trmm_autotune
++ cd build
++ python /dev/fd/63 --test-limit=25 --no-dups
+++ ./trmm_autotune
+[     0s] WARNING opentuner.search.simplextechniques: only 1 point in simplex, will not use RandomNelderMead
+/home/jirka/.local/lib/python3.11/site-packages/opentuner/search/driver.py:183: SAWarning: Object of type <DesiredResult> not in session, add operation along 'TuningRun.desired_results' will not proceed
+  self.session.flush()  # populate configuration_id
+[    18s]    INFO opentuner.search.plugin.DisplayPlugin: tests=4, best {'block_j': 2, 'order': 0, 'a_layout': 0, 'b_layout': 1, 'block_i': 4}, cost time=0.4327, found by NormalGreedyMutation
+[    34s]    INFO opentuner.search.plugin.DisplayPlugin: tests=8, best {'block_j': 2, 'order': 0, 'a_layout': 0, 'b_layout': 0, 'block_i': 4}, cost time=0.4165, found by UniformGreedyMutation
+[    51s]    INFO opentuner.search.plugin.DisplayPlugin: tests=12, best {'block_j': 2, 'order': 0, 'a_layout': 0, 'b_layout': 0, 'block_i': 4}, cost time=0.4165, found by UniformGreedyMutation
+[    66s]    INFO opentuner.search.plugin.DisplayPlugin: tests=16, best {'block_j': 2, 'order': 0, 'a_layout': 0, 'b_layout': 0, 'block_i': 1}, cost time=0.4117, found by NormalGreedyMutation
+[    82s]    INFO opentuner.search.plugin.DisplayPlugin: tests=20, best {'block_j': 2, 'order': 0, 'a_layout': 0, 'b_layout': 0, 'block_i': 1}, cost time=0.4117, found by NormalGreedyMutation
+[    97s]    INFO opentuner.search.plugin.DisplayPlugin: tests=24, best {'block_j': 2, 'order': 0, 'a_layout': 0, 'b_layout': 0, 'block_i': 1}, cost time=0.4117, found by NormalGreedyMutation
+[   112s]    INFO opentuner.search.plugin.DisplayPlugin: tests=28, best {'block_j': 2, 'order': 0, 'a_layout': 0, 'b_layout': 0, 'block_i': 1}, cost time=0.4117, found by NormalGreedyMutation
+[   112s]    INFO opentuner.search.plugin.DisplayPlugin: tests=28, best {'block_j': 2, 'order': 0, 'a_layout': 0, 'b_layout': 0, 'block_i': 1}, cost time=0.4117, found by NormalGreedyMutation
++ cd autotuned
+++ grep -oE '"\w+"\s*:\s*[^,}]+' ../build/mmm_final_config.json
+++ sed -E 's/"|://g'
+++ awk '{printf("%s", "-DNOARR_PARAMETER_VALUE_" $1 "=" $2 " ")}END{print ""}'
++ config='-DNOARR_PARAMETER_VALUE_block_j=2 -DNOARR_PARAMETER_VALUE_order=0 -DNOARR_PARAMETER_VALUE_a_layout=0 -DNOARR_PARAMETER_VALUE_b_layout=0 -DNOARR_PARAMETER_VALUE_block_i=1 '
++ mv ../build/mmm_final_config.json trmm_autotune.config.json
++ echo '-DNOARR_PARAMETER_VALUE_block_j=2 -DNOARR_PARAMETER_VALUE_order=0 -DNOARR_PARAMETER_VALUE_a_layout=0 -DNOARR_PARAMETER_VALUE_b_layout=0 -DNOARR_PARAMETER_VALUE_block_i=1 '
++ cmake -DCMAKE_BUILD_TYPE=Release -DNOARR_STRUCTURES_BRANCH=tuning '-DCMAKE_CXX_FLAGS=-DLARGE_DATASET -DDATA_TYPE_IS_FLOAT -DNOARR_PASS_BY_DEFINE -DNOARR_PARAMETER_VALUE_block_j=2 -DNOARR_PARAMETER_VALUE_order=0 -DNOARR_PARAMETER_VALUE_a_layout=0 -DNOARR_PARAMETER_VALUE_b_layout=0 -DNOARR_PARAMETER_VALUE_block_i=1 ' ..
+-- Configuring done (0.6s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/jirka/noarr-polybench/autotuned
+++ nproc
+++ echo trmm_autotune
+++ sed -E s/_autotune//
++ cmake --build . -j12 -t trmm
+[ 50%] Building CXX object CMakeFiles/trmm.dir/linear-algebra/blas/trmm/trmm.cpp.o
+[100%] Linking CXX executable trmm
+[100%] Built target trmm
