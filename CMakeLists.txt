@@ -1,18 +1,26 @@
 cmake_minimum_required(VERSION 3.10)
 Include(FetchContent)
 
-# set the project name
-project(NoarrPolybench VERSION 0.0.1)
+# set the project name and version
+project(
+  NoarrPolybench VERSION 0.0.1
+  DESCRIPTION "Polybench kernels implemented using Noarr Structures"
+  LANGUAGES CXX
+)
 
 # specify the C++ standard
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
+if(NOT DEFINED NOARR_STRUCTURES_BRANCH)
+  set(NOARR_STRUCTURES_BRANCH main)
+endif()
+
 # download Noarr
 FetchContent_Declare(
   Noarr
   GIT_REPOSITORY https://github.com/jiriklepl/noarr-structures.git
-  GIT_TAG        main)
+  GIT_TAG        ${NOARR_STRUCTURES_BRANCH})
 FetchContent_MakeAvailable(Noarr)
 
 include_directories(include)
