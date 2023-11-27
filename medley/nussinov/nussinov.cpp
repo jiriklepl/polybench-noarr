@@ -17,25 +17,26 @@ using base_t = char;
 namespace {
 
 // initialization function
-void init_array(auto seq, auto table) {
+void init_array(auto seq, auto table) noexcept {
 	// seq: i
 	// table: i x j
 
 	noarr::traverser(seq)
-		.for_each([=](auto state) {
+		.for_each([=](auto state) constexpr noexcept {
 			auto i = noarr::get_index<'i'>(state);
 
 			seq[state] = (base_t)((i + 1) % 4);
 		});
-	
+
 	noarr::traverser(table)
-		.for_each([=](auto state) {
+		.for_each([=](auto state) constexpr noexcept {
 			table[state] = 0;
 		});
 }
 
 // computation kernel
-void kernel_nussinov(auto seq, auto table) {
+[[gnu::flatten, gnu::noinline]]
+void kernel_nussinov(auto seq, auto table) noexcept {
 	// seq: i
 	// table: i x j
 
@@ -45,12 +46,12 @@ void kernel_nussinov(auto seq, auto table) {
 
 	noarr::traverser(seq, table, table_ik, table_kj)
 		.order(noarr::reverse<'i'>())
-		.template for_dims<'i'>([=](auto inner) {
+		.template for_dims<'i'>([=](auto inner) constexpr noexcept {
 			auto state = inner.state();
 
 			inner
 				.order(noarr::shift<'j'>(noarr::get_index<'i'>(state) + 1))
-				.template for_dims<'j'>([=](auto inner) {
+				.template for_dims<'j'>([=](auto inner) constexpr noexcept {
 					auto state = inner.state();
 
 					if (noarr::get_index<'j'>(state) >= 0)
@@ -78,7 +79,7 @@ void kernel_nussinov(auto seq, auto table) {
 
 					inner
 						.order(noarr::span<'k'>(noarr::get_index<'i'>(state) + 1, noarr::get_index<'j'>(state)))
-						.template for_each<'k'>([=](auto state) {
+						.template for_each<'k'>([=](auto state) constexpr noexcept {
 							table[state] = std::max(
 								table[state],
 								table_ik[state] +
@@ -116,12 +117,12 @@ int main(int argc, char *argv[]) {
 	if (argc > 0 && argv[0] != ""s) [table = table.get_ref()] {
 		std::cout << std::fixed << std::setprecision(2);
 		noarr::traverser(table)
-			.template for_dims<'i'>([=](auto inner) {
+			.template for_dims<'i'>([=](auto inner) constexpr noexcept {
 				auto state = inner.state();
 				std::cout << std::fixed << std::setprecision(2);
 				inner
 					.order(noarr::shift<'j'>(noarr::get_index<'i'>(state)))
-					.template for_each<'j'>([=](auto state) {
+					.template for_each<'j'>([=](auto state) constexpr noexcept {
 						std::cout << table[state] << " ";
 					});
 			});

@@ -16,7 +16,7 @@ using num_t = DATA_TYPE;
 namespace {
 
 // initialization function
-void init_array(auto L, auto x, auto b) {
+void init_array(auto L, auto x, auto b) noexcept {
 	// L: i x j
 	// x: i
 	// b: i
@@ -24,7 +24,7 @@ void init_array(auto L, auto x, auto b) {
 	auto n = L | noarr::get_length<'i'>();
 
 	noarr::traverser(L, x, b)
-		.template for_dims<'i'>([=](auto inner) {
+		.template for_dims<'i'>([=](auto inner) constexpr noexcept {
 			auto state = inner.state();
 			auto i = noarr::get_index<'i'>(state);
 
@@ -33,7 +33,7 @@ void init_array(auto L, auto x, auto b) {
 
 			inner
 				.order(noarr::slice<'j'>(0, i + 1))
-				.template for_each<'j'>([=](auto state) {
+				.template for_each<'j'>([=](auto state) constexpr noexcept {
 					auto j = noarr::get_index<'j'>(state);
 					L[state] = (num_t)(i + n - j + 1) * 2 / n;
 				});
@@ -41,7 +41,8 @@ void init_array(auto L, auto x, auto b) {
 }
 
 // computation kernel
-void kernel_trisolv(auto L, auto x, auto b) {
+[[gnu::flatten, gnu::noinline]]
+void kernel_trisolv(auto L, auto x, auto b) noexcept {
 	// L: i x j
 	// x: i
 	// b: i
@@ -49,14 +50,14 @@ void kernel_trisolv(auto L, auto x, auto b) {
 	auto x_j = x ^ noarr::rename<'i', 'j'>();
 
 	noarr::traverser(L, x, b)
-		.template for_dims<'i'>([=](auto inner) {
+		.template for_dims<'i'>([=](auto inner) constexpr noexcept {
 			auto state = inner.state();
 
 			x[state] = b[state];
 
 			inner
 				.order(noarr::slice<'j'>(0, noarr::get_index<'i'>(state)))
-				.for_each([=](auto state) {
+				.for_each([=](auto state) constexpr noexcept {
 					x[state] -= L[state] * x_j[state];
 				});
 

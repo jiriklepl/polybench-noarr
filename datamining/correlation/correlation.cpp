@@ -15,18 +15,21 @@ using num_t = DATA_TYPE;
 
 namespace {
 
-void init_array(num_t &float_n, auto data) {
+// initialization function
+void init_array(num_t &float_n, auto data) noexcept {
 	// data: k x j
 
 	float_n = data | noarr::get_length<'k'>();
 
-	noarr::traverser(data).for_each([=](auto state) {
+	noarr::traverser(data).for_each([=](auto state) constexpr noexcept {
 		auto [k, j] = noarr::get_indices<'k', 'j'>(state);
 		data[state] = (num_t)(k * j) / (data | noarr::get_length<'j'>()) + k;
 	});
 }
 
-void kernel_correlation(num_t float_n, auto data, auto corr, auto mean, auto stddev) {
+// computation kernel
+[[gnu::flatten, gnu::noinline]]
+void kernel_correlation(num_t float_n, auto data, auto corr, auto mean, auto stddev) noexcept {
 	// data: k x j
 	// corr: i x j
 	// mean: j
@@ -40,12 +43,12 @@ void kernel_correlation(num_t float_n, auto data, auto corr, auto mean, auto std
 	auto ni = corr | noarr::get_length<'i'>();
 
 	noarr::traverser(data, mean)
-		.template for_dims<'j'>([=](auto inner) {
+		.template for_dims<'j'>([=](auto inner) constexpr noexcept {
 			auto state = inner.state();
 
 			mean[state] = 0;
 
-			inner.for_each([=](auto state) {
+			inner.for_each([=](auto state) constexpr noexcept {
 				mean[state] += data[state];
 			});
 
@@ -53,12 +56,12 @@ void kernel_correlation(num_t float_n, auto data, auto corr, auto mean, auto std
 		});
 
 	noarr::traverser(data, mean, stddev)
-		.template for_dims<'j'>([=](auto inner) {
+		.template for_dims<'j'>([=](auto inner) constexpr noexcept {
 			auto state = inner.state();
 
 			stddev[state] = 0;
 
-			inner.for_each([=](auto state) {
+			inner.for_each([=](auto state) constexpr noexcept {
 				stddev[state] += (data[state] - mean[state]) * (data[state] - mean[state]);
 			});
 
@@ -67,7 +70,7 @@ void kernel_correlation(num_t float_n, auto data, auto corr, auto mean, auto std
 			stddev[state] = stddev[state] <= eps ? (num_t)1.0 : stddev[state];
 		});
 
-	noarr::traverser(data, mean, stddev).for_each([=](auto state) {
+	noarr::traverser(data, mean, stddev).for_each([=](auto state) constexpr noexcept {
 		data[state] -= mean[state];
 		data[state] /= std::sqrt(float_n) * stddev[state];
 	});
@@ -75,7 +78,7 @@ void kernel_correlation(num_t float_n, auto data, auto corr, auto mean, auto std
 	auto traverser = noarr::traverser(data, corr, data_ki, corr_ji);
 	traverser
 		.order(noarr::span<'i'>(0, ni - 1))
-		.template for_dims<'i'>([=](auto inner) {
+		.template for_dims<'i'>([=](auto inner) constexpr noexcept {
 			auto state = inner.state();
 			auto i = noarr::get_index<'i'>(state);
 
@@ -83,12 +86,12 @@ void kernel_correlation(num_t float_n, auto data, auto corr, auto mean, auto std
 
 			inner
 				.order(noarr::shift<'j'>(i + 1))
-				.template for_dims<'j'>([=](auto inner) {
+				.template for_dims<'j'>([=](auto inner) constexpr noexcept {
 					auto state = inner.state();
 
 					corr[state] = 0;
 
-					inner.for_each([=](auto state) {
+					inner.for_each([=](auto state) constexpr noexcept {
 						corr[state] += data_ki[state] * data[state];
 					});
 

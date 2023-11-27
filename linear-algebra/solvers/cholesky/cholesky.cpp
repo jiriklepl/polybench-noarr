@@ -16,13 +16,13 @@ using num_t = DATA_TYPE;
 namespace {
 
 // initialization function
-void init_array(auto A) {
+void init_array(auto A) noexcept {
 	// A: i x j
 
 	int n = A | noarr::get_length<'i'>();
 
 	noarr::traverser(A)
-		.template for_dims<'i'>([=](auto inner) {
+		.template for_dims<'i'>([=](auto inner) constexpr noexcept {
 			auto state = inner.state();
 
 			auto i = noarr::get_index<'i'>(state);
@@ -31,13 +31,13 @@ void init_array(auto A) {
 
 			inner
 				.order(noarr::slice<'j'>(0, i + 1))
-				.for_each([=](auto state) {
+				.for_each([=](auto state) constexpr noexcept {
 					A[state] = (num_t) (-(int)noarr::get_index<'j'>(state) % n) / n + 1;
 				});
 
 			inner
 				.order(noarr::shift<'j'>(i + 1))
-				.for_each([=](auto state) {
+				.for_each([=](auto state) constexpr noexcept {
 					A[state] = 0;
 				});
 
@@ -51,20 +51,21 @@ void init_array(auto A) {
 	auto A_ik = A ^ noarr::rename<'j', 'k'>();
 	auto A_jk = A ^ noarr::rename<'i', 'j', 'j', 'k'>();
 
-	noarr::traverser(B_ref).for_each([=](auto state) {
+	noarr::traverser(B_ref).for_each([=](auto state) constexpr noexcept {
 		B_ref[state] = 0;
 	});
 
-	noarr::traverser(B_ref, A_ik, A_jk).for_each([=](auto state) {
+	noarr::traverser(B_ref, A_ik, A_jk).for_each([=](auto state) constexpr noexcept {
 		B_ref[state] += A_ik[state] * A_jk[state];
 	});
 
-	noarr::traverser(A, B_ref).for_each([=](auto state) {
+	noarr::traverser(A, B_ref).for_each([=](auto state) constexpr noexcept {
 		A[state] = B_ref[state];
 	});
 }
 
 // computation kernel
+[[gnu::flatten, gnu::noinline]]
 void kernel_cholesky(auto A) {
 	// A: i x j
 
@@ -72,17 +73,17 @@ void kernel_cholesky(auto A) {
 	auto A_jk = A ^ noarr::rename<'i', 'j', 'j', 'k'>();
 
 	noarr::traverser(A, A_ik, A_jk)
-		.template for_dims<'i'>([=](auto inner) {
+		.template for_dims<'i'>([=](auto inner) constexpr noexcept {
 			auto state = inner.state();
 
 			inner
 				.order(noarr::slice<'j'>(0, noarr::get_index<'i'>(state)))
-				.template for_dims<'j'>([=](auto inner) {
+				.template for_dims<'j'>([=](auto inner) constexpr noexcept {
 					auto state = inner.state();
-					
+
 					inner
 						.order(noarr::slice<'k'>(0, noarr::get_index<'j'>(state)))
-						.for_each([=](auto state) {
+						.for_each([=](auto state) constexpr noexcept {
 							A[state] -= A_ik[state] * A_jk[state];
 						});
 
@@ -93,7 +94,7 @@ void kernel_cholesky(auto A) {
 
 			inner
 				.order(noarr::slice<'k'>(0, noarr::get_index<'i'>(state)))
-				.template for_each<'k'>([=](auto state) {
+				.template for_each<'k'>([=](auto state) constexpr noexcept {
 					A_ii[state] -= A_ik[state] * A_ik[state];
 				});
 
@@ -128,12 +129,12 @@ int main(int argc, char *argv[]) {
 	if (argc > 0 && argv[0] != ""s) [A = A.get_ref()] {
 		std::cout << std::fixed << std::setprecision(2);
 		noarr::traverser(A)
-			.template for_dims<'i'>([=](auto inner) {
+			.template for_dims<'i'>([=](auto inner) constexpr noexcept {
 				auto state = inner.state();
 
 				inner
 					.order(noarr::slice<'j'>(0, noarr::get_index<'i'>(state) + 1))
-					.for_each([=](auto state) {
+					.for_each([=](auto state) constexpr noexcept {
 						std::cout << A[state] << " ";
 					});
 

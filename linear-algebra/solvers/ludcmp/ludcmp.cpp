@@ -15,7 +15,7 @@ using num_t = DATA_TYPE;
 namespace {
 
 // initialization function
-void init_array(auto A, auto b, auto x, auto y) {
+void init_array(auto A, auto b, auto x, auto y) noexcept {
 	// A: i x j
 	// b: i
 	// x: i
@@ -25,7 +25,7 @@ void init_array(auto A, auto b, auto x, auto y) {
 	num_t fn = (num_t)n;
 
 	noarr::traverser(b, x, y)
-		.for_each([=](auto state) {
+		.for_each([=](auto state) constexpr noexcept {
 			auto i = noarr::get_index<'i'>(state);
 
 			x[state] = 0;
@@ -34,22 +34,22 @@ void init_array(auto A, auto b, auto x, auto y) {
 		});
 
 	noarr::traverser(A)
-		.template for_dims<'i'>([=](auto inner) {
+		.template for_dims<'i'>([=](auto inner) constexpr noexcept {
 			auto state = inner.state();
 
 			auto i = noarr::get_index<'i'>(state);
 
 			inner
 				.order(noarr::slice<'j'>(0, i + 1))
-				.for_each([=](auto state) {
+				.for_each([=](auto state) constexpr noexcept {
 					int j = noarr::get_index<'j'>(state);
 
 					A[state] = (num_t)(-j % n) / n + 1;
 				});
-			
+
 			inner
 				.order(noarr::shift<'j'>(i + 1))
-				.for_each([=](auto state) {
+				.for_each([=](auto state) constexpr noexcept {
 					A[state] = 0;
 				});
 
@@ -64,22 +64,23 @@ void init_array(auto A, auto b, auto x, auto y) {
 	auto A_jk = A ^ noarr::rename<'i', 'j', 'j', 'k'>();
 
 	noarr::traverser(B_ref)
-		.for_each([=](auto state) {
+		.for_each([=](auto state) constexpr noexcept {
 			B_ref[state] = 0;
 		});
 
 	noarr::traverser(B_ref, A_ik, A_jk)
-		.for_each([=](auto state) {
+		.for_each([=](auto state) constexpr noexcept {
 			B_ref[state] += A_ik[state] * A_jk[state];
 		});
 
-	noarr::traverser(A, B_ref).for_each([=](auto state) {
+	noarr::traverser(A, B_ref).for_each([=](auto state) constexpr noexcept {
 		A[state] = B_ref[state];
 	});
 }
 
 // computation kernel
-void kernel_ludcmp(auto A, auto b, auto x, auto y) {
+[[gnu::flatten, gnu::noinline]]
+void kernel_ludcmp(auto A, auto b, auto x, auto y) noexcept {
 	// A: i x j
 	// b: i
 	// x: i
@@ -89,19 +90,19 @@ void kernel_ludcmp(auto A, auto b, auto x, auto y) {
 	auto A_kj = A ^ noarr::rename<'i', 'k'>();
 
 	noarr::traverser(A, b, x, y, A_ik, A_kj)
-		.template for_dims<'i'>([=](auto inner) {
+		.template for_dims<'i'>([=](auto inner) constexpr noexcept {
 			auto state = inner.state();
 
 			inner
 				.order(noarr::slice<'j'>(0, noarr::get_index<'i'>(state)))
-				.template for_dims<'j'>([=](auto inner) {
+				.template for_dims<'j'>([=](auto inner) constexpr noexcept {
 					auto state = inner.state();
 
 					num_t w = A[state];
 
 					inner
 						.order(noarr::slice<'k'>(0, noarr::get_index<'j'>(state)))
-						.template for_each<'k'>([=, &w](auto state) {
+						.template for_each<'k'>([=, &w](auto state) constexpr noexcept {
 							w -= A_ik[state] * A_kj[state];
 						});
 
@@ -110,14 +111,14 @@ void kernel_ludcmp(auto A, auto b, auto x, auto y) {
 
 			inner
 				.order(noarr::shift<'j'>(noarr::get_index<'i'>(state)))
-				.template for_dims<'j'>([=](auto inner) {
+				.template for_dims<'j'>([=](auto inner) constexpr noexcept {
 					auto state = inner.state();
 
 					num_t w = A[state];
 
 					inner
 						.order(noarr::slice<'k'>(0, noarr::get_index<'i'>(state)))
-						.template for_each<'k'>([=, &w](auto state) {
+						.template for_each<'k'>([=, &w](auto state) constexpr noexcept {
 							w -= A_ik[state] * A_kj[state];
 						});
 
@@ -126,33 +127,33 @@ void kernel_ludcmp(auto A, auto b, auto x, auto y) {
 		});
 
 		noarr::traverser(A, b, y)
-			.template for_dims<'i'>([=](auto inner) {
+			.template for_dims<'i'>([=](auto inner) constexpr noexcept {
 				auto state = inner.state();
 
 				num_t w = b[state];
 
 				inner
 					.order(noarr::slice<'j'>(0, noarr::get_index<'i'>(state)))
-					.template for_each<'j'>([=, &w](auto state) {
+					.template for_each<'j'>([=, &w](auto state) constexpr noexcept {
 						w -= A[state] * y[noarr::idx<'i'>(noarr::get_index<'j'>(state))];
 					});
-				
+
 				y[state] = w;
 			});
 
 		noarr::traverser(A, x)
 			.order(noarr::reverse<'i'>())
-			.template for_dims<'i'>([=](auto inner) {
+			.template for_dims<'i'>([=](auto inner) constexpr noexcept {
 				auto state = inner.state();
 
 				num_t w = y[state];
 
 				inner
 					.order(noarr::shift<'j'>(noarr::get_index<'i'>(state) + 1))
-					.template for_each<'j'>([=, &w](auto state) {
+					.template for_each<'j'>([=, &w](auto state) constexpr noexcept {
 						w -= A[state] * x[noarr::idx<'i'>(noarr::get_index<'j'>(state))];
 					});
-				
+
 				x[state] = w / A[state & noarr::idx<'j'>(noarr::get_index<'i'>(state))]; // TODO: A_diag
 			});
 }

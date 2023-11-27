@@ -16,7 +16,7 @@ using num_t = DATA_TYPE;
 namespace {
 
 // initialization function
-void init_array(auto A, auto R, auto Q) {
+void init_array(auto A, auto R, auto Q) noexcept {
 	// A: i x k
 	// R: k x j
 	// Q: i x k
@@ -24,7 +24,7 @@ void init_array(auto A, auto R, auto Q) {
 	auto ni = A | noarr::get_length<'i'>();
 
 	noarr::traverser(A, Q)
-		.for_each([=](auto state) {
+		.for_each([=](auto state) constexpr noexcept {
 			auto i = noarr::get_index<'i'>(state);
 			auto k = noarr::get_index<'k'>(state);
 
@@ -33,13 +33,14 @@ void init_array(auto A, auto R, auto Q) {
 		});
 
 	noarr::traverser(R)
-		.for_each([=](auto state) {
+		.for_each([=](auto state) constexpr noexcept {
 			R[state] = 0.0;
 		});
 }
 
 // computation kernel
-void kernel_gramschmidt(auto A, auto R, auto Q) {
+[[gnu::flatten, gnu::noinline]]
+void kernel_gramschmidt(auto A, auto R, auto Q) noexcept {
 	// A: i x k
 	// R: k x j
 	// Q: i x k
@@ -47,11 +48,11 @@ void kernel_gramschmidt(auto A, auto R, auto Q) {
 	auto A_ij = A ^ noarr::rename<'k', 'j'>();
 
 	noarr::traverser(A_ij, R, Q)
-		.template for_dims<'k'>([=](auto inner) {
+		.template for_dims<'k'>([=](auto inner) constexpr noexcept {
 			auto state = inner.state();
 			num_t norm = 0;
 
-			inner.template for_each<'i'>([=, &norm](auto state) {
+			inner.template for_each<'i'>([=, &norm](auto state) constexpr noexcept {
 				norm += A[state] * A[state];
 			});
 
@@ -59,22 +60,22 @@ void kernel_gramschmidt(auto A, auto R, auto Q) {
 
 			R_diag[state] = std::sqrt(norm);
 
-			inner.template for_each<'i'>([=](auto state) {
+			inner.template for_each<'i'>([=](auto state) constexpr noexcept {
 				Q[state] = A[state] / R_diag[state];
 			});
 
 			inner
 				.order(noarr::shift<'j'>(noarr::get_index<'k'>(state) + 1))
-				.template for_dims<'j'>([=](auto inner) {
+				.template for_dims<'j'>([=](auto inner) constexpr noexcept {
 					auto state = inner.state();
 
 					R[state] = 0;
 
-					inner.template for_each<'i'>([=](auto state) {
+					inner.for_each([=](auto state) constexpr noexcept {
 						R[state] = R[state] + Q[state] * A_ij[state];
 					});
 
-					inner.template for_each<'i'>([=](auto state) {
+					inner.for_each([=](auto state) constexpr noexcept {
 						A_ij[state] = A_ij[state] - Q[state] * R[state];
 					});
 				});

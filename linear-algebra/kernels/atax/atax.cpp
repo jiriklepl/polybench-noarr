@@ -3,61 +3,81 @@
 #include <iostream>
 
 #include <noarr/structures_extended.hpp>
-#include <noarr/structures/extra/traverser.hpp>
+#include <noarr/structures/extra/planner.hpp>
 #include <noarr/structures/interop/bag.hpp>
 #include <noarr/structures/interop/serialize_data.hpp>
 
 #include "defines.hpp"
 #include "atax.hpp"
+#include "noarr/structures/structs/blocks.hpp"
 
 using num_t = DATA_TYPE;
 
 namespace {
 
+constexpr auto i_vec =  noarr::vector<'i'>();
+constexpr auto j_vec =  noarr::vector<'j'>();
+
+struct tuning {
+	DEFINE_PROTO_STRUCT(block_i1, noarr::neutral_proto());
+	DEFINE_PROTO_STRUCT(block_j1, noarr::neutral_proto());
+
+	DEFINE_PROTO_STRUCT(order1, block_i1 ^ block_j1);
+
+	DEFINE_PROTO_STRUCT(block_i2, noarr::neutral_proto());
+	DEFINE_PROTO_STRUCT(block_j2, noarr::neutral_proto());
+
+	DEFINE_PROTO_STRUCT(order2, block_i2 ^ block_j2);
+
+	DEFINE_PROTO_STRUCT(c_layout, i_vec ^ j_vec);
+} tuning;
+
 // initialization function
-void init_array(auto A, auto x) {
+void init_array(auto A, auto x) noexcept {
 	// A: i x j
 	// x: j
 
 	auto ni = A | noarr::get_length<'i'>();
 	auto nj = A | noarr::get_length<'j'>();
 
-	noarr::traverser(x).for_each([=](auto state) {
+	noarr::traverser(x).for_each([=](auto state) constexpr noexcept {
 		auto j = noarr::get_index<'j'>(state);
 		x[state] = 1 + j / (num_t)nj;
 	});
 
-	noarr::traverser(A).for_each([=](auto state) {
+	noarr::traverser(A).for_each([=](auto state) constexpr noexcept {
 		auto [i, j] = noarr::get_indices<'i', 'j'>(state);
 		A[state] = (num_t)((i + j) % nj) / (5 * ni);
 	});
 }
 
 // computation kernel
-void kernel_atax(auto A, auto x, auto y, auto tmp) {
+template<class Order1 = noarr::neutral_proto, class Order2 = noarr::neutral_proto>
+[[gnu::flatten, gnu::noinline]]
+void kernel_atax(auto A, auto x, auto y, auto tmp, Order1 order1 = {}, Order2 order2 = {}) noexcept {
 	// A: i x j
 	// x: j
 	// y: j
 	// tmp: i
 
-	noarr::traverser(y)
-		.for_each([=](auto state) {
-			y[state] = 0;
+	noarr::traverser(y).for_each([=](auto state) constexpr noexcept {
+		y[state] = 0;
+	});
+
+	noarr::traverser(tmp).for_each([=](auto state) constexpr noexcept {
+		tmp[state] = 0;
+	});
+
+	noarr::traverser(tmp, A, x)
+		.order(order1)
+		.for_each([=](auto state) constexpr noexcept {
+			tmp[state] += A[state] * x[state];
 		});
-	
-	noarr::traverser(A, x, y, tmp)
-		.template for_dims<'i'>([=](auto inner) {
-			auto state = inner.state();
 
-			tmp[state] = 0.0;
-
-			inner.for_each([=](auto state) {
-				tmp[state] += A[state] * x[state];
-			});
-
-			inner.for_each([=](auto state) {
-				y[state] += A[state] * tmp[state];
-			});
+	noarr::traverser(y, A, tmp)
+		.order(order2)
+		.for_each([=](auto state) constexpr noexcept {
+			y[state] += A[state] * tmp[state];
 		});
 }
 
@@ -71,7 +91,7 @@ int main(int argc, char *argv[]) {
 	std::size_t nj = NJ;
 
 	// data
-	auto A = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'j'>(ni, nj));
+	auto A = noarr::make_bag(noarr::scalar<num_t>() ^ tuning.c_layout ^ noarr::set_length<'i'>(ni) ^ noarr::set_length<'j'>(nj));
 
 	auto x = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'j'>(nj));
 	auto y = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'j'>(nj));
@@ -84,7 +104,7 @@ int main(int argc, char *argv[]) {
 	auto start = std::chrono::high_resolution_clock::now();
 
 	// run kernel
-	kernel_atax(A.get_ref(), x.get_ref(), y.get_ref(), tmp.get_ref());
+	kernel_atax(A.get_ref(), x.get_ref(), y.get_ref(), tmp.get_ref(), tuning.order1, tuning.order2);
 
 	auto end = std::chrono::high_resolution_clock::now();
 

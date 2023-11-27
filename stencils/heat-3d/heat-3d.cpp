@@ -14,15 +14,30 @@ using num_t = DATA_TYPE;
 
 namespace {
 
+constexpr auto i_vec =  noarr::vector<'i'>();
+constexpr auto j_vec =  noarr::vector<'j'>();
+constexpr auto k_vec =  noarr::vector<'k'>();
+
+struct tuning {
+	DEFINE_PROTO_STRUCT(block_i, noarr::neutral_proto());
+	DEFINE_PROTO_STRUCT(block_j, noarr::neutral_proto());
+	DEFINE_PROTO_STRUCT(block_k, noarr::neutral_proto());
+
+	DEFINE_PROTO_STRUCT(order, block_i ^ block_j ^ block_k);
+
+	DEFINE_PROTO_STRUCT(a_layout, i_vec ^ j_vec ^ k_vec);
+	DEFINE_PROTO_STRUCT(b_layout, i_vec ^ j_vec ^ k_vec);
+} tuning;
+
 // initialization function
-void init_array(auto A, auto B) {
+void init_array(auto A, auto B) noexcept {
 	// A: i x j x k
 	// B: i x j x k
 
 	auto n = A | noarr::get_length<'i'>();
 
 	noarr::traverser(A, B)
-		.for_each([=](auto state) {
+		.for_each([=](auto state) constexpr noexcept {
 			auto [i, j, k] = noarr::get_indices<'i', 'j', 'k'>(state);
 
 			A[state] = B[state] = (num_t) (i + j + (n - k)) * 10 / n;
@@ -31,7 +46,8 @@ void init_array(auto A, auto B) {
 
 // computation kernel
 template<class Order = noarr::neutral_proto>
-void kernel_heat_3d(std::size_t steps, auto A, auto B, Order order = {}) {
+[[gnu::flatten, gnu::noinline]]
+void kernel_heat_3d(std::size_t steps, auto A, auto B, Order order = {}) noexcept {
 	// A: i x j x k
 	// B: i x j x k
 
@@ -40,8 +56,8 @@ void kernel_heat_3d(std::size_t steps, auto A, auto B, Order order = {}) {
 	traverser
 		.order(noarr::symmetric_spans<'i', 'j', 'k'>(traverser.top_struct(), 1, 1, 1))
 		.order(order)
-		.template for_dims<'t'>([=](auto inner) {
-			inner.for_each([=](auto state) {
+		.template for_dims<'t'>([=](auto inner) constexpr noexcept {
+			inner.for_each([=](auto state) constexpr noexcept {
 				B[state] =
 					(num_t).125 * (A[neighbor<'i'>(state, -1)] -
 					               2 * A[state] +
@@ -55,7 +71,7 @@ void kernel_heat_3d(std::size_t steps, auto A, auto B, Order order = {}) {
 					A[state];
 			});
 
-			inner.for_each([=](auto state) {
+			inner.for_each([=](auto state) constexpr noexcept {
 				A[state] =
 					(num_t).125 * (B[neighbor<'i'>(state, -1)] -
 					               2 * B[state] +
@@ -80,9 +96,11 @@ int main(int argc, char *argv[]) {
 	std::size_t n = N;
 	std::size_t t = TSTEPS;
 
+	auto set_lengths = noarr::set_length<'i'>(n) ^ noarr::set_length<'j'>(n) ^ noarr::set_length<'k'>(n);
+
 	// data
-	auto A = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'j', 'k'>(n, n, n));
-	auto B = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'j', 'k'>(n, n, n));
+	auto A = noarr::make_bag(noarr::scalar<num_t>() ^ tuning.a_layout ^ set_lengths);
+	auto B = noarr::make_bag(noarr::scalar<num_t>() ^ tuning.b_layout ^ set_lengths);
 
 	// initialize data
 	init_array(A.get_ref(), B.get_ref());
@@ -90,7 +108,7 @@ int main(int argc, char *argv[]) {
 	auto start = std::chrono::high_resolution_clock::now();
 
 	// run kernel
-	kernel_heat_3d(t, A.get_ref(), B.get_ref());
+	kernel_heat_3d(t, A.get_ref(), B.get_ref(), tuning.order);
 
 	auto end = std::chrono::high_resolution_clock::now();
 
