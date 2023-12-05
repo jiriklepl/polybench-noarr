@@ -1,6 +1,6 @@
 #!/bin/bash -ex
 
-NUM_RUNS=25
+NUM_RUNS=${NUM_RUNS:-25}
 
 mkdir -p build
 
