@@ -117,3 +117,9 @@ target_compile_definitions(syr2k_autotune PRIVATE NOARR_TUNE)
 
 add_executable(syrk_autotune linear-algebra/blas/syrk/syrk.cpp)
 target_compile_definitions(syrk_autotune PRIVATE NOARR_TUNE)
+
+if (MSVC)
+  add_compile_options(/W4 /WX)
+else()
+  add_compile_options(-Wall -Wextra -pedantic -Werror)
+endif()
