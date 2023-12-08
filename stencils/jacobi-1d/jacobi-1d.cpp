@@ -39,6 +39,7 @@ void kernel_jacobi_1d(std::size_t steps, auto A, auto B) noexcept {
 
 	auto traverser = noarr::traverser(A, B).order(noarr::bcast<'t'>(steps));
 
+	#pragma scop
 	traverser
 		.order(noarr::symmetric_span<'i'>(traverser.top_struct(), 1))
 		.template for_dims<'t'>([=](auto inner) constexpr noexcept {
@@ -50,6 +51,7 @@ void kernel_jacobi_1d(std::size_t steps, auto A, auto B) noexcept {
 				A[state] = 0.33333 * (B[neighbor<'i'>(state, -1)] + B[state] + B[neighbor<'i'>(state, +1)]);
 			});
 		});
+	#pragma endscop
 }
 
 } // namespace

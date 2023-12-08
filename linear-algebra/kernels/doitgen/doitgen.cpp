@@ -59,6 +59,7 @@ void kernel_doitgen(auto A, auto C4, auto sum, Order order = {}) noexcept {
 
 	auto A_rqs = A ^ noarr::rename<'p', 's'>();
 
+	#pragma scop
 	noarr::planner(A, C4, sum)
 		.template for_sections<'r', 'q'>([=](auto inner) constexpr noexcept {
 			inner.template for_sections<'p'>([=](auto inner) constexpr noexcept {
@@ -86,6 +87,7 @@ void kernel_doitgen(auto A, auto C4, auto sum, Order order = {}) noexcept {
 		.order(noarr::hoist<'r'>())
 		.order(order)
 		();
+	#pragma endscop
 }
 
 } // namespace

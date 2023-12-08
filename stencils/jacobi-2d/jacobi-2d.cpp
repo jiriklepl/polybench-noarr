@@ -48,6 +48,7 @@ void kernel_jacobi_2d(std::size_t steps, auto A, auto B, Order order = {}) noexc
 
 	auto traverser = noarr::traverser(A, B).order(noarr::bcast<'t'>(steps));
 
+	#pragma scop
 	traverser
 		.order(noarr::symmetric_spans<'i', 'j'>(traverser.top_struct(), 1, 1))
 		.order(order)
@@ -70,6 +71,7 @@ void kernel_jacobi_2d(std::size_t steps, auto A, auto B, Order order = {}) noexc
 					B[neighbor<'i'>(state, -1)]);
 			});
 		});
+	#pragma endscop
 }
 
 } // namespace

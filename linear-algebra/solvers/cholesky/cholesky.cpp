@@ -72,6 +72,7 @@ void kernel_cholesky(auto A) {
 	auto A_ik = A ^ noarr::rename<'j', 'k'>();
 	auto A_jk = A ^ noarr::rename<'i', 'j', 'j', 'k'>();
 
+	#pragma scop
 	noarr::traverser(A, A_ik, A_jk)
 		.template for_dims<'i'>([=](auto inner) constexpr noexcept {
 			auto state = inner.state();
@@ -100,6 +101,7 @@ void kernel_cholesky(auto A) {
 
 			A_ii[state] = std::sqrt(A_ii[state]);
 		});
+	#pragma endscop
 }
 
 } // namespace

@@ -51,6 +51,7 @@ void kernel_covariance(num_t float_n, auto data, auto cov, auto mean, Order orde
 	auto cov_ji = cov ^ noarr::rename<'i', 'j', 'j', 'i'>();
 	auto data_ki = data ^ noarr::rename<'j', 'i'>();
 
+	#pragma scop
 	noarr::traverser(mean).for_each([=](auto state) constexpr noexcept {
 		mean[state] = 0;
 	});
@@ -99,6 +100,7 @@ void kernel_covariance(num_t float_n, auto data, auto cov, auto mean, Order orde
 					cov_ji[state] = cov[state];
 				});
 		});
+	#pragma endscop
 }
 
 } // namespace

@@ -89,6 +89,7 @@ void kernel_ludcmp(auto A, auto b, auto x, auto y) noexcept {
 	auto A_ik = A ^ noarr::rename<'j', 'k'>();
 	auto A_kj = A ^ noarr::rename<'i', 'k'>();
 
+	#pragma scop
 	noarr::traverser(A, b, x, y, A_ik, A_kj)
 		.template for_dims<'i'>([=](auto inner) constexpr noexcept {
 			auto state = inner.state();
@@ -156,6 +157,7 @@ void kernel_ludcmp(auto A, auto b, auto x, auto y) noexcept {
 
 				x[state] = w / A[state & noarr::idx<'j'>(noarr::get_index<'i'>(state))]; // TODO: A_diag
 			});
+	#pragma endscop
 }
 
 } // namespace

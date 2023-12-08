@@ -44,6 +44,7 @@ void kernel_nussinov(auto seq, auto table) noexcept {
 	auto table_ik = table ^ noarr::rename<'j', 'k'>();
 	auto table_kj = table ^ noarr::rename<'i', 'k'>();
 
+	#pragma scop
 	noarr::traverser(seq, table, table_ik, table_kj)
 		.order(noarr::reverse<'i'>())
 		.template for_dims<'i'>([=](auto inner) constexpr noexcept {
@@ -87,6 +88,7 @@ void kernel_nussinov(auto seq, auto table) noexcept {
 						});
 				});
 		});
+	#pragma endscop
 }
 
 } // namespace

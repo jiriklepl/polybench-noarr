@@ -60,6 +60,7 @@ void kernel_atax(auto A, auto x, auto y, auto tmp, Order1 order1 = {}, Order2 or
 	// y: j
 	// tmp: i
 
+	#pragma scop
 	noarr::traverser(y).for_each([=](auto state) constexpr noexcept {
 		y[state] = 0;
 	});
@@ -79,6 +80,7 @@ void kernel_atax(auto A, auto x, auto y, auto tmp, Order1 order1 = {}, Order2 or
 		.for_each([=](auto state) constexpr noexcept {
 			y[state] += A[state] * tmp[state];
 		});
+	#pragma endscop
 }
 
 } // namespace

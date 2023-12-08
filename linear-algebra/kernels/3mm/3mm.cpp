@@ -94,6 +94,7 @@ void kernel_3mm(auto E, auto A, auto B, auto F, auto C, auto D, auto G, Order1 o
 		m += l * r;
 	};
 
+	#pragma scop
 	noarr::planner(E, A, B)
 		.for_each_elem(madd)
 		.template for_sections<'i', 'j'>([=](auto inner) constexpr noexcept {
@@ -129,6 +130,7 @@ void kernel_3mm(auto E, auto A, auto B, auto F, auto C, auto D, auto G, Order1 o
 		.order(noarr::hoist<'i'>())
 		.order(order3)
 		();
+	#pragma endscop
 }
 
 } // namespace

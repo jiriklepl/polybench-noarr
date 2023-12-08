@@ -42,6 +42,7 @@ void kernel_correlation(num_t float_n, auto data, auto corr, auto mean, auto std
 
 	auto ni = corr | noarr::get_length<'i'>();
 
+	#pragma scop
 	noarr::traverser(data, mean)
 		.template for_dims<'j'>([=](auto inner) constexpr noexcept {
 			auto state = inner.state();
@@ -99,7 +100,8 @@ void kernel_correlation(num_t float_n, auto data, auto corr, auto mean, auto std
 				});
 		});
 
-		corr[noarr::idx<'i'>(ni - 1) & noarr::idx<'j'>(ni - 1)] = 1;
+	corr[noarr::idx<'i'>(ni - 1) & noarr::idx<'j'>(ni - 1)] = 1;
+	#pragma endscop
 }
 
 } // namespace

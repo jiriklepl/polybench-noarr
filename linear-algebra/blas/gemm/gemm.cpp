@@ -66,6 +66,7 @@ void kernel_gemm(num_t alpha, num_t beta, auto C, auto A, auto B, Order order = 
 	// A: i x k
 	// B: k x j
 
+	#pragma scop
 	noarr::traverser(C)
 		.for_each([=](auto state) constexpr noexcept {
 			C[state] *= beta;
@@ -75,6 +76,7 @@ void kernel_gemm(num_t alpha, num_t beta, auto C, auto A, auto B, Order order = 
 		.for_each([=](auto state) constexpr noexcept {
 			C[state] += alpha * A[state] * B[state];
 		});
+	#pragma endscop
 }
 
 } // namespace

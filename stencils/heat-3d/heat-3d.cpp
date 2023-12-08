@@ -53,6 +53,7 @@ void kernel_heat_3d(std::size_t steps, auto A, auto B, Order order = {}) noexcep
 
 	auto traverser = noarr::traverser(A, B).order(noarr::bcast<'t'>(steps));
 
+	#pragma scop
 	traverser
 		.order(noarr::symmetric_spans<'i', 'j', 'k'>(traverser.top_struct(), 1, 1, 1))
 		.order(order)
@@ -85,6 +86,7 @@ void kernel_heat_3d(std::size_t steps, auto A, auto B, Order order = {}) noexcep
 					B[state];
 			});
 		});
+	#pragma endscop
 }
 
 } // namespace

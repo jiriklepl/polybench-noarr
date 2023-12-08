@@ -57,6 +57,7 @@ void kernel_adi(auto steps, auto u, auto v, auto p, auto q) noexcept {
 	num_t e = (num_t)1.0 + mul2;
 	num_t f = d;
 
+	#pragma scop
 	traverser.order(noarr::symmetric_spans<'i', 'j'>(traverser.top_struct(), 1, 1))
 		.template for_dims<'t'>([=](auto inner) constexpr noexcept {
 			// column sweep
@@ -109,6 +110,7 @@ void kernel_adi(auto steps, auto u, auto v, auto p, auto q) noexcept {
 					});
 			});
 		});
+	#pragma endscop
 }
 
 } // namespace

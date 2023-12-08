@@ -69,6 +69,7 @@ void kernel_trmm(num_t alpha, auto A, auto B, Order order = {}) noexcept {
 
 	auto B_renamed = B ^ noarr::rename<'i', 'k'>();
 
+	#pragma scop
 	noarr::planner(A, B, B_renamed)
 		.for_each_elem([](auto &&A, auto &&B, auto &&B_renamed) constexpr noexcept {
 			B += A * B_renamed;
@@ -86,6 +87,7 @@ void kernel_trmm(num_t alpha, auto A, auto B, Order order = {}) noexcept {
 		.order(noarr::hoist<'i'>())
 		.order(order)
 		();
+	#pragma endscop
 }
 
 } // namespace

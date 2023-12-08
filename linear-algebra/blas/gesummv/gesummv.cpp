@@ -65,6 +65,7 @@ void kernel_gesummv(num_t alpha, num_t beta, auto A, auto B, auto tmp, auto x, a
 	// x: j
 	// y: i
 
+	#pragma scop
 	noarr::traverser(A, B, tmp, x, y).for_each([=](auto state) constexpr noexcept {
 		tmp[state] = 0;
 		y[state] = 0;
@@ -81,6 +82,7 @@ void kernel_gesummv(num_t alpha, num_t beta, auto A, auto B, auto tmp, auto x, a
 		.for_each([=](auto state) constexpr noexcept {
 			y[state] = alpha * tmp[state] + beta * y[state];
 		});
+	#pragma endscop
 }
 
 } // namespace

@@ -63,6 +63,7 @@ void kernel_syrk(num_t alpha, num_t beta, auto C, auto A, Order order = {}) noex
 
 	auto A_renamed = A ^ noarr::rename<'i', 'j'>();
 
+	#pragma scop
 	noarr::traverser(C)
 		.template for_dims<'i'>([=](auto inner) constexpr noexcept {
 			auto state = inner.state();
@@ -88,6 +89,7 @@ void kernel_syrk(num_t alpha, num_t beta, auto C, auto A, Order order = {}) noex
 		.order(noarr::hoist<'i'>())
 		.order(order)
 		();
+	#pragma endscop
 }
 
 } // namespace

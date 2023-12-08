@@ -47,6 +47,7 @@ void kernel_fdtd_2d(auto ex, auto ey, auto hz, auto _fict_) noexcept {
 	// hz: i x j
 	// _fict_: t
 
+	#pragma scop
 	noarr::traverser(ex, ey, hz, _fict_)
 		.template for_dims<'t'>([=](auto inner) constexpr noexcept {
 			inner
@@ -78,6 +79,7 @@ void kernel_fdtd_2d(auto ex, auto ey, auto hz, auto _fict_) noexcept {
 						ey[state]);
 				});
 		});
+	#pragma endscop
 }
 
 } // namespace

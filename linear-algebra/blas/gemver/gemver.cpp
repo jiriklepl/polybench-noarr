@@ -103,6 +103,7 @@ void kernel_gemver(num_t alpha, num_t beta, auto A,
 	auto A_ji = A ^ noarr::rename<'i', 'j', 'j', 'i'>();
 	auto x_j = x ^ noarr::rename<'i', 'j'>();
 
+	#pragma scop
 	noarr::traverser(A, u1, u2, v1, v2)
 		.order(order1)
 		.for_each([=](auto state) constexpr noexcept {
@@ -123,8 +124,9 @@ void kernel_gemver(num_t alpha, num_t beta, auto A,
 	noarr::traverser(A, w, x_j)
 		.order(order3)
 		.for_each([=](auto state) constexpr noexcept {
-		   w[state] = w[state] + alpha * A[state] * x_j[state];
+			w[state] = w[state] + alpha * A[state] * x_j[state];
 		});
+	#pragma endscop
 }
 
 } // namespace
