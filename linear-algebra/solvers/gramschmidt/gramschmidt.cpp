@@ -47,6 +47,7 @@ void kernel_gramschmidt(auto A, auto R, auto Q) noexcept {
 
 	auto A_ij = A ^ noarr::rename<'k', 'j'>();
 
+	#pragma scop
 	noarr::traverser(A_ij, R, Q)
 		.template for_dims<'k'>([=](auto inner) constexpr noexcept {
 			auto state = inner.state();
@@ -80,6 +81,7 @@ void kernel_gramschmidt(auto A, auto R, auto Q) noexcept {
 					});
 				});
 		});
+	#pragma endscop
 }
 
 } // namespace

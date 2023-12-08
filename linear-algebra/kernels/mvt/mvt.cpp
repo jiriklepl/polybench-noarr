@@ -121,6 +121,7 @@ void kernel_mvt(auto x1, auto x2, auto y1, auto y2, auto A, Order1 order1 = {}, 
 
 	auto A_ji = A ^ noarr::rename<'i', 'j', 'j', 'i'>();
 
+	#pragma scop
 	noarr::traverser(x1, A, y1)
 		.order(order1)
 		.for_each([=](auto state) constexpr noexcept {
@@ -132,6 +133,7 @@ void kernel_mvt(auto x1, auto x2, auto y1, auto y2, auto A, Order1 order1 = {}, 
 		.for_each([=](auto state) constexpr noexcept {
 			x2[state] += A_ji[state] * y2[state];
 		});
+	#pragma endscop
 }
 
 } // namespace

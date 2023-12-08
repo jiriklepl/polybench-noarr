@@ -35,6 +35,7 @@ void kernel_seidel_2d(std::size_t steps, auto A) noexcept {
 
 	auto traverser = noarr::traverser(A).order(noarr::bcast<'t'>(steps));
 
+	#pragma scop
 	traverser
 		.order(noarr::symmetric_spans<'i', 'j'>(traverser.top_struct(), 1, 1))
 		.order(noarr::reorder<'t', 'i', 'j'>())
@@ -50,6 +51,7 @@ void kernel_seidel_2d(std::size_t steps, auto A) noexcept {
 				A[neighbor<'i'>(state, +1)] +          // edge
 				A[neighbor<'i', 'j'>(state, +1, +1)]) / (num_t)9.0; // corner
 		});
+	#pragma endscop
 }
 
 } // namespace

@@ -69,6 +69,7 @@ void kernel_lu(auto A) noexcept {
 	auto A_ik = A ^ noarr::rename<'j', 'k'>();
 	auto A_kj = A ^ noarr::rename<'i', 'k'>();
 
+	#pragma scop
 	noarr::traverser(A, A_ik, A_kj)
 		.template for_dims<'i'>([=](auto inner) constexpr noexcept {
 			auto state = inner.state();
@@ -94,6 +95,7 @@ void kernel_lu(auto A) noexcept {
 					A[state] -= A_ik[state] * A_kj[state];
 				});
 		});
+	#pragma endscop
 }
 
 } // namespace

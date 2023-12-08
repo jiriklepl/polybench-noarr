@@ -49,6 +49,7 @@ void kernel_deriche(num_t alpha, auto imgIn, auto imgOut, auto y1, auto y2) noex
 	b2 = -std::exp(((num_t)(-2.0) * alpha));
 	c1 = c2 = 1;
 
+	#pragma scop
 	noarr::traverser(imgIn, y1)
 		.template for_dims<'w'>([=](auto inner) constexpr noexcept {
 			num_t ym1 = 0;
@@ -122,6 +123,7 @@ void kernel_deriche(num_t alpha, auto imgIn, auto imgOut, auto y1, auto y2) noex
 	noarr::traverser(y1, y2, imgOut).for_each([=](auto state) constexpr noexcept {
 		imgOut[state] = c2 * (y1[state] + y2[state]);
 	});
+	#pragma endscop
 }
 
 } // namespace

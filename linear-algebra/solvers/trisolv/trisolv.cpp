@@ -49,6 +49,7 @@ void kernel_trisolv(auto L, auto x, auto b) noexcept {
 
 	auto x_j = x ^ noarr::rename<'i', 'j'>();
 
+	#pragma scop
 	noarr::traverser(L, x, b)
 		.template for_dims<'i'>([=](auto inner) constexpr noexcept {
 			auto state = inner.state();
@@ -63,6 +64,7 @@ void kernel_trisolv(auto L, auto x, auto b) noexcept {
 
 			x[state] = x[state] / L[state & noarr::idx<'j'>(noarr::get_index<'i'>(state))];
 		});
+	#pragma endscop
 }
 
 } // namespace

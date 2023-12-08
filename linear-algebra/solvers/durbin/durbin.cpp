@@ -42,6 +42,7 @@ void kernel_durbin(auto r, auto y) noexcept {
 	num_t beta;
 	num_t sum;
 
+	#pragma scop
 	y[noarr::idx<'i'>(0)] = -r[noarr::idx<'i'>(0)];
 	beta = 1;
 	alpha = -r[noarr::idx<'i'>(0)];
@@ -77,6 +78,7 @@ void kernel_durbin(auto r, auto y) noexcept {
 
 			y_k[state] = alpha;
 		});
+	#pragma endscop
 }
 
 } // namespace

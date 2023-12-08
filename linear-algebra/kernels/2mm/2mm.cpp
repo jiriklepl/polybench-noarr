@@ -147,6 +147,7 @@ void kernel_2mm(num_t alpha, num_t beta, auto tmp, auto A, auto B, auto C, auto 
 	// C: j x l
 	// D: i x l
 
+	#pragma scop
 	noarr::planner(tmp, A, B)
 		.for_each_elem([alpha](auto &&tmp, auto &&A, auto &&B) constexpr noexcept {
 			tmp += alpha * A * B;
@@ -178,6 +179,7 @@ void kernel_2mm(num_t alpha, num_t beta, auto tmp, auto A, auto B, auto C, auto 
 		.order(noarr::hoist<'i'>())
 		.order(order2)
 		();
+	#pragma endscop
 }
 
 } // namespace

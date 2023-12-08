@@ -102,6 +102,7 @@ void kernel_syr2k(num_t alpha, num_t beta, auto C, auto A, auto B, Order order =
 	auto A_renamed = A ^ noarr::rename<'i', 'j'>();
 	auto B_renamed = B ^ noarr::rename<'i', 'j'>();
 
+	#pragma scop
 	noarr::traverser(C)
 		.template for_dims<'i'>([=](auto inner) constexpr noexcept {
 			auto state = inner.state();
@@ -127,6 +128,7 @@ void kernel_syr2k(num_t alpha, num_t beta, auto C, auto A, auto B, Order order =
 		.order(noarr::hoist<'i'>())
 		.order(order)
 		();
+	#pragma endscop
 }
 
 } // namespace

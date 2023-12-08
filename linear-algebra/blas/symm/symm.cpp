@@ -112,6 +112,7 @@ void kernel_symm(num_t alpha, num_t beta, auto C, auto A, auto B, Order order = 
 	auto C_renamed = C ^ noarr::rename<'i', 'k'>();
 	auto B_renamed = B ^ noarr::rename<'i', 'k'>();
 
+	#pragma scop
 	noarr::planner(C, A, B)
 		.template for_sections<'i', 'j'>([=](auto inner) constexpr noexcept {
 			num_t temp = 0;
@@ -131,6 +132,7 @@ void kernel_symm(num_t alpha, num_t beta, auto C, auto A, auto B, Order order = 
 		.order(noarr::hoist<'i'>())
 		.order(order)
 		();
+	#pragma endscop
 }
 
 } // namespace

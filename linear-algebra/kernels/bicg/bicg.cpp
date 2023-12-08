@@ -54,6 +54,7 @@ void kernel_bicg(auto A, auto s, auto q, auto p, auto r, Order order = {}) noexc
 	// p: j
 	// r: i
 
+	#pragma scop
 	noarr::traverser(s)
 		.for_each([=](auto state) constexpr noexcept {
 			s[state] = 0;
@@ -74,6 +75,7 @@ void kernel_bicg(auto A, auto s, auto q, auto p, auto r, Order order = {}) noexc
 		.order(noarr::hoist<'i'>())
 		.order(order)
 		();
+	#pragma endscop
 }
 
 } // namespace
