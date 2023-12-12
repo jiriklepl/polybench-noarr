@@ -50,12 +50,10 @@ struct tuning {
 		*block_j1 ^ *block_i1);
 
 	NOARR_TUNE_PAR(a_layout, noarr::tuning::choice,
-		i_vec ^ j_vec,
-		j_vec ^ i_vec);
+		i_vec ^ j_vec);
 	
 	NOARR_TUNE_PAR(b_layout, noarr::tuning::choice,
-		i_vec ^ j_vec,
-		j_vec ^ i_vec);
+		i_vec ^ j_vec);
 
 	NOARR_TUNE_END();
 } tuning;

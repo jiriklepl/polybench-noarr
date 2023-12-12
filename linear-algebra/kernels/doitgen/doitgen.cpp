@@ -52,16 +52,10 @@ struct tuning {
 		*block_q ^ *block_r);
 
 	NOARR_TUNE_PAR(a_layout, noarr::tuning::choice,
-		r_vec ^ q_vec ^ p_vec,
-		r_vec ^ p_vec ^ q_vec,
-		q_vec ^ r_vec ^ p_vec,
-		q_vec ^ p_vec ^ r_vec,
-		p_vec ^ r_vec ^ q_vec,
-		p_vec ^ q_vec ^ r_vec);
+		r_vec ^ q_vec ^ p_vec);
 
 	NOARR_TUNE_PAR(c4_layout, noarr::tuning::choice,
-		s_vec ^ p_vec,
-		p_vec ^ s_vec);
+		s_vec ^ p_vec);
 
 	NOARR_TUNE_END();
 } tuning;
