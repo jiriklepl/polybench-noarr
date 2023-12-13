@@ -1,33 +1,35 @@
 #!/usr/bin/env bash
 
-# This script compares the output of the C and C++ & Noarr implementations of the Polybench benchmarks
-# It assumes that the C++ & Noarr implementations are built in the build directory and that the C implementations are built in the $POLYBENCH_C_DIR/build directory
+# This script compares the output of the C and C++/Noarr implementations of the Polybench benchmarks
+# It assumes that the C++/Noarr implementations are built in the build directory and that the C implementations are built in the $POLYBENCH_C_DIR/build directory
+
+BUILD_DIR=${BUILD_DIR:-build}
+IGNORE_AUTOTUNED=${IGNORE_AUTOTUNED:-0}
 
 if [ -z "$POLYBENCH_C_DIR" ]; then
-	echo "POLYBENCH_C_DIR is not set" >&2
-	exit 1
+	POLYBENCH_C_DIR="$BUILD_DIR/PolyBenchC-4.2.1"
+	mkdir -p "$POLYBENCH_C_DIR" || exit 1
+	if [ -d "$POLYBENCH_C_DIR/.git" ]; then
+		( cd "$POLYBENCH_C_DIR" && git pull )
+	else
+		git clone "https://github.com/jiriklepl/PolyBenchC-4.2.1.git" "$POLYBENCH_C_DIR"
+	fi
 fi
 
 dirname=$(mktemp -d)
 
-trap "rm -rf $dirname" EXIT
+trap "echo deleting $dirname; rm -rf $dirname" EXIT
 
-(
-	cd "$POLYBENCH_C_DIR" || exit 1
-	./build.sh || exit 1
-)
+( cd "$POLYBENCH_C_DIR" && ./build.sh ) || exit 1
+( cd . && ./build.sh ) || exit 1
 
-(
-	./build.sh || exit 1
-)
-
-find build -maxdepth 1 -executable -type f \
+find "$BUILD_DIR" -maxdepth 1 -executable -type f \
 	| while read -r file; do
 		filename=$(basename "$file")
 
 		case "$filename" in
 			*_autotune)
-				continue
+				continue # ignore autotune scripts, compare only regular algorithms
 				;;
 		esac
 
@@ -36,18 +38,18 @@ find build -maxdepth 1 -executable -type f \
 
 		echo "Comparing $filename"
 
-		printf "Noarr:             " >&2
-		"build/$filename" > "$dirname/cpp"
+		printf "\tNoarr:             "
+		"$BUILD_DIR/$filename" 2>&1 1> "$dirname/cpp"
 
-		if [ -f "autotuned/$filename" ]; then
-			printf "Noarr (autotuned): " >&2
-			"autotuned/$filename" > "$dirname/cpp-autotuned"
+		if [ "$IGNORE_AUTOTUNED" -e 0 ] && [ -f "autotuned/$filename" ]; then
+			printf "\tNoarr (autotuned): "
+			"autotuned/$filename" 2>&1 1> "$dirname/cpp-autotuned"
 		fi
 
-		printf "C:                 " >&2
-		"$POLYBENCH_C_DIR/build/$filename" 1>&2 2> "$dirname/c"
+		printf "\tC:                 "
+		"$POLYBENCH_C_DIR/$BUILD_DIR/$filename" 2> "$dirname/c"
 
-		if [ -f "autotuned/$filename" ]; then
+		if [ "$IGNORE_AUTOTUNED" -e 0 ] && [ -f "autotuned/$filename" ]; then
 			paste <(grep -oE '[0-9]+\.[0-9]+' "$dirname/c") <(grep -oE '[0-9]+(\.[0-9]+)?' "$dirname/cpp") <(grep -oE '[0-9]+(\.[0-9]+)?' "$dirname/cpp-autotuned")
 		else 
 			paste <(grep -oE '[0-9]+\.[0-9]+' "$dirname/c") <(grep -oE '[0-9]+(\.[0-9]+)?' "$dirname/cpp")
@@ -56,7 +58,7 @@ find build -maxdepth 1 -executable -type f \
 			n = 0
 			changes = 0
 			autotune_changes = 0
-			outputs = \"$([ -f "autotuned/$filename" ] && echo 3 || echo 2)\"
+			outputs = \"$([ "$IGNORE_AUTOTUNED" -e 0 ] && [ -f "autotuned/$filename" ] && echo 3 || echo 2)\"
 		}
 
 		NF == outputs {
@@ -86,5 +88,5 @@ find build -maxdepth 1 -executable -type f \
 				printf \"Different output on %s \n\", \"$filename\"
 				exit 1
 			}
-		}" >&2
+		}" 1>&2
 	done
