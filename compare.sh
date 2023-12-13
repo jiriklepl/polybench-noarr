@@ -5,6 +5,7 @@
 
 BUILD_DIR=${BUILD_DIR:-build}
 IGNORE_AUTOTUNED=${IGNORE_AUTOTUNED:-0}
+SKIP_DIFF=${SKIP_DIFF:-0}
 
 if [ -z "$POLYBENCH_C_DIR" ]; then
 	POLYBENCH_C_DIR="$BUILD_DIR/PolyBenchC-4.2.1"
@@ -41,7 +42,7 @@ find "$BUILD_DIR" -maxdepth 1 -executable -type f \
 		printf "\tNoarr:             "
 		"$BUILD_DIR/$filename" 2>&1 1> "$dirname/cpp"
 
-		if [ "$IGNORE_AUTOTUNED" -e 0 ] && [ -f "autotuned/$filename" ]; then
+		if [ "$IGNORE_AUTOTUNED" -eq 0 ] && [ -f "autotuned/$filename" ]; then
 			printf "\tNoarr (autotuned): "
 			"autotuned/$filename" 2>&1 1> "$dirname/cpp-autotuned"
 		fi
@@ -49,7 +50,7 @@ find "$BUILD_DIR" -maxdepth 1 -executable -type f \
 		printf "\tC:                 "
 		"$POLYBENCH_C_DIR/$BUILD_DIR/$filename" 2> "$dirname/c"
 
-		if [ "$IGNORE_AUTOTUNED" -e 0 ] && [ -f "autotuned/$filename" ]; then
+		[ "$SKIP_DIFF" -eq 0 ] && if [ "$IGNORE_AUTOTUNED" -eq 0 ] && [ -f "autotuned/$filename" ]; then
 			paste <(grep -oE '[0-9]+\.[0-9]+' "$dirname/c") <(grep -oE '[0-9]+(\.[0-9]+)?' "$dirname/cpp") <(grep -oE '[0-9]+(\.[0-9]+)?' "$dirname/cpp-autotuned")
 		else 
 			paste <(grep -oE '[0-9]+\.[0-9]+' "$dirname/c") <(grep -oE '[0-9]+(\.[0-9]+)?' "$dirname/cpp")
@@ -58,7 +59,7 @@ find "$BUILD_DIR" -maxdepth 1 -executable -type f \
 			n = 0
 			changes = 0
 			autotune_changes = 0
-			outputs = \"$([ "$IGNORE_AUTOTUNED" -e 0 ] && [ -f "autotuned/$filename" ] && echo 3 || echo 2)\"
+			outputs = \"$([ "$IGNORE_AUTOTUNED" -eq 0 ] && [ -f "autotuned/$filename" ] && echo 3 || echo 2)\"
 		}
 
 		NF == outputs {
