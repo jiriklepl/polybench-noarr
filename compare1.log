@@ -1,0 +1,189 @@
+-- Configuring done (0.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/jirka/PolyBenchC-4.2.1/build
+[  6%] Built target lu
+[  5%] Built target durbin
+[ 13%] Built target correlation
+[ 13%] Built target ludcmp
+[ 16%] Built target trisolv
+[ 20%] Built target gramschmidt
+[ 23%] Built target cholesky
+[ 26%] Built target gemm
+[ 33%] Built target syrk
+[ 33%] Built target gemver
+[ 36%] Built target covariance
+[ 40%] Built target syr2k
+[ 53%] Built target bicg
+[ 53%] Built target gesummv
+[ 53%] Built target mvt
+[ 53%] Built target symm
+[ 56%] Built target 3mm
+[ 60%] Built target doitgen
+[ 63%] Built target atax
+[ 66%] Built target trmm
+[ 70%] Built target 2mm
+[ 73%] Built target floyd-warshall
+[ 76%] Built target nussinov
+[ 90%] Built target jacobi-1d
+[ 90%] Built target fdtd-2d
+[ 90%] Built target jacobi-2d
+[ 90%] Built target seidel-2d
+[ 93%] Built target deriche
+[ 96%] Built target adi
+[100%] Built target heat-3d
+-- Configuring done (0.8s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/jirka/PMAM2024-artifact/build
+[  3%] Built target covariance
+[  4%] Built target correlation
+[  6%] Built target gemver
+[  9%] Built target symm
+[ 11%] Built target trmm
+[ 13%] Built target gemm
+[ 15%] Built target 3mm
+[ 17%] Built target 2mm
+[ 19%] Built target syr2k
+[ 23%] Built target syrk
+[ 23%] Built target gesummv
+[ 26%] Built target atax
+[ 28%] Built target bicg
+[ 30%] Built target mvt
+[ 32%] Built target doitgen
+[ 36%] Built target cholesky
+[ 36%] Built target durbin
+[ 39%] Built target gramschmidt
+[ 41%] Built target lu
+[ 43%] Built target trisolv
+[ 45%] Built target floyd-warshall
+[ 47%] Built target deriche
+[ 52%] Built target ludcmp
+[ 52%] Built target nussinov
+[ 54%] Built target fdtd-2d
+[ 56%] Built target adi
+[ 59%] Built target jacobi-2d
+[ 60%] Built target heat-3d
+[ 63%] Built target seidel-2d
+[ 65%] Built target jacobi-1d
+[ 69%] Built target mvt_autotune
+[ 69%] Built target floyd-warshall_autotune
+[ 71%] Built target gemver_autotune
+[ 73%] Built target gemm_autotune
+[ 76%] Built target 2mm_autotune
+[ 78%] Built target trmm_autotune
+[ 80%] Built target symm_autotune
+[ 82%] Built target doitgen_autotune
+[ 84%] Built target 3mm_autotune
+[ 86%] Built target heat-3d_autotune
+[ 89%] Built target atax_autotune
+[ 91%] Built target gesummv_autotune
+[ 93%] Built target covariance_autotune
+[ 95%] Built target jacobi-2d_autotune
+[ 97%] Built target syr2k_autotune
+[100%] Built target syrk_autotune
+Comparing lu
+	Noarr:             51.0222
+	C:                 39.314238
+Comparing jacobi-1d
+	Noarr:             0.00206416
+	C:                 0.002170
+Comparing syr2k
+	Noarr:             6.21179
+	Noarr (autotuned): 4.65413
+	C:                 22.043960
+Comparing gemm
+	Noarr:             3.86699
+	Noarr (autotuned): 1.31502
+	C:                 2.264899
+Comparing cholesky
+	Noarr:             29.499
+	C:                 8.460648
+Comparing gemver
+	Noarr:             0.0614729
+	Noarr (autotuned): 0.0305256
+	C:                 0.068247
+Comparing gramschmidt
+	Noarr:             6.06784
+	C:                 76.019866
+Comparing bicg
+	Noarr:             0.0139286
+	C:                 0.011592
+Comparing fdtd-2d
+	Noarr:             7.47928
+	C:                 7.385101
+Comparing mvt
+	Noarr:             0.0630203
+	Noarr (autotuned): 0.0217025
+	C:                 0.072287
+Comparing nussinov
+	Noarr:             68.8697
+	C:                 72.860563
+Comparing covariance
+	Noarr:             7.37437
+	Noarr (autotuned): 7.41501
+	C:                 20.317268
+Comparing atax
+	Noarr:             0.00476393
+	Noarr (autotuned): 0.00410185
+	C:                 0.003342
+Comparing 3mm
+	Noarr:             21.3938
+	Noarr (autotuned): 18.6448
+	C:                 23.333379
+Comparing correlation
+	Noarr:             7.38798
+	C:                 21.417948
+Comparing doitgen
+	Noarr:             2.83295
+	Noarr (autotuned): 2.8389
+	C:                 2.933919
+Comparing syrk
+	Noarr:             4.88385
+	Noarr (autotuned): 4.03742
+	C:                 4.973377
+Comparing gesummv
+	Noarr:             0.00345536
+	Noarr (autotuned): 0.00404038
+	C:                 0.022181
+Comparing trmm
+	Noarr:             4.00064
+	Noarr (autotuned): 3.70538
+	C:                 14.927905
+Comparing 2mm
+	Noarr:             21.0232
+	Noarr (autotuned): 16.9813
+	C:                 17.283915
+Comparing durbin
+	Noarr:             0.00745843
+	C:                 0.007282
+Comparing floyd-warshall
+	Noarr:             91.7621
+	Noarr (autotuned): 74.7413
+	C:                 114.241501
+Comparing jacobi-2d
+	Noarr:             6.75922
+	Noarr (autotuned): 6.61304
+	C:                 6.627914
+Comparing deriche
+	Noarr:             0.75246
+	C:                 0.630035
+Comparing seidel-2d
+	Noarr:             143.98
+	C:                 108.255701
+Comparing heat-3d
+	Noarr:             9.17338
+	Noarr (autotuned): 9.31629
+	C:                 8.766141
+Comparing trisolv
+	Noarr:             0.0196692
+	C:                 0.006322
+Comparing adi
+	Noarr:             93.3859
+	C:                 65.704240
+Comparing symm
+	Noarr:             5.96902
+	Noarr (autotuned): 4.23194
+	C:                 18.801047
+Comparing ludcmp
+	Noarr:             37.7945
+	C:                 37.216465
+deleting /tmp/tmp.0eeT9cszjX
