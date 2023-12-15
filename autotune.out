@@ -1,0 +1,145 @@
+-- Configuring done (0.8s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/jirka/PMAM2024-artifact/build
+[  4%] Built target gemm
+[  4%] Built target correlation
+[  6%] Built target symm
+[  8%] Built target covariance
+[ 10%] Built target syrk
+[ 13%] Built target gemver
+[ 15%] Built target syr2k
+[ 17%] Built target gesummv
+[ 19%] Built target trmm
+[ 26%] Built target 2mm
+[ 26%] Built target atax
+[ 26%] Built target 3mm
+[ 30%] Built target cholesky
+[ 32%] Built target bicg
+[ 32%] Built target doitgen
+[ 35%] Built target gramschmidt
+[ 36%] Built target mvt
+[ 39%] Built target lu
+[ 41%] Built target ludcmp
+[ 45%] Built target deriche
+[ 45%] Built target durbin
+[ 47%] Built target floyd-warshall
+[ 50%] Built target trisolv
+[ 52%] Built target nussinov
+[ 54%] Built target adi
+[ 56%] Built target fdtd-2d
+[ 58%] Built target heat-3d
+[ 60%] Built target jacobi-1d
+[ 63%] Built target jacobi-2d
+[ 65%] Built target seidel-2d
+[ 67%] Built target mvt_autotune
+[ 69%] Built target gemm_autotune
+[ 71%] Built target gemver_autotune
+[ 73%] Built target floyd-warshall_autotune
+[ 80%] Built target 3mm_autotune
+[ 80%] Built target symm_autotune
+[ 80%] Built target 2mm_autotune
+[ 82%] Built target trmm_autotune
+[ 84%] Built target doitgen_autotune
+[ 86%] Built target heat-3d_autotune
+[ 96%] Built target syrk_autotune
+[ 96%] Built target covariance_autotune
+[ 96%] Built target jacobi-2d_autotune
+[ 97%] Built target atax_autotune
+[ 97%] Built target gesummv_autotune
+[100%] Built target syr2k_autotune
+-- Configuring done (0.8s)
+-- Generating done (0.1s)
+-- Build files have been written to: /home/jirka/PMAM2024-artifact/autotuned
+[ 50%] Building CXX object CMakeFiles/2mm.dir/linear-algebra/kernels/2mm/2mm.cpp.o
+[100%] Linking CXX executable 2mm
+[100%] Built target 2mm
+-- Configuring done (0.8s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/jirka/PMAM2024-artifact/autotuned
+[ 50%] Building CXX object CMakeFiles/3mm.dir/linear-algebra/kernels/3mm/3mm.cpp.o
+[100%] Linking CXX executable 3mm
+[100%] Built target 3mm
+-- Configuring done (0.7s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/jirka/PMAM2024-artifact/autotuned
+[ 50%] Building CXX object CMakeFiles/atax.dir/linear-algebra/kernels/atax/atax.cpp.o
+[100%] Linking CXX executable atax
+[100%] Built target atax
+-- Configuring done (0.7s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/jirka/PMAM2024-artifact/autotuned
+[ 50%] Building CXX object CMakeFiles/covariance.dir/datamining/covariance/covariance.cpp.o
+[100%] Linking CXX executable covariance
+[100%] Built target covariance
+-- Configuring done (0.8s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/jirka/PMAM2024-artifact/autotuned
+[ 50%] Building CXX object CMakeFiles/doitgen.dir/linear-algebra/kernels/doitgen/doitgen.cpp.o
+[100%] Linking CXX executable doitgen
+[100%] Built target doitgen
+-- Configuring done (0.8s)
+-- Generating done (0.1s)
+-- Build files have been written to: /home/jirka/PMAM2024-artifact/autotuned
+[ 50%] Building CXX object CMakeFiles/floyd-warshall.dir/medley/floyd-warshall/floyd-warshall.cpp.o
+[100%] Linking CXX executable floyd-warshall
+[100%] Built target floyd-warshall
+-- Configuring done (0.8s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/jirka/PMAM2024-artifact/autotuned
+[ 50%] Building CXX object CMakeFiles/gemm.dir/linear-algebra/blas/gemm/gemm.cpp.o
+[100%] Linking CXX executable gemm
+[100%] Built target gemm
+-- Configuring done (0.8s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/jirka/PMAM2024-artifact/autotuned
+[ 50%] Building CXX object CMakeFiles/gemver.dir/linear-algebra/blas/gemver/gemver.cpp.o
+[100%] Linking CXX executable gemver
+[100%] Built target gemver
+-- Configuring done (0.9s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/jirka/PMAM2024-artifact/autotuned
+[ 50%] Building CXX object CMakeFiles/gesummv.dir/linear-algebra/blas/gesummv/gesummv.cpp.o
+[100%] Linking CXX executable gesummv
+[100%] Built target gesummv
+-- Configuring done (0.8s)
+-- Generating done (0.1s)
+-- Build files have been written to: /home/jirka/PMAM2024-artifact/autotuned
+[ 50%] Building CXX object CMakeFiles/heat-3d.dir/stencils/heat-3d/heat-3d.cpp.o
+[100%] Linking CXX executable heat-3d
+[100%] Built target heat-3d
+-- Configuring done (0.8s)
+-- Generating done (0.1s)
+-- Build files have been written to: /home/jirka/PMAM2024-artifact/autotuned
+[ 50%] Building CXX object CMakeFiles/jacobi-2d.dir/stencils/jacobi-2d/jacobi-2d.cpp.o
+[100%] Linking CXX executable jacobi-2d
+[100%] Built target jacobi-2d
+-- Configuring done (0.8s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/jirka/PMAM2024-artifact/autotuned
+[ 50%] Building CXX object CMakeFiles/mvt.dir/linear-algebra/kernels/mvt/mvt.cpp.o
+[100%] Linking CXX executable mvt
+[100%] Built target mvt
+-- Configuring done (0.9s)
+-- Generating done (0.1s)
+-- Build files have been written to: /home/jirka/PMAM2024-artifact/autotuned
+[ 50%] Building CXX object CMakeFiles/symm.dir/linear-algebra/blas/symm/symm.cpp.o
+[100%] Linking CXX executable symm
+[100%] Built target symm
+-- Configuring done (0.8s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/jirka/PMAM2024-artifact/autotuned
+[ 50%] Building CXX object CMakeFiles/syr2k.dir/linear-algebra/blas/syr2k/syr2k.cpp.o
+[100%] Linking CXX executable syr2k
+[100%] Built target syr2k
+-- Configuring done (0.8s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/jirka/PMAM2024-artifact/autotuned
+[ 50%] Building CXX object CMakeFiles/syrk.dir/linear-algebra/blas/syrk/syrk.cpp.o
+[100%] Linking CXX executable syrk
+[100%] Built target syrk
+-- Configuring done (0.8s)
+-- Generating done (0.1s)
+-- Build files have been written to: /home/jirka/PMAM2024-artifact/autotuned
+[ 50%] Building CXX object CMakeFiles/trmm.dir/linear-algebra/blas/trmm/trmm.cpp.o
+[100%] Linking CXX executable trmm
+[100%] Built target trmm
