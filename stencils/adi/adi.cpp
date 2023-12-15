@@ -15,13 +15,13 @@ using num_t = DATA_TYPE;
 namespace {
 
 // initialization function
-void init_array(auto u) {
+void init_array(auto u) noexcept {
 	// u: i x j
 
 	auto n = u | noarr::get_length<'i'>();
 
 	noarr::traverser(u)
-		.for_each([=](auto state) {
+		.for_each([=](auto state) constexpr noexcept {
 			auto [i, j] = noarr::get_indices<'i', 'j'>(state);
 
 			u[state] = (num_t)(i + n - j) / n;
@@ -29,7 +29,8 @@ void init_array(auto u) {
 }
 
 // computation kernel
-void kernel_adi(auto steps, auto u, auto v, auto p, auto q) {
+[[gnu::flatten, gnu::noinline]]
+void kernel_adi(auto steps, auto u, auto v, auto p, auto q) noexcept {
 	// u: i x j
 	// v: j x i
 	// p: i x j
@@ -56,17 +57,18 @@ void kernel_adi(auto steps, auto u, auto v, auto p, auto q) {
 	num_t e = (num_t)1.0 + mul2;
 	num_t f = d;
 
+	#pragma scop
 	traverser.order(noarr::symmetric_spans<'i', 'j'>(traverser.top_struct(), 1, 1))
-		.template for_dims<'t'>([=](auto inner) {
+		.template for_dims<'t'>([=](auto inner) constexpr noexcept {
 			// column sweep
-			inner.template for_dims<'i'>([=](auto inner) {
+			inner.template for_dims<'i'>([=](auto inner) constexpr noexcept {
 				auto state = inner.state();
 
 				v[state & noarr::idx<'j'>(0)] = (num_t)1.0;
 				p[state & noarr::idx<'j'>(0)] = (num_t)0.0;
 				q[state & noarr::idx<'j'>(0)] = v[state & noarr::idx<'j'>(0)];
 
-				inner.for_each([=](auto state) {
+				inner.for_each([=](auto state) constexpr noexcept {
 					p[state] = -c / (a * p[noarr::neighbor<'j'>(state, -1)] + b);
 					q[state] = (-d * u_trans[noarr::neighbor<'i'>(state, -1)] + (B2 + B1 * d) * u_trans[state] -
 					             f * u_trans[noarr::neighbor<'i'>(state, +1)] -
@@ -78,20 +80,20 @@ void kernel_adi(auto steps, auto u, auto v, auto p, auto q) {
 
 				inner
 					.order(noarr::reverse<'j'>())
-					.for_each([=](auto state) {
+					.for_each([=](auto state) constexpr noexcept {
 						v[state] = p[state] * v[noarr::neighbor<'j'>(state, 1)] + q[state];
 					});
 			});
 
 			// row sweep
-			inner.template for_dims<'i'>([=](auto inner) {
+			inner.template for_dims<'i'>([=](auto inner) constexpr noexcept {
 				auto state = inner.state();
 
 				u[state & noarr::idx<'j'>(0)] = (num_t)1.0;
 				p[state & noarr::idx<'j'>(0)] = (num_t)0.0;
 				q[state & noarr::idx<'j'>(0)] = u[state & noarr::idx<'j'>(0)];
 
-				inner.for_each([=](auto state) {
+				inner.for_each([=](auto state) constexpr noexcept {
 					p[state] = -f / (d * p[noarr::neighbor<'j'>(state, -1)] + e);
 					q[state] = (-a * v_trans[noarr::neighbor<'i'>(state, -1)] + (B2 + B1 * a) * v_trans[state] -
 					             c * v_trans[noarr::neighbor<'i'>(state, +1)] -
@@ -103,11 +105,12 @@ void kernel_adi(auto steps, auto u, auto v, auto p, auto q) {
 
 				inner
 					.order(noarr::reverse<'j'>())
-					.for_each([=](auto state) {
+					.for_each([=](auto state) constexpr noexcept {
 						u[state] = p[state] * u[noarr::neighbor<'j'>(state, 1)] + q[state];
 					});
 			});
 		});
+	#pragma endscop
 }
 
 } // namespace

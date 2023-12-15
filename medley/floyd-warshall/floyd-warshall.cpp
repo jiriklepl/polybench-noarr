@@ -10,17 +10,32 @@
 
 #include "defines.hpp"
 #include "floyd-warshall.hpp"
+#include "noarr/structures/structs/blocks.hpp"
 
 using num_t = DATA_TYPE;
 
 namespace {
 
+constexpr auto i_vec =  noarr::vector<'i'>();
+constexpr auto j_vec =  noarr::vector<'j'>();
+constexpr auto k_vec =  noarr::vector<'k'>();
+
+struct tuning {
+	DEFINE_PROTO_STRUCT(block_i, noarr::neutral_proto());
+	DEFINE_PROTO_STRUCT(block_j, noarr::neutral_proto());
+	DEFINE_PROTO_STRUCT(block_k, noarr::neutral_proto());
+
+	DEFINE_PROTO_STRUCT(order, block_k ^ block_i ^ block_j);
+
+	DEFINE_PROTO_STRUCT(path_layout, i_vec ^ j_vec);
+} tuning;
+
 // initialization function
-void init_array(auto path) {
+void init_array(auto path) noexcept {
 	// path: i x j
 
 	noarr::traverser(path)
-		.for_each([=](auto state) {
+		.for_each([=](auto state) constexpr noexcept {
 			auto [i, j] = noarr::get_indices<'i', 'j'>(state);
 
 			path[state] = i * j % 7 + 1;
@@ -33,19 +48,21 @@ void init_array(auto path) {
 
 // computation kernel
 template<class Order = noarr::neutral_proto>
-void kernel_floyd_warshall(auto path, Order order = {}) {
+[[gnu::flatten, gnu::noinline]]
+void kernel_floyd_warshall(auto path, Order order = {}) noexcept {
 	// path: i x j
 
 	auto path_start_k = path ^ noarr::rename<'i', 'k'>();
 	auto path_end_k = path ^ noarr::rename<'j', 'k'>();
-	
+
+	#pragma scop
 	noarr::traverser(path, path_start_k, path_end_k)
+		.order(noarr::hoist<'k'>())
 		.order(order)
-		.template for_dims<'k'>([=](auto inner) {
-			inner.for_each([=](auto state) {
-				path[state] = std::min(path_start_k[state] + path_end_k[state], path[state]);
-			});
+		.for_each([=](auto state) constexpr noexcept {
+			path[state] = std::min(path_start_k[state] + path_end_k[state], path[state]);
 		});
+	#pragma endscop
 }
 
 } // namespace
@@ -57,7 +74,7 @@ int main(int argc, char *argv[]) {
 	std::size_t n = N;
 
 	// data
-	auto path = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'j'>(n, n));
+	auto path = noarr::make_bag(noarr::scalar<num_t>() ^ tuning.path_layout ^ noarr::set_length<'i'>(n) ^ noarr::set_length<'j'>(n));
 
 	// initialize data
 	init_array(path.get_ref());
@@ -65,7 +82,7 @@ int main(int argc, char *argv[]) {
 	auto start = std::chrono::high_resolution_clock::now();
 
 	// run kernel
-	kernel_floyd_warshall(path.get_ref());
+	kernel_floyd_warshall(path.get_ref(), tuning.order);
 
 	auto end = std::chrono::high_resolution_clock::now();
 

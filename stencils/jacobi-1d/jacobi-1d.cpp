@@ -15,14 +15,14 @@ using num_t = DATA_TYPE;
 namespace {
 
 // initialization function
-void init_array(auto A, auto B) {
+void init_array(auto A, auto B) noexcept {
 	// A: i
 	// B: i
 
 	auto n = A | noarr::get_length<'i'>();
 
 	noarr::traverser(A, B)
-		.for_each([=](auto state) {
+		.for_each([=](auto state) constexpr noexcept {
 			auto i = noarr::get_index<'i'>(state);
 
 			A[state] = ((num_t) i + 2) / n;
@@ -32,25 +32,26 @@ void init_array(auto A, auto B) {
 
 
 // computation kernel
-template<class Order = noarr::neutral_proto>
-void kernel_jacobi_1d(std::size_t steps, auto A, auto B, Order order = {}) {
+[[gnu::flatten, gnu::noinline]]
+void kernel_jacobi_1d(std::size_t steps, auto A, auto B) noexcept {
 	// A: i
 	// B: i
 
 	auto traverser = noarr::traverser(A, B).order(noarr::bcast<'t'>(steps));
 
+	#pragma scop
 	traverser
 		.order(noarr::symmetric_span<'i'>(traverser.top_struct(), 1))
-		.order(order)
-		.template for_dims<'t'>([=](auto inner) {
-			inner.for_each([=](auto state) {
+		.template for_dims<'t'>([=](auto inner) constexpr noexcept {
+			inner.for_each([=](auto state) constexpr noexcept {
 				B[state] = 0.33333 * (A[neighbor<'i'>(state, -1)] + A[state] + A[neighbor<'i'>(state, +1)]);
 			});
 
-			inner.for_each([=](auto state) {
+			inner.for_each([=](auto state) constexpr noexcept {
 				A[state] = 0.33333 * (B[neighbor<'i'>(state, -1)] + B[state] + B[neighbor<'i'>(state, +1)]);
 			});
 		});
+	#pragma endscop
 }
 
 } // namespace

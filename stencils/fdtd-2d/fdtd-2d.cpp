@@ -15,7 +15,7 @@ using num_t = DATA_TYPE;
 namespace {
 
 // initialization function
-void init_array(auto ex, auto ey, auto hz, auto _fict_) {
+void init_array(auto ex, auto ey, auto hz, auto _fict_) noexcept {
 	// ex: i x j
 	// ey: i x j
 	// hz: i x j
@@ -23,13 +23,13 @@ void init_array(auto ex, auto ey, auto hz, auto _fict_) {
 
 	auto ni = ex | noarr::get_length<'i'>();
 	auto nj = ex | noarr::get_length<'j'>();
-	
-	noarr::traverser(_fict_).for_each([=](auto state) {
+
+	noarr::traverser(_fict_).for_each([=](auto state) constexpr noexcept {
 		auto t = noarr::get_index<'t'>(state);
 		_fict_[state] = t;
 	});
 
-	noarr::traverser(ex, ey, hz).for_each([=](auto state) {
+	noarr::traverser(ex, ey, hz).for_each([=](auto state) constexpr noexcept {
 		auto [i, j] = noarr::get_indices<'i', 'j'>(state);
 
 		ex[state] = ((num_t) i * (j + 1)) / ni;
@@ -40,36 +40,38 @@ void init_array(auto ex, auto ey, auto hz, auto _fict_) {
 
 
 // computation kernel
-void kernel_fdtd_2d(auto ex, auto ey, auto hz, auto _fict_) {
+[[gnu::flatten, gnu::noinline]]
+void kernel_fdtd_2d(auto ex, auto ey, auto hz, auto _fict_) noexcept {
 	// ex: i x j
 	// ey: i x j
 	// hz: i x j
 	// _fict_: t
 
+	#pragma scop
 	noarr::traverser(ex, ey, hz, _fict_)
-		.template for_dims<'t'>([=](auto inner) {
+		.template for_dims<'t'>([=](auto inner) constexpr noexcept {
 			inner
 				.order(noarr::shift<'i'>(1))
-				.template for_each<'j'>([=](auto state) {
+				.template for_each<'j'>([=](auto state) constexpr noexcept {
 					ey[state & noarr::idx<'i'>(0)] = _fict_[state];
 				});
 
 			inner
 				.order(noarr::shift<'i'>(1))
-				.for_each([=](auto state) {
+				.for_each([=](auto state) constexpr noexcept {
 					ey[state] = ey[state] - (num_t).5 * (hz[state] - hz[noarr::neighbor<'i'>(state, -1)]);
 				});
 
 			inner
 				.order(noarr::shift<'j'>(1))
-				.for_each([=](auto state) {
+				.for_each([=](auto state) constexpr noexcept {
 					ex[state] = ex[state] - (num_t).5 * (hz[state] - hz[noarr::neighbor<'j'>(state, -1)]);
 				});
 
 			inner
 				.order(noarr::span<'i'>(0, (inner.top_struct() | noarr::get_length<'i'>()) - 1)
 					 ^ noarr::span<'j'>(0, (inner.top_struct() | noarr::get_length<'j'>()) - 1))
-				.for_each([=](auto state) {
+				.for_each([=](auto state) constexpr noexcept {
 					hz[state] = hz[state] - (num_t).7 * (
 						ex[noarr::neighbor<'j'>(state, +1)] -
 						ex[state] +
@@ -77,6 +79,7 @@ void kernel_fdtd_2d(auto ex, auto ey, auto hz, auto _fict_) {
 						ey[state]);
 				});
 		});
+	#pragma endscop
 }
 
 } // namespace

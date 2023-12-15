@@ -3,7 +3,7 @@
 #include <iostream>
 
 #include <noarr/structures_extended.hpp>
-#include <noarr/structures/extra/traverser.hpp>
+#include <noarr/structures/extra/planner.hpp>
 #include <noarr/structures/interop/bag.hpp>
 #include <noarr/structures/interop/serialize_data.hpp>
 
@@ -14,8 +14,22 @@ using num_t = DATA_TYPE;
 
 namespace {
 
+constexpr auto i_vec =  noarr::vector<'i'>();
+constexpr auto j_vec =  noarr::vector<'j'>();
+constexpr auto k_vec =  noarr::vector<'k'>();
+
+struct tuning {
+	DEFINE_PROTO_STRUCT(block_i, noarr::neutral_proto());
+	DEFINE_PROTO_STRUCT(block_j, noarr::neutral_proto());
+
+	DEFINE_PROTO_STRUCT(order, block_i ^ block_j);
+
+	DEFINE_PROTO_STRUCT(a_layout, k_vec ^ i_vec);
+	DEFINE_PROTO_STRUCT(b_layout, i_vec ^ j_vec);
+} tuning;
+
 // initialization function
-void init_array(num_t &alpha, auto A, auto B) {
+void init_array(num_t &alpha, auto A, auto B) noexcept {
 	// A: k x i
 	// B: i x j
 
@@ -25,21 +39,21 @@ void init_array(num_t &alpha, auto A, auto B) {
 	auto nj = B | noarr::get_length<'j'>();
 
 	noarr::traverser(A)
-		.template for_dims<'k'>([=](auto inner) {
+		.template for_dims<'k'>([=](auto inner) constexpr noexcept {
 			auto state = inner.state();
 
 			auto k = noarr::get_index<'k'>(state);
 
 			inner.order(noarr::slice<'i'>(0, k))
-				.for_each([=](auto state) {
+				.for_each([=](auto state) constexpr noexcept {
 					auto i = noarr::get_index<'i'>(state);
 					A[state] = (num_t)((k + i) % ni) / ni;
 				});
-			
+
 			A[state & noarr::idx<'i'>(k)] = 1.0;
 		});
 
-	noarr::traverser(B).for_each([=](auto state) {
+	noarr::traverser(B).for_each([=](auto state) constexpr noexcept {
 		auto [i, j] = noarr::get_indices<'i', 'j'>(state);
 
 		B[state] = (num_t)((nj + (i - j)) % nj) / nj;
@@ -47,24 +61,33 @@ void init_array(num_t &alpha, auto A, auto B) {
 }
 
 // computation kernel
-void kernel_trmm(num_t alpha, auto A, auto B) {
+template<class Order = noarr::neutral_proto>
+[[gnu::flatten, gnu::noinline]]
+void kernel_trmm(num_t alpha, auto A, auto B, Order order = {}) noexcept {
 	// A: k x i
 	// B: i x j
 
 	auto B_renamed = B ^ noarr::rename<'i', 'k'>();
 
-	noarr::traverser(A, B)
-		.template for_dims<'i', 'j'>([=](auto inner) {
+	#pragma scop
+	noarr::planner(A, B, B_renamed)
+		.for_each_elem([](auto &&A, auto &&B, auto &&B_renamed) constexpr noexcept {
+			B += A * B_renamed;
+		})
+		.template for_sections<'i', 'j'>([=](auto inner) constexpr noexcept {
 			auto state = inner.state();
 
 			inner
 				.order(noarr::shift<'k'>(noarr::get_index<'i'>(state) + 1))
-				.template for_each<'k'>([=](auto state) {
-					B[state] += A[state] * B_renamed[state];
-				});
-			
+				();
+
 			B[state] *= alpha;
-		});
+		})
+		.order(noarr::hoist<'j'>())
+		.order(noarr::hoist<'i'>())
+		.order(order)
+		();
+	#pragma endscop
 }
 
 } // namespace
@@ -79,8 +102,10 @@ int main(int argc, char *argv[]) {
 	// data
 	num_t alpha;
 
-	auto A = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'k', 'i'>(ni, ni));
-	auto B = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'j'>(ni, nj));
+	auto set_lengths = noarr::set_length<'i'>(ni) ^ noarr::set_length<'k'>(ni) ^ noarr::set_length<'j'>(nj);
+
+	auto A = noarr::make_bag(noarr::scalar<num_t>() ^ tuning.a_layout ^ set_lengths);
+	auto B = noarr::make_bag(noarr::scalar<num_t>() ^ tuning.b_layout ^ set_lengths);
 
 	// initialize data
 	init_array(alpha, A.get_ref(), B.get_ref());
@@ -88,7 +113,7 @@ int main(int argc, char *argv[]) {
 	auto start = std::chrono::high_resolution_clock::now();
 
 	// run kernel
-	kernel_trmm(alpha, A.get_ref(), B.get_ref());
+	kernel_trmm(alpha, A.get_ref(), B.get_ref(), tuning.order);
 
 	auto end = std::chrono::high_resolution_clock::now();
 

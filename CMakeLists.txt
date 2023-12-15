@@ -1,18 +1,26 @@
 cmake_minimum_required(VERSION 3.10)
 Include(FetchContent)
 
-# set the project name
-project(NoarrPolybench VERSION 0.0.1)
+# set the project name and version
+project(
+  NoarrPolybench VERSION 0.0.1
+  DESCRIPTION "Polybench kernels implemented using Noarr Structures"
+  LANGUAGES CXX
+)
 
 # specify the C++ standard
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
+if(NOT DEFINED NOARR_STRUCTURES_BRANCH)
+  set(NOARR_STRUCTURES_BRANCH main)
+endif()
+
 # download Noarr
 FetchContent_Declare(
   Noarr
   GIT_REPOSITORY https://github.com/jiriklepl/noarr-structures.git
-  GIT_TAG        main)
+  GIT_TAG        ${NOARR_STRUCTURES_BRANCH})
 FetchContent_MakeAvailable(Noarr)
 
 include_directories(include)
@@ -59,3 +67,9 @@ add_executable(heat-3d stencils/heat-3d/heat-3d.cpp)
 add_executable(jacobi-1d stencils/jacobi-1d/jacobi-1d.cpp)
 add_executable(jacobi-2d stencils/jacobi-2d/jacobi-2d.cpp)
 add_executable(seidel-2d stencils/seidel-2d/seidel-2d.cpp)
+
+if (MSVC)
+  add_compile_options(/W4 /WX)
+else()
+  add_compile_options(-Wall -Wextra -pedantic -Werror)
+endif()

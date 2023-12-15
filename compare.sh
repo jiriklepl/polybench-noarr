@@ -10,30 +10,51 @@ fi
 
 dirname=$(mktemp -d)
 
-trap "rm -rf $dirname" EXIT
+trap "echo deleting $dirname; rm -rf $dirname" EXIT
 
-(
-	cd "$POLYBENCH_C_DIR" || exit 1
-	./build.sh || exit 1
-)
+( cd "$POLYBENCH_C_DIR" && ./build.sh ) || exit 1
+( cd . && ./build.sh ) || exit 1
 
-(
-	./build.sh || exit 1
-)
+find build -maxdepth 1 -executable -type f |
+while read -r file; do
+	filename=$(basename "$file")
 
-find build -maxdepth 1 -executable -type f \
-	| while read -r file; do
-		filename=$(basename "$file")
-		echo "Comparing $filename"
+	echo "Comparing $filename"
 
-		printf "Noarr: " >&2
-		"build/$filename" > "$dirname/cpp"
+	printf "Noarr:             " >&2
+	"build/$filename" > "$dirname/cpp"
 
-		printf "C:     " >&2
-		"$POLYBENCH_C_DIR/build/$filename" 1>&2 2> "$dirname/c"
+	printf "C:                 " >&2
+	"$POLYBENCH_C_DIR/build/$filename" 1>&2 2> "$dirname/c"
 
-		diff -y --suppress-common-lines \
-			<(grep -oE '[0-9]+(\.[0-9]+)?' "$dirname/cpp" | cat -n) \
-			<(grep -oE '[0-9]+\.[0-9]+' "$dirname/c" | cat -n) || \
-				printf "Different output on %s\n" "$filename" >&2
-	done
+	paste <(grep -oE '[0-9]+\.[0-9]+' "$dirname/c") <(grep -oE '[0-9]+(\.[0-9]+)?' "$dirname/cpp") |
+	awk "BEGIN {
+		different = 0
+		n = 0
+		changes = 0
+	}
+
+	{
+		n++
+		if (\$1 != \$2 && changes < 10) {
+			print \"baseline\", n, \$1
+			print \"   noarr\", n, \$2
+			changes++
+			different = 1
+		}
+
+		if (changes >= 10)
+			nextfile
+
+		next
+	}
+
+	{ different = 1; nextfile }
+
+	END {
+		if (different) {
+			printf \"Different output on %s \n\", \"$filename\"
+			exit 1
+		}
+	}" >&2
+done

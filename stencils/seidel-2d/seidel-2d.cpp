@@ -15,13 +15,13 @@ using num_t = DATA_TYPE;
 namespace {
 
 // initialization function
-void init_array(auto A) {
+void init_array(auto A) noexcept {
 	// A: i x j
 
 	auto n = A | noarr::get_length<'i'>();
 
 	noarr::traverser(A)
-		.for_each([=](auto state) {
+		.for_each([=](auto state) constexpr noexcept {
 			auto [i, j] = noarr::get_indices<'i', 'j'>(state);
 
 			A[state] = ((num_t)i * (j + 2) + 2) / n;
@@ -29,15 +29,17 @@ void init_array(auto A) {
 }
 
 // computation kernel
-void kernel_seidel_2d(std::size_t steps, auto A) {
+[[gnu::flatten, gnu::noinline]]
+void kernel_seidel_2d(std::size_t steps, auto A) noexcept {
 	// A: i x j
 
 	auto traverser = noarr::traverser(A).order(noarr::bcast<'t'>(steps));
 
+	#pragma scop
 	traverser
 		.order(noarr::symmetric_spans<'i', 'j'>(traverser.top_struct(), 1, 1))
 		.order(noarr::reorder<'t', 'i', 'j'>())
-		.for_each([=](auto state) {
+		.for_each([=](auto state) constexpr noexcept {
 			A[state] = (
 				A[neighbor<'i', 'j'>(state, -1, -1)] + // corner
 				A[neighbor<'i'>(state, -1)] +          // edge
@@ -49,6 +51,7 @@ void kernel_seidel_2d(std::size_t steps, auto A) {
 				A[neighbor<'i'>(state, +1)] +          // edge
 				A[neighbor<'i', 'j'>(state, +1, +1)]) / (num_t)9.0; // corner
 		});
+	#pragma endscop
 }
 
 } // namespace
