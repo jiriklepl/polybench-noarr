@@ -49,6 +49,7 @@
   - consists of multiple independent traversals
   - the penultimate traversal supports tiling of `i` and `k`, but not `j`
 - gesummv
+- gemm
 - syr2k (triangular)
   - supports tiling of `i` and `k`, but not `j`
 - syrk (triangular)
@@ -86,7 +87,6 @@ These are the easiest to transform, some of them do not even require the planner
 **These allow full transformation:**
 
 - floyd-warshall
-- gemm
 - gemver
 - mvt
 
