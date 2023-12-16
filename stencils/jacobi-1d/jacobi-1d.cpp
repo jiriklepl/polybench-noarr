@@ -22,7 +22,7 @@ void init_array(auto A, auto B) noexcept {
 	auto n = A | noarr::get_length<'i'>();
 
 	noarr::traverser(A, B)
-		.for_each([=](auto state) constexpr noexcept {
+		.for_each([=](auto state) {
 			auto i = noarr::get_index<'i'>(state);
 
 			A[state] = ((num_t) i + 2) / n;
@@ -41,12 +41,12 @@ void kernel_jacobi_1d(std::size_t steps, auto A, auto B) noexcept {
 
 	traverser
 		.order(noarr::symmetric_span<'i'>(traverser.top_struct(), 1))
-		.template for_dims<'t'>([=](auto inner) constexpr noexcept {
-			inner.for_each([=](auto state) constexpr noexcept {
+		.template for_dims<'t'>([=](auto inner) {
+			inner.for_each([=](auto state) {
 				B[state] = 0.33333 * (A[neighbor<'i'>(state, -1)] + A[state] + A[neighbor<'i'>(state, +1)]);
 			});
 
-			inner.for_each([=](auto state) constexpr noexcept {
+			inner.for_each([=](auto state) {
 				A[state] = 0.33333 * (B[neighbor<'i'>(state, -1)] + B[state] + B[neighbor<'i'>(state, +1)]);
 			});
 		});

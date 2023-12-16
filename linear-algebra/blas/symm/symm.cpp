@@ -75,24 +75,24 @@ void init_array(num_t &alpha, num_t &beta, auto C, auto A, auto B) noexcept {
 	auto nj = C | noarr::get_length<'j'>();
 
 	noarr::traverser(C)
-		.for_each([=](auto state) constexpr noexcept {
+		.for_each([=](auto state) {
 			auto [i, j] = noarr::get_indices<'i', 'j'>(state);
 			C[state] = (num_t)((i + j) % 100) / ni;
 			B[state] = (num_t)((nj + i - j) % 100) / ni;
 		});
 
 	noarr::traverser(A)
-		.template for_dims<'i'>([=](auto inner) constexpr noexcept {
+		.template for_dims<'i'>([=](auto inner) {
 			auto state = inner.state();
 			
 			inner.order(noarr::slice<'k'>(0, noarr::get_index<'i'>(state) + 1))
-				.for_each([=](auto state) constexpr noexcept {
+				.for_each([=](auto state) {
 					auto [i, k] = noarr::get_indices<'i', 'k'>(state);
 					A[state] = (num_t)((i + k) % 100) / ni;
 				});
 			
 			inner.order(noarr::shift<'k'>(noarr::get_index<'i'>(state) + 1))
-				.for_each([=](auto state) constexpr noexcept {
+				.for_each([=](auto state) {
 					A[state] = -999;
 				});
 		});
@@ -110,13 +110,13 @@ void kernel_symm(num_t alpha, num_t beta, auto C, auto A, auto B, Order order = 
 	auto B_renamed = B ^ noarr::rename<'i', 'k'>();
 
 	noarr::planner(C, A, B)
-		.template for_sections<'i', 'j'>([=](auto inner) constexpr noexcept {
+		.template for_sections<'i', 'j'>([=](auto inner) {
 			num_t temp = 0;
 			auto state = inner.state();
 
 			inner
 				.order(noarr::slice<'k'>(0, noarr::get_index<'i'>(state)))
-				.for_each([=, &temp](auto state) constexpr noexcept {
+				.for_each([=, &temp](auto state) {
 					C_renamed[state] += alpha * B[state] * A[state];
 					temp += B_renamed[state] * A[state];
 				})

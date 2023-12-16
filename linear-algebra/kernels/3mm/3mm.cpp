@@ -133,25 +133,25 @@ void init_array(auto A, auto B, auto C, auto D) noexcept {
 	auto nl = D | noarr::get_length<'l'>();
 
 	noarr::traverser(A)
-		.for_each([=](auto state) constexpr noexcept {
+		.for_each([=](auto state) {
 			auto [i, k] = noarr::get_indices<'i', 'k'>(state);
 			A[state] = (num_t)((i * k + 1) % ni) / (5 * ni);
 		});
 
 	noarr::traverser(B)
-		.for_each([=](auto state) constexpr noexcept {
+		.for_each([=](auto state) {
 			auto [k, j] = noarr::get_indices<'k', 'j'>(state);
 			B[state] = (num_t)((k * (j + 1) + 2) % nj) / (5 * nj);
 		});
 
 	noarr::traverser(C)
-		.for_each([=](auto state) constexpr noexcept {
+		.for_each([=](auto state) {
 			auto [j, m] = noarr::get_indices<'j', 'm'>(state);
 			C[state] = (num_t)(j * (m + 3) % nl) / (5 * nl);
 		});
 
 	noarr::traverser(D)
-		.for_each([=](auto state) constexpr noexcept {
+		.for_each([=](auto state) {
 			auto [m, l] = noarr::get_indices<'m', 'l'>(state);
 			D[state] = (num_t)((m * (l + 2) + 2) % nk) / (5 * nk);
 		});
@@ -169,13 +169,13 @@ void kernel_3mm(auto E, auto A, auto B, auto F, auto C, auto D, auto G, Order1 o
 	// D: m x l
 	// G: i x l
 
-	constexpr auto madd = [](auto &&m, auto &&l, auto &&r) constexpr noexcept {
+	constexpr auto madd = [](auto &&m, auto &&l, auto &&r) {
 		m += l * r;
 	};
 
 	noarr::planner(E, A, B)
 		.for_each_elem(madd)
-		.template for_sections<'i', 'j'>([=](auto inner) constexpr noexcept {
+		.template for_sections<'i', 'j'>([=](auto inner) {
 			E[inner.state()] = 0;
 			inner();
 		})
@@ -187,7 +187,7 @@ void kernel_3mm(auto E, auto A, auto B, auto F, auto C, auto D, auto G, Order1 o
 
 	noarr::planner(F, C, D)
 		.for_each_elem(madd)
-		.template for_sections<'j', 'l'>([=](auto inner) constexpr noexcept {
+		.template for_sections<'j', 'l'>([=](auto inner) {
 			F[inner.state()] = 0;
 			inner();
 		})
@@ -199,7 +199,7 @@ void kernel_3mm(auto E, auto A, auto B, auto F, auto C, auto D, auto G, Order1 o
 
 	noarr::planner(G, E, F)
 		.for_each_elem(madd)
-		.template for_sections<'i', 'l'>([=](auto inner) constexpr noexcept {
+		.template for_sections<'i', 'l'>([=](auto inner) {
 			G[inner.state()] = 0;
 			inner();
 		})

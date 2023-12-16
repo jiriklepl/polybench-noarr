@@ -24,7 +24,7 @@ void init_array(auto L, auto x, auto b) noexcept {
 	auto n = L | noarr::get_length<'i'>();
 
 	noarr::traverser(L, x, b)
-		.template for_dims<'i'>([=](auto inner) constexpr noexcept {
+		.template for_dims<'i'>([=](auto inner) {
 			auto state = inner.state();
 			auto i = noarr::get_index<'i'>(state);
 
@@ -33,7 +33,7 @@ void init_array(auto L, auto x, auto b) noexcept {
 
 			inner
 				.order(noarr::slice<'j'>(0, i + 1))
-				.template for_each<'j'>([=](auto state) constexpr noexcept {
+				.template for_each<'j'>([=](auto state) {
 					auto j = noarr::get_index<'j'>(state);
 					L[state] = (num_t)(i + n - j + 1) * 2 / n;
 				});
@@ -50,14 +50,14 @@ void kernel_trisolv(auto L, auto x, auto b) noexcept {
 	auto x_j = x ^ noarr::rename<'i', 'j'>();
 
 	noarr::traverser(L, x, b)
-		.template for_dims<'i'>([=](auto inner) constexpr noexcept {
+		.template for_dims<'i'>([=](auto inner) {
 			auto state = inner.state();
 
 			x[state] = b[state];
 
 			inner
 				.order(noarr::slice<'j'>(0, noarr::get_index<'i'>(state)))
-				.for_each([=](auto state) constexpr noexcept {
+				.for_each([=](auto state) {
 					x[state] -= L[state] * x_j[state];
 				});
 

@@ -76,7 +76,7 @@ void init_array(auto path) noexcept {
 	// path: i x j
 
 	noarr::traverser(path)
-		.for_each([=](auto state) constexpr noexcept {
+		.for_each([=](auto state) {
 			auto [i, j] = noarr::get_indices<'i', 'j'>(state);
 
 			path[state] = i * j % 7 + 1;
@@ -99,7 +99,7 @@ void kernel_floyd_warshall(auto path, Order order = {}) noexcept {
 	noarr::traverser(path, path_start_k, path_end_k)
 		.order(noarr::hoist<'k'>())
 		.order(order)
-		.for_each([=](auto state) constexpr noexcept {
+		.for_each([=](auto state) {
 			path[state] = std::min(path_start_k[state] + path_end_k[state], path[state]);
 		});
 }

@@ -21,7 +21,7 @@ void init_array(auto u) noexcept {
 	auto n = u | noarr::get_length<'i'>();
 
 	noarr::traverser(u)
-		.for_each([=](auto state) constexpr noexcept {
+		.for_each([=](auto state) {
 			auto [i, j] = noarr::get_indices<'i', 'j'>(state);
 
 			u[state] = (num_t)(i + n - j) / n;
@@ -58,16 +58,16 @@ void kernel_adi(auto steps, auto u, auto v, auto p, auto q) noexcept {
 	num_t f = d;
 
 	traverser.order(noarr::symmetric_spans<'i', 'j'>(traverser.top_struct(), 1, 1))
-		.template for_dims<'t'>([=](auto inner) constexpr noexcept {
+		.template for_dims<'t'>([=](auto inner) {
 			// column sweep
-			inner.template for_dims<'i'>([=](auto inner) constexpr noexcept {
+			inner.template for_dims<'i'>([=](auto inner) {
 				auto state = inner.state();
 
 				v[state & noarr::idx<'j'>(0)] = (num_t)1.0;
 				p[state & noarr::idx<'j'>(0)] = (num_t)0.0;
 				q[state & noarr::idx<'j'>(0)] = v[state & noarr::idx<'j'>(0)];
 
-				inner.for_each([=](auto state) constexpr noexcept {
+				inner.for_each([=](auto state) {
 					p[state] = -c / (a * p[noarr::neighbor<'j'>(state, -1)] + b);
 					q[state] = (-d * u_trans[noarr::neighbor<'i'>(state, -1)] + (B2 + B1 * d) * u_trans[state] -
 					             f * u_trans[noarr::neighbor<'i'>(state, +1)] -
@@ -79,20 +79,20 @@ void kernel_adi(auto steps, auto u, auto v, auto p, auto q) noexcept {
 
 				inner
 					.order(noarr::reverse<'j'>())
-					.for_each([=](auto state) constexpr noexcept {
+					.for_each([=](auto state) {
 						v[state] = p[state] * v[noarr::neighbor<'j'>(state, 1)] + q[state];
 					});
 			});
 
 			// row sweep
-			inner.template for_dims<'i'>([=](auto inner) constexpr noexcept {
+			inner.template for_dims<'i'>([=](auto inner) {
 				auto state = inner.state();
 
 				u[state & noarr::idx<'j'>(0)] = (num_t)1.0;
 				p[state & noarr::idx<'j'>(0)] = (num_t)0.0;
 				q[state & noarr::idx<'j'>(0)] = u[state & noarr::idx<'j'>(0)];
 
-				inner.for_each([=](auto state) constexpr noexcept {
+				inner.for_each([=](auto state) {
 					p[state] = -f / (d * p[noarr::neighbor<'j'>(state, -1)] + e);
 					q[state] = (-a * v_trans[noarr::neighbor<'i'>(state, -1)] + (B2 + B1 * a) * v_trans[state] -
 					             c * v_trans[noarr::neighbor<'i'>(state, +1)] -
@@ -104,7 +104,7 @@ void kernel_adi(auto steps, auto u, auto v, auto p, auto q) noexcept {
 
 				inner
 					.order(noarr::reverse<'j'>())
-					.for_each([=](auto state) constexpr noexcept {
+					.for_each([=](auto state) {
 						u[state] = p[state] * u[noarr::neighbor<'j'>(state, 1)] + q[state];
 					});
 			});

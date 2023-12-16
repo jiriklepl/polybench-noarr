@@ -21,7 +21,7 @@ void init_array(auto A) noexcept {
 	auto n = A | noarr::get_length<'i'>();
 
 	noarr::traverser(A)
-		.for_each([=](auto state) constexpr noexcept {
+		.for_each([=](auto state) {
 			auto [i, j] = noarr::get_indices<'i', 'j'>(state);
 
 			A[state] = ((num_t)i * (j + 2) + 2) / n;
@@ -38,7 +38,7 @@ void kernel_seidel_2d(std::size_t steps, auto A) noexcept {
 	traverser
 		.order(noarr::symmetric_spans<'i', 'j'>(traverser.top_struct(), 1, 1))
 		.order(noarr::reorder<'t', 'i', 'j'>())
-		.for_each([=](auto state) constexpr noexcept {
+		.for_each([=](auto state) {
 			A[state] = (
 				A[neighbor<'i', 'j'>(state, -1, -1)] + // corner
 				A[neighbor<'i'>(state, -1)] +          // edge

@@ -21,20 +21,20 @@ void init_array(auto A) noexcept {
 	int n = A | noarr::get_length<'i'>();
 
 	noarr::traverser(A)
-		.template for_dims<'i'>([=](auto inner) constexpr noexcept {
+		.template for_dims<'i'>([=](auto inner) {
 			auto state = inner.state();
 
 			auto i = noarr::get_index<'i'>(state);
 
 			inner
 				.order(noarr::slice<'j'>(0, i + 1))
-				.for_each([=](auto state) constexpr noexcept {
+				.for_each([=](auto state) {
 					A[state] = (num_t) (-(int)noarr::get_index<'j'>(state) % n) / n + 1;
 				});
 
 			inner
 				.order(noarr::shift<'j'>(i + 1))
-				.for_each([=](auto state) constexpr noexcept {
+				.for_each([=](auto state) {
 					A[state] = 0;
 				});
 
@@ -48,15 +48,15 @@ void init_array(auto A) noexcept {
 	auto A_ik = A ^ noarr::rename<'j', 'k'>();
 	auto A_jk = A ^ noarr::rename<'i', 'j', 'j', 'k'>();
 
-	noarr::traverser(B_ref).for_each([=](auto state) constexpr noexcept {
+	noarr::traverser(B_ref).for_each([=](auto state) {
 		B_ref[state] = 0;
 	});
 
-	noarr::traverser(B_ref, A_ik, A_jk).for_each([=](auto state) constexpr noexcept {
+	noarr::traverser(B_ref, A_ik, A_jk).for_each([=](auto state) {
 		B_ref[state] += A_ik[state] * A_jk[state];
 	});
 
-	noarr::traverser(A, B_ref).for_each([=](auto state) constexpr noexcept {
+	noarr::traverser(A, B_ref).for_each([=](auto state) {
 		A[state] = B_ref[state];
 	});
 }
@@ -70,17 +70,17 @@ void kernel_lu(auto A) noexcept {
 	auto A_kj = A ^ noarr::rename<'i', 'k'>();
 
 	noarr::traverser(A, A_ik, A_kj)
-		.template for_dims<'i'>([=](auto inner) constexpr noexcept {
+		.template for_dims<'i'>([=](auto inner) {
 			auto state = inner.state();
 
 			inner
 				.order(noarr::slice<'j'>(0, noarr::get_index<'i'>(state)))
-				.template for_dims<'j'>([=](auto inner) constexpr noexcept {
+				.template for_dims<'j'>([=](auto inner) {
 					auto state = inner.state();
 					
 					inner
 						.order(noarr::slice<'k'>(0, noarr::get_index<'j'>(state)))
-						.for_each([=](auto state) constexpr noexcept {
+						.for_each([=](auto state) {
 							A[state] -= A_ik[state] * A_kj[state];
 						});
 
@@ -90,7 +90,7 @@ void kernel_lu(auto A) noexcept {
 			inner
 				.order(noarr::shift<'j'>(noarr::get_index<'i'>(state)))
 				.order(noarr::slice<'k'>(0, noarr::get_index<'i'>(state)))
-				.for_each([=](auto state) constexpr noexcept {
+				.for_each([=](auto state) {
 					A[state] -= A_ik[state] * A_kj[state];
 				});
 		});

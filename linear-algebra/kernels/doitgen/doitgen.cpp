@@ -68,13 +68,13 @@ void init_array(auto A, auto C4) noexcept {
 	auto np = A | noarr::get_length<'p'>();
 
 	noarr::traverser(A)
-		.for_each([=](auto state) constexpr noexcept {
+		.for_each([=](auto state) {
 			auto [r, q, p] = noarr::get_indices<'r', 'q', 'p'>(state);
 			A[state] = (num_t)((r * q + p) % np) / np;
 		});
 
 	noarr::traverser(C4)
-		.for_each([=](auto state) constexpr noexcept {
+		.for_each([=](auto state) {
 			auto [s, p] = noarr::get_indices<'s', 'p'>(state);
 			C4[state] = (num_t)(s * p % np) / np;
 		});
@@ -91,13 +91,13 @@ void kernel_doitgen(auto A, auto C4, auto sum, Order order = {}) noexcept {
 	auto A_rqs = A ^ noarr::rename<'p', 's'>();
 
 	noarr::planner(A, C4, sum)
-		.template for_sections<'r', 'q'>([=](auto inner) constexpr noexcept {
-			inner.template for_sections<'p'>([=](auto inner) constexpr noexcept {
+		.template for_sections<'r', 'q'>([=](auto inner) {
+			inner.template for_sections<'p'>([=](auto inner) {
 				auto state = inner.state();
 
 				sum[state] = 0;
 
-				inner.for_each([=](auto state) constexpr noexcept {
+				inner.for_each([=](auto state) {
 					sum[state] += A_rqs[state] * C4[state];
 				})
 				();
@@ -106,7 +106,7 @@ void kernel_doitgen(auto A, auto C4, auto sum, Order order = {}) noexcept {
 			();
 
 			inner
-				.template for_sections<'p'>([=](auto inner) constexpr noexcept {
+				.template for_sections<'p'>([=](auto inner) {
 					auto state = inner.state();
 					A[state] = sum[state];
 				})

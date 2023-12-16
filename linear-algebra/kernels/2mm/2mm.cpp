@@ -108,25 +108,25 @@ void init_array(num_t &alpha, num_t &beta, auto A, auto B, auto C, auto D) noexc
 	auto nl = C | noarr::get_length<'l'>();
 
 	noarr::traverser(A)
-		.for_each([=](auto state) constexpr noexcept {
+		.for_each([=](auto state) {
 			auto [i, k] = noarr::get_indices<'i', 'k'>(state);
 			A[state] = (num_t)((i * k + 1) % ni) / ni;
 		});
 
 	noarr::traverser(B)
-		.for_each([=](auto state) constexpr noexcept {
+		.for_each([=](auto state) {
 			auto [k, j] = noarr::get_indices<'k', 'j'>(state);
 			B[state] = (num_t)(k * (j + 1) % nj) / nj;
 		});
 
 	noarr::traverser(C)
-		.for_each([=](auto state) constexpr noexcept {
+		.for_each([=](auto state) {
 			auto [j, l] = noarr::get_indices<'j', 'l'>(state);
 			C[state] = (num_t)((j * (l + 3) + 1) % nl) / nl;
 		});
 
 	noarr::traverser(D)
-		.for_each([=](auto state) constexpr noexcept {
+		.for_each([=](auto state) {
 			auto [i, l] = noarr::get_indices<'i', 'l'>(state);
 			D[state] = (num_t)(i * (l + 2) % nk) / nk;
 		});
@@ -143,10 +143,10 @@ void kernel_2mm(num_t alpha, num_t beta, auto tmp, auto A, auto B, auto C, auto 
 	// D: i x l
 
 	noarr::planner(tmp, A, B)
-		.for_each_elem([alpha](auto &&tmp, auto &&A, auto &&B) constexpr noexcept {
+		.for_each_elem([alpha](auto &&tmp, auto &&A, auto &&B) {
 			tmp += alpha * A * B;
 		})
-		.template for_sections<'i', 'j'>([tmp](auto inner) constexpr noexcept {
+		.template for_sections<'i', 'j'>([tmp](auto inner) {
 			auto state = inner.state();
 
 			tmp[state] = 0;
@@ -159,10 +159,10 @@ void kernel_2mm(num_t alpha, num_t beta, auto tmp, auto A, auto B, auto C, auto 
 		();
 
 	noarr::planner(D, tmp, C)
-		.for_each_elem([](auto &&D, auto &&tmp, auto &&C) constexpr noexcept {
+		.for_each_elem([](auto &&D, auto &&tmp, auto &&C) {
 			D += tmp * C;
 		})
-		.template for_sections<'i', 'l'>([D, beta](auto inner) constexpr noexcept {
+		.template for_sections<'i', 'l'>([D, beta](auto inner) {
 			auto state = inner.state();
 
 			D[state] *= beta;

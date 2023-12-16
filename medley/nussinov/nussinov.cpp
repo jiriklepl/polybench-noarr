@@ -22,14 +22,14 @@ void init_array(auto seq, auto table) noexcept {
 	// table: i x j
 
 	noarr::traverser(seq)
-		.for_each([=](auto state) constexpr noexcept {
+		.for_each([=](auto state) {
 			auto i = noarr::get_index<'i'>(state);
 
 			seq[state] = (base_t)((i + 1) % 4);
 		});
 	
 	noarr::traverser(table)
-		.for_each([=](auto state) constexpr noexcept {
+		.for_each([=](auto state) {
 			table[state] = 0;
 		});
 }
@@ -46,12 +46,12 @@ void kernel_nussinov(auto seq, auto table) noexcept {
 
 	noarr::traverser(seq, table, table_ik, table_kj)
 		.order(noarr::reverse<'i'>())
-		.template for_dims<'i'>([=](auto inner) constexpr noexcept {
+		.template for_dims<'i'>([=](auto inner) {
 			auto state = inner.state();
 
 			inner
 				.order(noarr::shift<'j'>(noarr::get_index<'i'>(state) + 1))
-				.template for_dims<'j'>([=](auto inner) constexpr noexcept {
+				.template for_dims<'j'>([=](auto inner) {
 					auto state = inner.state();
 
 					if (noarr::get_index<'j'>(state) >= 0)
@@ -79,7 +79,7 @@ void kernel_nussinov(auto seq, auto table) noexcept {
 
 					inner
 						.order(noarr::span<'k'>(noarr::get_index<'i'>(state) + 1, noarr::get_index<'j'>(state)))
-						.template for_each<'k'>([=](auto state) constexpr noexcept {
+						.template for_each<'k'>([=](auto state) {
 							table[state] = std::max(
 								table[state],
 								table_ik[state] +
@@ -117,12 +117,12 @@ int main(int argc, char *argv[]) {
 	if (argc > 0 && argv[0] != ""s) [table = table.get_ref()] {
 		std::cout << std::fixed << std::setprecision(2);
 		noarr::traverser(table)
-			.template for_dims<'i'>([=](auto inner) constexpr noexcept {
+			.template for_dims<'i'>([=](auto inner) {
 				auto state = inner.state();
 				std::cout << std::fixed << std::setprecision(2);
 				inner
 					.order(noarr::shift<'j'>(noarr::get_index<'i'>(state)))
-					.template for_each<'j'>([=](auto state) constexpr noexcept {
+					.template for_each<'j'>([=](auto state) {
 						std::cout << table[state] << " ";
 					});
 			});

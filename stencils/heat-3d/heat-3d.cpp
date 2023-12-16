@@ -80,7 +80,7 @@ void init_array(auto A, auto B) noexcept {
 	auto n = A | noarr::get_length<'i'>();
 
 	noarr::traverser(A, B)
-		.for_each([=](auto state) constexpr noexcept {
+		.for_each([=](auto state) {
 			auto [i, j, k] = noarr::get_indices<'i', 'j', 'k'>(state);
 
 			A[state] = B[state] = (num_t) (i + j + (n - k)) * 10 / n;
@@ -99,8 +99,8 @@ void kernel_heat_3d(std::size_t steps, auto A, auto B, Order order = {}) noexcep
 	traverser
 		.order(noarr::symmetric_spans<'i', 'j', 'k'>(traverser.top_struct(), 1, 1, 1))
 		.order(order)
-		.template for_dims<'t'>([=](auto inner) constexpr noexcept {
-			inner.for_each([=](auto state) constexpr noexcept {
+		.template for_dims<'t'>([=](auto inner) {
+			inner.for_each([=](auto state) {
 				B[state] =
 					(num_t).125 * (A[neighbor<'i'>(state, -1)] -
 					               2 * A[state] +
@@ -114,7 +114,7 @@ void kernel_heat_3d(std::size_t steps, auto A, auto B, Order order = {}) noexcep
 					A[state];
 			});
 
-			inner.for_each([=](auto state) constexpr noexcept {
+			inner.for_each([=](auto state) {
 				A[state] =
 					(num_t).125 * (B[neighbor<'i'>(state, -1)] -
 					               2 * B[state] +

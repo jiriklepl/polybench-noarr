@@ -70,14 +70,14 @@ void init_array(num_t &alpha, num_t &beta, auto A, auto B, auto x) noexcept {
 	auto n = A | noarr::get_length<'i'>();
 
 	noarr::traverser(A, B, x)
-		.template for_dims<'i'>([=](auto inner) constexpr noexcept {
+		.template for_dims<'i'>([=](auto inner) {
 			auto state = inner.state();
 
 			auto i = noarr::get_index<'i'>(state);
 
 			x[noarr::idx<'j'>(i)] = (num_t)(i % n) / n;
 
-			inner.for_each([=](auto state) constexpr noexcept {
+			inner.for_each([=](auto state) {
 				auto j = noarr::get_index<'j'>(state);
 
 				A[state] = (num_t)((i * j + 1) % n) / n;
@@ -96,20 +96,20 @@ void kernel_gesummv(num_t alpha, num_t beta, auto A, auto B, auto tmp, auto x, a
 	// x: j
 	// y: i
 
-	noarr::traverser(A, B, tmp, x, y).for_each([=](auto state) constexpr noexcept {
+	noarr::traverser(A, B, tmp, x, y).for_each([=](auto state) {
 		tmp[state] = 0;
 		y[state] = 0;
 	});
 
 	noarr::traverser(A, B, tmp, x, y)
 		.order(order1)
-		.for_each([=](auto state) constexpr noexcept {
+		.for_each([=](auto state) {
 			tmp[state] += A[state] * x[state];
 			y[state] += B[state] * x[state];
 		});
 
 	noarr::traverser(y, tmp)
-		.for_each([=](auto state) constexpr noexcept {
+		.for_each([=](auto state) {
 			y[state] = alpha * tmp[state] + beta * y[state];
 		});
 }

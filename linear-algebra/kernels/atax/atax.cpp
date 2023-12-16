@@ -86,12 +86,12 @@ void init_array(auto A, auto x) noexcept {
 	auto ni = A | noarr::get_length<'i'>();
 	auto nj = A | noarr::get_length<'j'>();
 
-	noarr::traverser(x).for_each([=](auto state) constexpr noexcept {
+	noarr::traverser(x).for_each([=](auto state) {
 		auto j = noarr::get_index<'j'>(state);
 		x[state] = 1 + j / (num_t)nj;
 	});
 
-	noarr::traverser(A).for_each([=](auto state) constexpr noexcept {
+	noarr::traverser(A).for_each([=](auto state) {
 		auto [i, j] = noarr::get_indices<'i', 'j'>(state);
 		A[state] = (num_t)((i + j) % nj) / (5 * ni);
 	});
@@ -106,23 +106,23 @@ void kernel_atax(auto A, auto x, auto y, auto tmp, Order1 order1 = {}, Order2 or
 	// y: j
 	// tmp: i
 
-	noarr::traverser(y).for_each([=](auto state) constexpr noexcept {
+	noarr::traverser(y).for_each([=](auto state) {
 		y[state] = 0;
 	});
 
-	noarr::traverser(tmp).for_each([=](auto state) constexpr noexcept {
+	noarr::traverser(tmp).for_each([=](auto state) {
 		tmp[state] = 0;
 	});
 
 	noarr::traverser(tmp, A, x)
 		.order(order1)
-		.for_each([=](auto state) constexpr noexcept {
+		.for_each([=](auto state) {
 			tmp[state] += A[state] * x[state];
 		});
 
 	noarr::traverser(y, A, tmp)
 		.order(order2)
-		.for_each([=](auto state) constexpr noexcept {
+		.for_each([=](auto state) {
 			y[state] += A[state] * tmp[state];
 		});
 }
