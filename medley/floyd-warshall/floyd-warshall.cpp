@@ -58,15 +58,15 @@ struct tuning {
 		noarr::strip_mine_dynamic<'k', 'K', 'k', 'u'>(noarr::lit<64>));
 
 	NOARR_TUNE_PAR(order, noarr::tuning::choice,
-		*block_k ^ *block_i ^ *block_j,
-		*block_k ^ *block_j ^ *block_i,
-		*block_i ^ *block_k ^ *block_j,
-		*block_i ^ *block_j ^ *block_k,
-		*block_j ^ *block_k ^ *block_i,
-		*block_j ^ *block_i ^ *block_k);
+		noarr::hoist<'j'>() ^ noarr::hoist<'i'>() ^ *block_k ^ *block_j ^ *block_i,
+		noarr::hoist<'k'>() ^ noarr::hoist<'i'>() ^ *block_j ^ *block_k ^ *block_i,
+		noarr::hoist<'i'>() ^ noarr::hoist<'j'>() ^ *block_k ^ *block_i ^ *block_j,
+		noarr::hoist<'k'>() ^ noarr::hoist<'j'>() ^ *block_i ^ *block_k ^ *block_j,
+		noarr::hoist<'i'>() ^ noarr::hoist<'k'>() ^ *block_j ^ *block_i ^ *block_k,
+		noarr::hoist<'j'>() ^ noarr::hoist<'k'>() ^ *block_i ^ *block_j ^ *block_k);
 
 	NOARR_TUNE_PAR(path_layout, noarr::tuning::choice,
-		i_vec ^ j_vec);
+		j_vec ^ i_vec);
 
 	NOARR_TUNE_END();
 } tuning;

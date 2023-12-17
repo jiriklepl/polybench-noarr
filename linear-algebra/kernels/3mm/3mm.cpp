@@ -85,37 +85,37 @@ struct tuning {
 		noarr::strip_mine_dynamic<'l', 'L', 'l', 'u'>(noarr::lit<64>));
 
 	NOARR_TUNE_PAR(order1, noarr::tuning::choice,
-		*block_i1 ^ *block_j1,
-		*block_j1 ^ *block_i1);
+		noarr::hoist<'i'>() ^ *block_j1 ^ *block_i1,
+		noarr::hoist<'j'>() ^ *block_i1 ^ *block_j1);
 
 	NOARR_TUNE_PAR(order2, noarr::tuning::choice,
-		*block_j2 ^ *block_l2,
-		*block_l2 ^ *block_j2);
+		noarr::hoist<'j'>() ^ *block_l2 ^ *block_j2,
+		noarr::hoist<'l'>() ^ *block_j2 ^ *block_l2);
 	
 	NOARR_TUNE_PAR(order3, noarr::tuning::choice,
-		*block_i3 ^ *block_l3,
-		*block_l3 ^ *block_i3);
+		noarr::hoist<'i'>() ^ *block_l3 ^ *block_i3,
+		noarr::hoist<'l'>() ^ *block_i3 ^ *block_l3);
 
 	NOARR_TUNE_PAR(e_layout, noarr::tuning::choice,
-		i_vec ^ j_vec);
+		j_vec ^ i_vec);
 
 	NOARR_TUNE_PAR(a_layout, noarr::tuning::choice,
-		i_vec ^ k_vec);
+		k_vec ^ i_vec);
 
 	NOARR_TUNE_PAR(b_layout, noarr::tuning::choice,
-		k_vec ^ j_vec);
+		j_vec ^ k_vec);
 
 	NOARR_TUNE_PAR(f_layout, noarr::tuning::choice,
-		j_vec ^ l_vec);
+		l_vec ^ j_vec);
 
 	NOARR_TUNE_PAR(c_layout, noarr::tuning::choice,
-		j_vec ^ m_vec);
+		m_vec ^ j_vec);
 
 	NOARR_TUNE_PAR(d_layout, noarr::tuning::choice,
-		m_vec ^ l_vec);
+		l_vec ^ m_vec);
 	
 	NOARR_TUNE_PAR(g_layout, noarr::tuning::choice,
-		i_vec ^ l_vec);
+		l_vec ^ i_vec);
 
 	NOARR_TUNE_END();
 } tuning;

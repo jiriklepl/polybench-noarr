@@ -43,8 +43,8 @@ struct tuning {
 		noarr::strip_mine_dynamic<'j', 'J', 'j', 'b'>(noarr::lit<64>));
 
 	NOARR_TUNE_PAR(order, noarr::tuning::choice,
-		*block_i ^ *block_j,
-		*block_i ^ *block_j);
+		noarr::hoist<'i'>() ^ *block_j ^ *block_i,
+		noarr::hoist<'j'>() ^ *block_i ^ *block_j);
 
 	NOARR_TUNE_END();
 } tuning;

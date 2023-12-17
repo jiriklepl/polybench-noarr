@@ -47,14 +47,14 @@ struct tuning {
 		noarr::strip_mine_dynamic<'j', 'J', 'j', 't'>(noarr::lit<64>));
 
 	NOARR_TUNE_PAR(order, noarr::tuning::choice,
-		*block_i ^ *block_j,
-		*block_j ^ *block_i);
+		noarr::hoist<'i'>() ^ *block_j ^ *block_i,
+		noarr::hoist<'j'>() ^ *block_i ^ *block_j);
 
 	NOARR_TUNE_PAR(a_layout, noarr::tuning::choice,
-		k_vec ^ i_vec);
+		i_vec ^ k_vec);
 	
 	NOARR_TUNE_PAR(b_layout, noarr::tuning::choice,
-		i_vec ^ j_vec);
+		j_vec ^ i_vec);
 
 	NOARR_TUNE_END();
 } tuning;
