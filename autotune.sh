@@ -4,6 +4,7 @@ NUM_RUNS=${NUM_RUNS:-25}
 
 mkdir -p build
 
+BUILD_DIR=${BUILD_DIR:-build}
 DATASET_SIZE=${DATASET_SIZE:-EXTRALARGE}
 DATA_TYPE=${DATA_TYPE:-FLOAT}
 NOARR_STRUCTURES_BRANCH=${NOARR_STRUCTURES_BRANCH:-tuning}
@@ -12,11 +13,11 @@ NOARR_STRUCTURES_BRANCH=${NOARR_STRUCTURES_BRANCH:-tuning}
 
 mkdir -p autotuned
 
-for file in build/*_autotune; do
+for file in "$BUILD_DIR"/*_autotune; do
 	filename=$(basename "$file")
 
 	(
-		cd build
+		cd "$BUILD_DIR"
 
 		# find the best configuration using opentuner
 		python <("./$filename") --test-limit="$NUM_RUNS" --no-dups
@@ -26,9 +27,9 @@ for file in build/*_autotune; do
 		cd autotuned
 
 		# transform the configuration into a list of defines
-		config=$(grep -oE '"\w+"\s*:\s*[^,}]+' ../build/mmm_final_config.json | sed -E 's/"|://g' | awk '{printf("%s", "-DNOARR_PARAMETER_VALUE_" $1 "=" $2 " ")}END{print ""}')
+		config=$(grep -oE '"\w+"\s*:\s*[^,}]+' ../$BUILD_DIR/mmm_final_config.json | sed -E 's/"|://g' | awk '{printf("%s", "-DNOARR_PARAMETER_VALUE_" $1 "=" $2 " ")}END{print ""}')
 
-		mv "../build/mmm_final_config.json" "$filename.config.json"
+		mv "../$BUILD_DIR/mmm_final_config.json" "$filename.config.json"
 		echo "$config" > "$filename.config.txt"
 
 		# build the autotuned version of the program
