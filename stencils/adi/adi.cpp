@@ -80,11 +80,11 @@ void kernel_adi(auto steps, auto u, auto v, auto p, auto q) noexcept {
 				q[state & noarr::idx<'j'>(0)] = v[state & noarr::idx<'j'>(0)];
 
 				inner.for_each([=](auto state) {
-					p[state] = -c / (a * p[noarr::neighbor<'j'>(state, -1)] + b);
-					q[state] = (-d * u_trans[noarr::neighbor<'i'>(state, -1)] + (B2 + B1 * d) * u_trans[state] -
-					             f * u_trans[noarr::neighbor<'i'>(state, +1)] -
-					             a * q[noarr::neighbor<'j'>(state, -1)]) /
-					           (a * p[noarr::neighbor<'j'>(state, -1)] + b);
+					p[state] = -c / (a * p[state - noarr::idx<'j'>(1)] + b);
+					q[state] = (-d * u_trans[state - noarr::idx<'i'>(1)] + (B2 + B1 * d) * u_trans[state] -
+					             f * u_trans[state + noarr::idx<'i'>(1)] -
+					             a * q[state - noarr::idx<'j'>(1)]) /
+					           (a * p[state - noarr::idx<'j'>(1)] + b);
 				});
 
 				v[state & noarr::idx<'j'>((traverser.top_struct() | noarr::get_length<'j'>()) - 1)] = (num_t)1.0;
@@ -92,7 +92,7 @@ void kernel_adi(auto steps, auto u, auto v, auto p, auto q) noexcept {
 				inner
 					.order(noarr::reverse<'j'>())
 					.for_each([=](auto state) {
-						v[state] = p[state] * v[noarr::neighbor<'j'>(state, 1)] + q[state];
+						v[state] = p[state] * v[state + noarr::idx<'j'>(1)] + q[state];
 					});
 			});
 
@@ -105,11 +105,11 @@ void kernel_adi(auto steps, auto u, auto v, auto p, auto q) noexcept {
 				q[state & noarr::idx<'j'>(0)] = u[state & noarr::idx<'j'>(0)];
 
 				inner.for_each([=](auto state) {
-					p[state] = -f / (d * p[noarr::neighbor<'j'>(state, -1)] + e);
-					q[state] = (-a * v_trans[noarr::neighbor<'i'>(state, -1)] + (B2 + B1 * a) * v_trans[state] -
-					             c * v_trans[noarr::neighbor<'i'>(state, +1)] -
-					             d * q[noarr::neighbor<'j'>(state, -1)]) /
-					           (d * p[noarr::neighbor<'j'>(state, -1)] + e);
+					p[state] = -f / (d * p[state - noarr::idx<'j'>(1)] + e);
+					q[state] = (-a * v_trans[state - noarr::idx<'i'>(1)] + (B2 + B1 * a) * v_trans[state] -
+					             c * v_trans[state + noarr::idx<'i'>(1)] -
+					             d * q[state - noarr::idx<'j'>(1)]) /
+					           (d * p[state - noarr::idx<'j'>(1)] + e);
 				});
 
 				u[state & noarr::idx<'j'>((traverser.top_struct() | noarr::get_length<'j'>()) - 1)] = (num_t)1.0;
@@ -117,7 +117,7 @@ void kernel_adi(auto steps, auto u, auto v, auto p, auto q) noexcept {
 				inner
 					.order(noarr::reverse<'j'>())
 					.for_each([=](auto state) {
-						u[state] = p[state] * u[noarr::neighbor<'j'>(state, 1)] + q[state];
+						u[state] = p[state] * u[state + noarr::idx<'j'>(1)] + q[state];
 					});
 			});
 		});

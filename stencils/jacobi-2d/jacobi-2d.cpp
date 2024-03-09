@@ -62,19 +62,19 @@ void kernel_jacobi_2d(std::size_t steps, auto A, auto B, Order order = {}) noexc
 			inner.for_each([=](auto state) {
 				B[state] = (num_t).2 * (
 					A[state] +
-					A[neighbor<'j'>(state, -1)] +
-					A[neighbor<'j'>(state, +1)] +
-					A[neighbor<'i'>(state, +1)] +
-					A[neighbor<'i'>(state, -1)]);
+					A[state - noarr::idx<'j'>(1)] +
+					A[state + noarr::idx<'j'>(1)] +
+					A[state + noarr::idx<'i'>(1)] +
+					A[state - noarr::idx<'i'>(1)]);
 			});
 
 			inner.for_each([=](auto state) {
 				A[state] = (num_t).2 * (
 					B[state] +
-					B[neighbor<'j'>(state, -1)] +
-					B[neighbor<'j'>(state, +1)] +
-					B[neighbor<'i'>(state, +1)] +
-					B[neighbor<'i'>(state, -1)]);
+					B[state - noarr::idx<'j'>(1)] +
+					B[state + noarr::idx<'j'>(1)] +
+					B[state + noarr::idx<'i'>(1)] +
+					B[state - noarr::idx<'i'>(1)]);
 			});
 		});
 	#pragma endscop

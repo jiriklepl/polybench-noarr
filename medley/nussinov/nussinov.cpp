@@ -68,24 +68,24 @@ void kernel_nussinov(auto seq, auto table) noexcept {
 					if (noarr::get_index<'j'>(state) >= 0)
 						table[state] = max_score(
 							table[state],
-							table[noarr::neighbor<'j'>(state, -1)]);
+							table[state - noarr::idx<'j'>(1)]);
 
 					if (noarr::get_index<'i'>(state) + 1 < (table | noarr::get_length<'i'>()))
 						table[state] = max_score(
 							table[state],
-							table[noarr::neighbor<'i'>(state, 1)]);
+							table[state + noarr::idx<'i'>(1)]);
 
 					if (noarr::get_index<'j'>(state) >= 0
 					 || noarr::get_index<'i'>(state) + 1 < (table | noarr::get_length<'i'>())) {
 						if (noarr::get_index<'i'>(state) < noarr::get_index<'j'>(state) - 1)
 							table[state] = max_score(
 								table[state],
-								(table[noarr::neighbor<'i', 'j'>(state, 1, -1)]) +
+								(table[state + noarr::idx<'i'>(1) - noarr::idx<'j'>(1)]) +
 								match(seq[state], seq_j[state]));
 						else
 							table[state] = max_score(
 								table[state],
-								(table[noarr::neighbor<'i', 'j'>(state, 1, -1)]));
+								(table[state + noarr::idx<'i'>(1) - noarr::idx<'j'>(1)]));
 					}
 
 					inner
@@ -94,7 +94,7 @@ void kernel_nussinov(auto seq, auto table) noexcept {
 							table[state] = max_score(
 								table[state],
 								table_ik[state] +
-								table_kj[noarr::neighbor<'k'>(state, 1)]);
+								table_kj[state + noarr::idx<'k'>(1)]);
 						});
 				});
 		});

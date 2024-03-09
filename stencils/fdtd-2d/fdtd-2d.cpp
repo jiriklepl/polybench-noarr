@@ -68,13 +68,13 @@ void kernel_fdtd_2d(auto ex, auto ey, auto hz, auto _fict_) noexcept {
 			inner
 				.order(noarr::shift<'i'>(1))
 				.for_each([=](auto state) {
-					ey[state] = ey[state] - (num_t).5 * (hz[state] - hz[noarr::neighbor<'i'>(state, -1)]);
+					ey[state] = ey[state] - (num_t).5 * (hz[state] - hz[state - noarr::idx<'i'>(1)]);
 				});
 
 			inner
 				.order(noarr::shift<'j'>(1))
 				.for_each([=](auto state) {
-					ex[state] = ex[state] - (num_t).5 * (hz[state] - hz[noarr::neighbor<'j'>(state, -1)]);
+					ex[state] = ex[state] - (num_t).5 * (hz[state] - hz[state - noarr::idx<'j'>(1)]);
 				});
 
 			inner
@@ -82,9 +82,9 @@ void kernel_fdtd_2d(auto ex, auto ey, auto hz, auto _fict_) noexcept {
 					 ^ noarr::span<'j'>(0, (inner.top_struct() | noarr::get_length<'j'>()) - 1))
 				.for_each([=](auto state) {
 					hz[state] = hz[state] - (num_t).7 * (
-						ex[noarr::neighbor<'j'>(state, +1)] -
+						ex[state + noarr::idx<'j'>(1)] -
 						ex[state] +
-						ey[noarr::neighbor<'i'>(state, +1)] -
+						ey[state + noarr::idx<'i'>(1)] -
 						ey[state]);
 				});
 		});

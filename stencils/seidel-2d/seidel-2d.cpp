@@ -48,15 +48,15 @@ void kernel_seidel_2d(std::size_t steps, auto A) noexcept {
 		.order(noarr::reorder<'t', 'i', 'j'>())
 		.for_each([=](auto state) {
 			A[state] = (
-				A[neighbor<'i', 'j'>(state, -1, -1)] + // corner
-				A[neighbor<'i'>(state, -1)] +          // edge
-				A[neighbor<'i', 'j'>(state, -1, +1)] + // corner
-				A[neighbor<'j'>(state, -1)] +          // edge
+				A[state - noarr::idx<'i'>(1) - noarr::idx<'j'>(1)] + // corner
+				A[state - noarr::idx<'i'>(1)] +          // edge
+				A[state - noarr::idx<'i'>(1) + noarr::idx<'j'>(1)] + // corner
+				A[state - noarr::idx<'j'>(1)] +          // edge
 				A[state] +                             // center
-				A[neighbor<'j'>(state, +1)] +          // edge
-				A[neighbor<'i', 'j'>(state, +1, -1)] + // corner
-				A[neighbor<'i'>(state, +1)] +          // edge
-				A[neighbor<'i', 'j'>(state, +1, +1)]) / (num_t)9.0; // corner
+				A[state + noarr::idx<'j'>(1)] +          // edge
+				A[state + noarr::idx<'i'>(1) - noarr::idx<'j'>(1)] + // corner
+				A[state + noarr::idx<'i'>(1)] +          // edge
+				A[state + noarr::idx<'i'>(1) + noarr::idx<'j'>(1)]) / (num_t)9.0; // corner
 		});
 	#pragma endscop
 }

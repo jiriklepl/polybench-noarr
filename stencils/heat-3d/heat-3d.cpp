@@ -60,29 +60,29 @@ void kernel_heat_3d(std::size_t steps, auto A, auto B, Order order = {}) noexcep
 		.template for_dims<'t'>([=](auto inner) {
 			inner.for_each([=](auto state) {
 				B[state] =
-					(num_t).125 * (A[neighbor<'i'>(state, -1)] -
+					(num_t).125 * (A[state - noarr::idx<'i'>(1)] -
 					               2 * A[state] +
-								   A[neighbor<'i'>(state, +1)]) +
-					(num_t).125 * (A[neighbor<'j'>(state, -1)] -
+								   A[state + noarr::idx<'i'>(1)]) +
+					(num_t).125 * (A[state - noarr::idx<'j'>(1)] -
 					               2 * A[state] +
-					               A[neighbor<'j'>(state, +1)]) +
-					(num_t).125 * (A[neighbor<'k'>(state, -1)] -
+					               A[state + noarr::idx<'j'>(1)]) +
+					(num_t).125 * (A[state - noarr::idx<'k'>(1)] -
 					               2 * A[state] +
-					               A[neighbor<'k'>(state, +1)]) +
+					               A[state + noarr::idx<'k'>(1)]) +
 					A[state];
 			});
 
 			inner.for_each([=](auto state) {
 				A[state] =
-					(num_t).125 * (B[neighbor<'i'>(state, -1)] -
+					(num_t).125 * (B[state - noarr::idx<'i'>(1)] -
 					               2 * B[state] +
-					               B[neighbor<'i'>(state, +1)]) +
-					(num_t).125 * (B[neighbor<'j'>(state, -1)] -
+					               B[state + noarr::idx<'i'>(1)]) +
+					(num_t).125 * (B[state - noarr::idx<'j'>(1)] -
 					               2 * B[state] +
-					               B[neighbor<'j'>(state, +1)]) +
-					(num_t).125 * (B[neighbor<'k'>(state, -1)] -
+					               B[state + noarr::idx<'j'>(1)]) +
+					(num_t).125 * (B[state - noarr::idx<'k'>(1)] -
 					               2 * B[state] +
-					               B[neighbor<'k'>(state, +1)]) +
+					               B[state + noarr::idx<'k'>(1)]) +
 					B[state];
 			});
 		});

@@ -44,13 +44,13 @@ void kernel_jacobi_1d(std::size_t steps, auto A, auto B) noexcept {
 		inner
 			.order(noarr::symmetric_span<'i'>(traverser.top_struct(), 1))
 			.for_each([=](auto state) {
-				B[state] = 0.33333 * (A[neighbor<'i'>(state, -1)] + A[state] + A[neighbor<'i'>(state, +1)]);
+				B[state] = 0.33333 * (A[state - noarr::idx<'i'>(1)] + A[state] + A[state + noarr::idx<'i'>(1)]);
 			});
 
 		inner
 			.order(noarr::symmetric_span<'i'>(traverser.top_struct(), 1))
 			.for_each([=](auto state) {
-				A[state] = 0.33333 * (B[neighbor<'i'>(state, -1)] + B[state] + B[neighbor<'i'>(state, +1)]);
+				A[state] = 0.33333 * (B[state - noarr::idx<'i'>(1)] + B[state] + B[state + noarr::idx<'i'>(1)]);
 			});
 	});
 	#pragma endscop
