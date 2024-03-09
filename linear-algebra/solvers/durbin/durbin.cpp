@@ -21,7 +21,7 @@ void init_array(auto r) noexcept {
 	auto n = r | noarr::get_length<'i'>();
 
 	noarr::traverser(r)
-		.for_each([=](auto state) constexpr noexcept {
+		.for_each([=](auto state) {
 			auto i = noarr::get_index<'i'>(state);
 			r[state] = n + 1 - i;
 		});
@@ -49,7 +49,7 @@ void kernel_durbin(auto r, auto y) noexcept {
 
 	noarr::traverser(r, y, r_k, y_k)
 		.order(noarr::shift<'k'>(1))
-		.template for_dims<'k'>([=, &alpha, &beta, &sum, z = z.get_ref()](auto inner) constexpr noexcept {
+		.template for_dims<'k'>([=, &alpha, &beta, &sum, z = z.get_ref()](auto inner) {
 			auto state = inner.state();
 
 			beta = (1 - alpha * alpha) * beta;
@@ -58,7 +58,7 @@ void kernel_durbin(auto r, auto y) noexcept {
 			auto traverser = inner
 				.order(noarr::slice<'i'>(0, noarr::get_index<'k'>(state)));
 
-			traverser.for_each([=, &sum](auto state) constexpr noexcept {
+			traverser.for_each([=, &sum](auto state) {
 				auto [i, k] = noarr::get_indices<'i', 'k'>(state);
 				// sum += r_k[noarr::neighbor<'k'>(state, -i - 1)] * y[state];
 				sum += r[noarr::idx<'i'>(k - i - 1)] * y[state];
@@ -66,13 +66,13 @@ void kernel_durbin(auto r, auto y) noexcept {
 
 			alpha = -(r_k[state] + sum) / beta;
 
-			traverser.for_each([=, &alpha](auto state) constexpr noexcept {
+			traverser.for_each([=, &alpha](auto state) {
 				auto [i, k] = noarr::get_indices<'i', 'k'>(state);
 				// z[state] = y[state] + alpha * y_k[noarr::neighbor<'k'>(state, -i - 1)];
 				z[state] = y[state] + alpha * y[noarr::idx<'i'>(k - i - 1)];
 			});
 
-			traverser.for_each([=](auto state) constexpr noexcept {
+			traverser.for_each([=](auto state) {
 				y[state] = z[state];
 			});
 
@@ -111,5 +111,6 @@ int main(int argc, char *argv[]) {
 		noarr::serialize_data(std::cout, y);
 	}
 
+	std::cerr << std::fixed << std::setprecision(6);
 	std::cerr << duration.count() << std::endl;
 }

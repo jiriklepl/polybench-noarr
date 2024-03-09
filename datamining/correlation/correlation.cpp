@@ -15,13 +15,22 @@ using num_t = DATA_TYPE;
 
 namespace {
 
+constexpr auto i_vec =  noarr::vector<'i'>();
+constexpr auto j_vec =  noarr::vector<'j'>();
+constexpr auto k_vec =  noarr::vector<'k'>();
+
+struct tuning {
+	DEFINE_PROTO_STRUCT(data_layout, j_vec ^ k_vec);
+	DEFINE_PROTO_STRUCT(corr_layout, j_vec ^ i_vec);
+} tuning;
+
 // initialization function
 void init_array(num_t &float_n, auto data) noexcept {
 	// data: k x j
 
 	float_n = data | noarr::get_length<'k'>();
 
-	noarr::traverser(data).for_each([=](auto state) constexpr noexcept {
+	noarr::traverser(data).for_each([=](auto state) {
 		auto [k, j] = noarr::get_indices<'k', 'j'>(state);
 		data[state] = (num_t)(k * j) / (data | noarr::get_length<'j'>()) + k;
 	});
@@ -44,12 +53,12 @@ void kernel_correlation(num_t float_n, auto data, auto corr, auto mean, auto std
 
 	#pragma scop
 	noarr::traverser(data, mean)
-		.template for_dims<'j'>([=](auto inner) constexpr noexcept {
+		.template for_dims<'j'>([=](auto inner) {
 			auto state = inner.state();
 
 			mean[state] = 0;
 
-			inner.for_each([=](auto state) constexpr noexcept {
+			inner.for_each([=](auto state) {
 				mean[state] += data[state];
 			});
 
@@ -57,12 +66,12 @@ void kernel_correlation(num_t float_n, auto data, auto corr, auto mean, auto std
 		});
 
 	noarr::traverser(data, mean, stddev)
-		.template for_dims<'j'>([=](auto inner) constexpr noexcept {
+		.template for_dims<'j'>([=](auto inner) {
 			auto state = inner.state();
 
 			stddev[state] = 0;
 
-			inner.for_each([=](auto state) constexpr noexcept {
+			inner.for_each([=](auto state) {
 				stddev[state] += (data[state] - mean[state]) * (data[state] - mean[state]);
 			});
 
@@ -71,7 +80,7 @@ void kernel_correlation(num_t float_n, auto data, auto corr, auto mean, auto std
 			stddev[state] = stddev[state] <= eps ? (num_t)1.0 : stddev[state];
 		});
 
-	noarr::traverser(data, mean, stddev).for_each([=](auto state) constexpr noexcept {
+	noarr::traverser(data, mean, stddev).for_each([=](auto state) {
 		data[state] -= mean[state];
 		data[state] /= std::sqrt(float_n) * stddev[state];
 	});
@@ -79,20 +88,20 @@ void kernel_correlation(num_t float_n, auto data, auto corr, auto mean, auto std
 	auto traverser = noarr::traverser(data, corr, data_ki, corr_ji);
 	traverser
 		.order(noarr::span<'i'>(0, ni - 1))
-		.template for_dims<'i'>([=](auto inner) constexpr noexcept {
+		.template for_dims<'i'>([=](auto inner) {
 			auto state = inner.state();
 			auto i = noarr::get_index<'i'>(state);
 
-			corr[state & noarr::idx<'j'>(i)] = 1; // TODO: corr_diag
+			corr[state & noarr::idx<'j'>(i)] = 1;
 
 			inner
 				.order(noarr::shift<'j'>(i + 1))
-				.template for_dims<'j'>([=](auto inner) constexpr noexcept {
+				.template for_dims<'j'>([=](auto inner) {
 					auto state = inner.state();
 
 					corr[state] = 0;
 
-					inner.for_each([=](auto state) constexpr noexcept {
+					inner.for_each([=](auto state) {
 						corr[state] += data_ki[state] * data[state];
 					});
 
@@ -115,8 +124,8 @@ int main(int argc, char *argv[]) {
 
 	// data
 	num_t float_n;
-	auto data = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'k', 'j'>(nk, nj));
-	auto corr = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'j'>(nj, nj));
+	auto data = noarr::make_bag(noarr::scalar<num_t>() ^ tuning.data_layout ^ noarr::set_length<'k'>(nk) ^ noarr::set_length<'j'>(nj));
+	auto corr = noarr::make_bag(noarr::scalar<num_t>() ^ tuning.corr_layout ^ noarr::set_length<'i'>(nj) ^ noarr::set_length<'j'>(nj));
 	auto mean = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'j'>(nj));
 	auto stddev = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'j'>(nj));
 
@@ -138,5 +147,6 @@ int main(int argc, char *argv[]) {
 		noarr::serialize_data(std::cout, corr.get_ref() ^ noarr::hoist<'i'>());
 	}
 
+	std::cerr << std::fixed << std::setprecision(6);
 	std::cerr << duration.count() << std::endl;
 }

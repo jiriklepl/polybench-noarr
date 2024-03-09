@@ -21,24 +21,24 @@ constexpr auto l_vec =  noarr::vector<'l'>();
 constexpr auto m_vec =  noarr::vector<'m'>();
 
 struct tuning {
-	DEFINE_PROTO_STRUCT(block_i1, noarr::neutral_proto());
-	DEFINE_PROTO_STRUCT(block_j1, noarr::neutral_proto());
-	DEFINE_PROTO_STRUCT(block_j2, noarr::neutral_proto());
-	DEFINE_PROTO_STRUCT(block_l2, noarr::neutral_proto());
-	DEFINE_PROTO_STRUCT(block_i3, noarr::neutral_proto());
-	DEFINE_PROTO_STRUCT(block_l3, noarr::neutral_proto());
+	DEFINE_PROTO_STRUCT(block_i1, noarr::hoist<'i'>());
+	DEFINE_PROTO_STRUCT(block_j1, noarr::hoist<'j'>());
+	DEFINE_PROTO_STRUCT(block_j2, noarr::hoist<'j'>());
+	DEFINE_PROTO_STRUCT(block_l2, noarr::hoist<'l'>());
+	DEFINE_PROTO_STRUCT(block_i3, noarr::hoist<'i'>());
+	DEFINE_PROTO_STRUCT(block_l3, noarr::hoist<'l'>());
 
-	DEFINE_PROTO_STRUCT(order1, block_i1 ^ block_j1);
-	DEFINE_PROTO_STRUCT(order2, block_j2 ^ block_l2);
-	DEFINE_PROTO_STRUCT(order3, block_i3 ^ block_l3);
+	DEFINE_PROTO_STRUCT(order1, block_j1 ^ block_i1);
+	DEFINE_PROTO_STRUCT(order2, block_l2 ^ block_j2);
+	DEFINE_PROTO_STRUCT(order3, block_l3 ^ block_i3);
 
-	DEFINE_PROTO_STRUCT(e_layout, i_vec ^ j_vec);
-	DEFINE_PROTO_STRUCT(a_layout, i_vec ^ k_vec);
-	DEFINE_PROTO_STRUCT(b_layout, k_vec ^ j_vec);
-	DEFINE_PROTO_STRUCT(f_layout, j_vec ^ l_vec);
-	DEFINE_PROTO_STRUCT(c_layout, j_vec ^ m_vec);
-	DEFINE_PROTO_STRUCT(d_layout, m_vec ^ l_vec);
-	DEFINE_PROTO_STRUCT(g_layout, i_vec ^ l_vec);
+	DEFINE_PROTO_STRUCT(e_layout, j_vec ^ i_vec);
+	DEFINE_PROTO_STRUCT(a_layout, k_vec ^ i_vec);
+	DEFINE_PROTO_STRUCT(b_layout, j_vec ^ k_vec);
+	DEFINE_PROTO_STRUCT(f_layout, l_vec ^ j_vec);
+	DEFINE_PROTO_STRUCT(c_layout, m_vec ^ j_vec);
+	DEFINE_PROTO_STRUCT(d_layout, l_vec ^ m_vec);
+	DEFINE_PROTO_STRUCT(g_layout, l_vec ^ i_vec);
 } tuning;
 
 // initialization function
@@ -54,25 +54,25 @@ void init_array(auto A, auto B, auto C, auto D) noexcept {
 	auto nl = D | noarr::get_length<'l'>();
 
 	noarr::traverser(A)
-		.for_each([=](auto state) constexpr noexcept {
+		.for_each([=](auto state) {
 			auto [i, k] = noarr::get_indices<'i', 'k'>(state);
 			A[state] = (num_t)((i * k + 1) % ni) / (5 * ni);
 		});
 
 	noarr::traverser(B)
-		.for_each([=](auto state) constexpr noexcept {
+		.for_each([=](auto state) {
 			auto [k, j] = noarr::get_indices<'k', 'j'>(state);
 			B[state] = (num_t)((k * (j + 1) + 2) % nj) / (5 * nj);
 		});
 
 	noarr::traverser(C)
-		.for_each([=](auto state) constexpr noexcept {
+		.for_each([=](auto state) {
 			auto [j, m] = noarr::get_indices<'j', 'm'>(state);
 			C[state] = (num_t)(j * (m + 3) % nl) / (5 * nl);
 		});
 
 	noarr::traverser(D)
-		.for_each([=](auto state) constexpr noexcept {
+		.for_each([=](auto state) {
 			auto [m, l] = noarr::get_indices<'m', 'l'>(state);
 			D[state] = (num_t)((m * (l + 2) + 2) % nk) / (5 * nk);
 		});
@@ -90,14 +90,14 @@ void kernel_3mm(auto E, auto A, auto B, auto F, auto C, auto D, auto G, Order1 o
 	// D: m x l
 	// G: i x l
 
-	constexpr auto madd = [](auto &&m, auto &&l, auto &&r) constexpr noexcept {
+	constexpr auto madd = [](auto &&m, auto &&l, auto &&r) {
 		m += l * r;
 	};
 
 	#pragma scop
 	noarr::planner(E, A, B)
 		.for_each_elem(madd)
-		.template for_sections<'i', 'j'>([=](auto inner) constexpr noexcept {
+		.template for_sections<'i', 'j'>([=](auto inner) {
 			E[inner.state()] = 0;
 			inner();
 		})
@@ -109,7 +109,7 @@ void kernel_3mm(auto E, auto A, auto B, auto F, auto C, auto D, auto G, Order1 o
 
 	noarr::planner(F, C, D)
 		.for_each_elem(madd)
-		.template for_sections<'j', 'l'>([=](auto inner) constexpr noexcept {
+		.template for_sections<'j', 'l'>([=](auto inner) {
 			F[inner.state()] = 0;
 			inner();
 		})
@@ -121,7 +121,7 @@ void kernel_3mm(auto E, auto A, auto B, auto F, auto C, auto D, auto G, Order1 o
 
 	noarr::planner(G, E, F)
 		.for_each_elem(madd)
-		.template for_sections<'i', 'l'>([=](auto inner) constexpr noexcept {
+		.template for_sections<'i', 'l'>([=](auto inner) {
 			G[inner.state()] = 0;
 			inner();
 		})
@@ -179,5 +179,6 @@ int main(int argc, char *argv[]) {
 		noarr::serialize_data(std::cout, G.get_ref() ^ noarr::hoist<'i'>());
 	}
 
+	std::cerr << std::fixed << std::setprecision(6);
 	std::cerr << duration.count() << std::endl;
 }

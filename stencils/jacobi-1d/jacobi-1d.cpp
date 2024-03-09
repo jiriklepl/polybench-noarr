@@ -22,7 +22,7 @@ void init_array(auto A, auto B) noexcept {
 	auto n = A | noarr::get_length<'i'>();
 
 	noarr::traverser(A, B)
-		.for_each([=](auto state) constexpr noexcept {
+		.for_each([=](auto state) {
 			auto i = noarr::get_index<'i'>(state);
 
 			A[state] = ((num_t) i + 2) / n;
@@ -40,17 +40,19 @@ void kernel_jacobi_1d(std::size_t steps, auto A, auto B) noexcept {
 	auto traverser = noarr::traverser(A, B).order(noarr::bcast<'t'>(steps));
 
 	#pragma scop
-	traverser
-		.order(noarr::symmetric_span<'i'>(traverser.top_struct(), 1))
-		.template for_dims<'t'>([=](auto inner) constexpr noexcept {
-			inner.for_each([=](auto state) constexpr noexcept {
+	traverser.template for_dims<'t'>([=](auto inner) {
+		inner
+			.order(noarr::symmetric_span<'i'>(traverser.top_struct(), 1))
+			.for_each([=](auto state) {
 				B[state] = 0.33333 * (A[neighbor<'i'>(state, -1)] + A[state] + A[neighbor<'i'>(state, +1)]);
 			});
 
-			inner.for_each([=](auto state) constexpr noexcept {
+		inner
+			.order(noarr::symmetric_span<'i'>(traverser.top_struct(), 1))
+			.for_each([=](auto state) {
 				A[state] = 0.33333 * (B[neighbor<'i'>(state, -1)] + B[state] + B[neighbor<'i'>(state, +1)]);
 			});
-		});
+	});
 	#pragma endscop
 }
 
@@ -85,5 +87,6 @@ int main(int argc, char *argv[]) {
 		noarr::serialize_data(std::cout, A);
 	}
 
+	std::cerr << std::fixed << std::setprecision(6);
 	std::cerr << duration.count() << std::endl;
 }

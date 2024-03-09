@@ -14,6 +14,13 @@ using num_t = DATA_TYPE;
 
 namespace {
 
+constexpr auto i_vec =  noarr::vector<'i'>();
+constexpr auto j_vec =  noarr::vector<'j'>();
+
+struct tuning {
+	DEFINE_PROTO_STRUCT(a_layout, j_vec ^ i_vec);
+} tuning;
+
 // initialization function
 void init_array(auto A) noexcept {
 	// A: i x j
@@ -21,7 +28,7 @@ void init_array(auto A) noexcept {
 	auto n = A | noarr::get_length<'i'>();
 
 	noarr::traverser(A)
-		.for_each([=](auto state) constexpr noexcept {
+		.for_each([=](auto state) {
 			auto [i, j] = noarr::get_indices<'i', 'j'>(state);
 
 			A[state] = ((num_t)i * (j + 2) + 2) / n;
@@ -39,7 +46,7 @@ void kernel_seidel_2d(std::size_t steps, auto A) noexcept {
 	traverser
 		.order(noarr::symmetric_spans<'i', 'j'>(traverser.top_struct(), 1, 1))
 		.order(noarr::reorder<'t', 'i', 'j'>())
-		.for_each([=](auto state) constexpr noexcept {
+		.for_each([=](auto state) {
 			A[state] = (
 				A[neighbor<'i', 'j'>(state, -1, -1)] + // corner
 				A[neighbor<'i'>(state, -1)] +          // edge
@@ -64,7 +71,7 @@ int main(int argc, char *argv[]) {
 	std::size_t t = TSTEPS;
 
 	// data
-	auto A = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'j'>(n, n));
+	auto A = noarr::make_bag(noarr::scalar<num_t>() ^ tuning.a_layout ^ noarr::set_length<'i'>(n) ^ noarr::set_length<'j'>(n));
 
 	// initialize data
 	init_array(A.get_ref());
@@ -84,5 +91,6 @@ int main(int argc, char *argv[]) {
 		noarr::serialize_data(std::cout, A.get_ref() ^ noarr::hoist<'i'>());
 	}
 
+	std::cerr << std::fixed << std::setprecision(6);
 	std::cerr << duration.count() << std::endl;
 }

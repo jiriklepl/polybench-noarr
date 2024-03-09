@@ -14,7 +14,17 @@
 using num_t = DATA_TYPE;
 using base_t = char;
 
+#define match(b1, b2) (((b1)+(b2)) == 3 ? 1 : 0)
+#define max_score(s1, s2) ((s1 >= s2) ? s1 : s2)
+
 namespace {
+
+constexpr auto i_vec =  noarr::vector<'i'>();
+constexpr auto j_vec =  noarr::vector<'j'>();
+
+struct tuning {
+	DEFINE_PROTO_STRUCT(table_layout, j_vec ^ i_vec);
+} tuning;
 
 // initialization function
 void init_array(auto seq, auto table) noexcept {
@@ -22,14 +32,14 @@ void init_array(auto seq, auto table) noexcept {
 	// table: i x j
 
 	noarr::traverser(seq)
-		.for_each([=](auto state) constexpr noexcept {
+		.for_each([=](auto state) {
 			auto i = noarr::get_index<'i'>(state);
 
 			seq[state] = (base_t)((i + 1) % 4);
 		});
 
 	noarr::traverser(table)
-		.for_each([=](auto state) constexpr noexcept {
+		.for_each([=](auto state) {
 			table[state] = 0;
 		});
 }
@@ -47,41 +57,41 @@ void kernel_nussinov(auto seq, auto table) noexcept {
 	#pragma scop
 	noarr::traverser(seq, table, table_ik, table_kj)
 		.order(noarr::reverse<'i'>())
-		.template for_dims<'i'>([=](auto inner) constexpr noexcept {
+		.template for_dims<'i'>([=](auto inner) {
 			auto state = inner.state();
 
 			inner
 				.order(noarr::shift<'j'>(noarr::get_index<'i'>(state) + 1))
-				.template for_dims<'j'>([=](auto inner) constexpr noexcept {
+				.template for_dims<'j'>([=](auto inner) {
 					auto state = inner.state();
 
 					if (noarr::get_index<'j'>(state) >= 0)
-						table[state] = std::max(
+						table[state] = max_score(
 							table[state],
 							table[noarr::neighbor<'j'>(state, -1)]);
 
 					if (noarr::get_index<'i'>(state) + 1 < (table | noarr::get_length<'i'>()))
-						table[state] = std::max(
+						table[state] = max_score(
 							table[state],
 							table[noarr::neighbor<'i'>(state, 1)]);
 
 					if (noarr::get_index<'j'>(state) >= 0
 					 || noarr::get_index<'i'>(state) + 1 < (table | noarr::get_length<'i'>())) {
 						if (noarr::get_index<'i'>(state) < noarr::get_index<'j'>(state) - 1)
-							table[state] = std::max(
+							table[state] = max_score(
 								table[state],
-								table[noarr::neighbor<'i', 'j'>(state, 1, -1)] +
-								(seq[state] + seq_j[state] == 3 ? 1 : 0));
+								(table[noarr::neighbor<'i', 'j'>(state, 1, -1)]) +
+								match(seq[state], seq_j[state]));
 						else
-							table[state] = std::max(
+							table[state] = max_score(
 								table[state],
-								table[noarr::neighbor<'i', 'j'>(state, 1, -1)]);
+								(table[noarr::neighbor<'i', 'j'>(state, 1, -1)]));
 					}
 
 					inner
 						.order(noarr::span<'k'>(noarr::get_index<'i'>(state) + 1, noarr::get_index<'j'>(state)))
-						.template for_each<'k'>([=](auto state) constexpr noexcept {
-							table[state] = std::max(
+						.template for_each<'k'>([=](auto state) {
+							table[state] = max_score(
 								table[state],
 								table_ik[state] +
 								table_kj[noarr::neighbor<'k'>(state, 1)]);
@@ -101,7 +111,7 @@ int main(int argc, char *argv[]) {
 
 	// data
 	auto seq = noarr::make_bag(noarr::scalar<base_t>() ^ noarr::sized_vector<'i'>(n));
-	auto table = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'j'>(n, n));
+	auto table = noarr::make_bag(noarr::scalar<num_t>() ^ tuning.table_layout ^ noarr::set_length<'i'>(n) ^ noarr::set_length<'j'>(n));
 
 	// initialize data
 	init_array(seq.get_ref(), table.get_ref());
@@ -119,16 +129,17 @@ int main(int argc, char *argv[]) {
 	if (argc > 0 && argv[0] != ""s) [table = table.get_ref()] {
 		std::cout << std::fixed << std::setprecision(2);
 		noarr::traverser(table)
-			.template for_dims<'i'>([=](auto inner) constexpr noexcept {
+			.template for_dims<'i'>([=](auto inner) {
 				auto state = inner.state();
 				std::cout << std::fixed << std::setprecision(2);
 				inner
 					.order(noarr::shift<'j'>(noarr::get_index<'i'>(state)))
-					.template for_each<'j'>([=](auto state) constexpr noexcept {
+					.template for_each<'j'>([=](auto state) {
 						std::cout << table[state] << " ";
 					});
 			});
 	}();
 
+	std::cerr << std::fixed << std::setprecision(6);
 	std::cerr << duration.count() << std::endl;
 }

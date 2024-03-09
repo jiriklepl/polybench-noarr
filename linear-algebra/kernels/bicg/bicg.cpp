@@ -14,6 +14,13 @@ using num_t = DATA_TYPE;
 
 namespace {
 
+constexpr auto i_vec =  noarr::vector<'i'>();
+constexpr auto j_vec =  noarr::vector<'j'>();
+
+struct tuning {
+	DEFINE_PROTO_STRUCT(a_layout, j_vec ^ i_vec);
+} tuning;
+
 // initialization function
 void init_array(auto A, auto r, auto p) noexcept {
 	// A: i x j
@@ -23,20 +30,20 @@ void init_array(auto A, auto r, auto p) noexcept {
 	auto ni = A | noarr::get_length<'i'>();
 	auto nj = A | noarr::get_length<'j'>();
 
-	noarr::traverser(p).for_each([=](auto state) constexpr noexcept {
+	noarr::traverser(p).for_each([=](auto state) {
 		auto j = noarr::get_index<'j'>(state);
 		p[state] = (num_t)(j % nj) / nj;
 	});
 
 	noarr::traverser(A, r)
-		.template for_dims<'i'>([=](auto inner) constexpr noexcept {
+		.template for_dims<'i'>([=](auto inner) {
 			auto state = inner.state();
 
 			auto i = noarr::get_index<'i'>(state);
 
 			r[state] = (num_t)(i % ni) / ni;
 
-			inner.for_each([=](auto state) constexpr noexcept {
+			inner.for_each([=](auto state) {
 				auto j = noarr::get_index<'j'>(state);
 
 				A[state] = (num_t)(i * (j + 1) % ni) / ni;
@@ -56,16 +63,16 @@ void kernel_bicg(auto A, auto s, auto q, auto p, auto r, Order order = {}) noexc
 
 	#pragma scop
 	noarr::traverser(s)
-		.for_each([=](auto state) constexpr noexcept {
+		.for_each([=](auto state) {
 			s[state] = 0;
 		});
 
 	noarr::planner(A, s, q, p, r)
-		.for_each_elem([](auto &&A, auto &&s, auto &&q, auto &&p, auto &&r) constexpr noexcept {
+		.for_each_elem([](auto &&A, auto &&s, auto &&q, auto &&p, auto &&r) {
 			s += A * r;
 			q += A * p;
 		})
-		.template for_sections<'i'>([=](auto inner) constexpr noexcept {
+		.template for_sections<'i'>([=](auto inner) {
 			auto state = inner.state();
 
 			q[state] = 0;
@@ -88,7 +95,7 @@ int main(int argc, char *argv[]) {
 	std::size_t nj = NJ;
 
 	// data
-	auto A = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'j'>(ni, nj));
+	auto A = noarr::make_bag(noarr::scalar<num_t>() ^ tuning.a_layout ^ noarr::set_length<'i'>(ni) ^ noarr::set_length<'j'>(nj));
 
 	auto s = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'j'>(nj));
 	auto q = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'i'>(ni));
@@ -115,5 +122,6 @@ int main(int argc, char *argv[]) {
 		noarr::serialize_data(std::cout, q);
 	}
 
+	std::cerr << std::fixed << std::setprecision(6);
 	std::cerr << duration.count() << std::endl;
 }

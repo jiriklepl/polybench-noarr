@@ -14,6 +14,13 @@ using num_t = DATA_TYPE;
 
 namespace {
 
+constexpr auto i_vec =  noarr::vector<'i'>();
+constexpr auto j_vec =  noarr::vector<'j'>();
+
+struct tuning {
+	DEFINE_PROTO_STRUCT(a_layout, j_vec ^ i_vec);
+} tuning;
+
 // initialization function
 void init_array(auto A, auto b, auto x, auto y) noexcept {
 	// A: i x j
@@ -25,7 +32,7 @@ void init_array(auto A, auto b, auto x, auto y) noexcept {
 	num_t fn = (num_t)n;
 
 	noarr::traverser(b, x, y)
-		.for_each([=](auto state) constexpr noexcept {
+		.for_each([=](auto state) {
 			auto i = noarr::get_index<'i'>(state);
 
 			x[state] = 0;
@@ -34,14 +41,14 @@ void init_array(auto A, auto b, auto x, auto y) noexcept {
 		});
 
 	noarr::traverser(A)
-		.template for_dims<'i'>([=](auto inner) constexpr noexcept {
+		.template for_dims<'i'>([=](auto inner) {
 			auto state = inner.state();
 
 			auto i = noarr::get_index<'i'>(state);
 
 			inner
 				.order(noarr::slice<'j'>(0, i + 1))
-				.for_each([=](auto state) constexpr noexcept {
+				.for_each([=](auto state) {
 					int j = noarr::get_index<'j'>(state);
 
 					A[state] = (num_t)(-j % n) / n + 1;
@@ -49,7 +56,7 @@ void init_array(auto A, auto b, auto x, auto y) noexcept {
 
 			inner
 				.order(noarr::shift<'j'>(i + 1))
-				.for_each([=](auto state) constexpr noexcept {
+				.for_each([=](auto state) {
 					A[state] = 0;
 				});
 
@@ -64,16 +71,16 @@ void init_array(auto A, auto b, auto x, auto y) noexcept {
 	auto A_jk = A ^ noarr::rename<'i', 'j', 'j', 'k'>();
 
 	noarr::traverser(B_ref)
-		.for_each([=](auto state) constexpr noexcept {
+		.for_each([=](auto state) {
 			B_ref[state] = 0;
 		});
 
 	noarr::traverser(B_ref, A_ik, A_jk)
-		.for_each([=](auto state) constexpr noexcept {
+		.for_each([=](auto state) {
 			B_ref[state] += A_ik[state] * A_jk[state];
 		});
 
-	noarr::traverser(A, B_ref).for_each([=](auto state) constexpr noexcept {
+	noarr::traverser(A, B_ref).for_each([=](auto state) {
 		A[state] = B_ref[state];
 	});
 }
@@ -91,19 +98,19 @@ void kernel_ludcmp(auto A, auto b, auto x, auto y) noexcept {
 
 	#pragma scop
 	noarr::traverser(A, b, x, y, A_ik, A_kj)
-		.template for_dims<'i'>([=](auto inner) constexpr noexcept {
+		.template for_dims<'i'>([=](auto inner) {
 			auto state = inner.state();
 
 			inner
 				.order(noarr::slice<'j'>(0, noarr::get_index<'i'>(state)))
-				.template for_dims<'j'>([=](auto inner) constexpr noexcept {
+				.template for_dims<'j'>([=](auto inner) {
 					auto state = inner.state();
 
 					num_t w = A[state];
 
 					inner
 						.order(noarr::slice<'k'>(0, noarr::get_index<'j'>(state)))
-						.template for_each<'k'>([=, &w](auto state) constexpr noexcept {
+						.template for_each<'k'>([=, &w](auto state) {
 							w -= A_ik[state] * A_kj[state];
 						});
 
@@ -112,14 +119,14 @@ void kernel_ludcmp(auto A, auto b, auto x, auto y) noexcept {
 
 			inner
 				.order(noarr::shift<'j'>(noarr::get_index<'i'>(state)))
-				.template for_dims<'j'>([=](auto inner) constexpr noexcept {
+				.template for_dims<'j'>([=](auto inner) {
 					auto state = inner.state();
 
 					num_t w = A[state];
 
 					inner
 						.order(noarr::slice<'k'>(0, noarr::get_index<'i'>(state)))
-						.template for_each<'k'>([=, &w](auto state) constexpr noexcept {
+						.template for_each<'k'>([=, &w](auto state) {
 							w -= A_ik[state] * A_kj[state];
 						});
 
@@ -128,14 +135,14 @@ void kernel_ludcmp(auto A, auto b, auto x, auto y) noexcept {
 		});
 
 		noarr::traverser(A, b, y)
-			.template for_dims<'i'>([=](auto inner) constexpr noexcept {
+			.template for_dims<'i'>([=](auto inner) {
 				auto state = inner.state();
 
 				num_t w = b[state];
 
 				inner
 					.order(noarr::slice<'j'>(0, noarr::get_index<'i'>(state)))
-					.template for_each<'j'>([=, &w](auto state) constexpr noexcept {
+					.template for_each<'j'>([=, &w](auto state) {
 						w -= A[state] * y[noarr::idx<'i'>(noarr::get_index<'j'>(state))];
 					});
 
@@ -144,18 +151,18 @@ void kernel_ludcmp(auto A, auto b, auto x, auto y) noexcept {
 
 		noarr::traverser(A, x)
 			.order(noarr::reverse<'i'>())
-			.template for_dims<'i'>([=](auto inner) constexpr noexcept {
+			.template for_dims<'i'>([=](auto inner) {
 				auto state = inner.state();
 
 				num_t w = y[state];
 
 				inner
 					.order(noarr::shift<'j'>(noarr::get_index<'i'>(state) + 1))
-					.template for_each<'j'>([=, &w](auto state) constexpr noexcept {
+					.template for_each<'j'>([=, &w](auto state) {
 						w -= A[state] * x[noarr::idx<'i'>(noarr::get_index<'j'>(state))];
 					});
 
-				x[state] = w / A[state & noarr::idx<'j'>(noarr::get_index<'i'>(state))]; // TODO: A_diag
+				x[state] = w / A[state & noarr::idx<'j'>(noarr::get_index<'i'>(state))];
 			});
 	#pragma endscop
 }
@@ -169,7 +176,7 @@ int main(int argc, char *argv[]) {
 	std::size_t n = N;
 
 	// data
-	auto A = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'j'>(n, n));
+	auto A = noarr::make_bag(noarr::scalar<num_t>() ^ tuning.a_layout ^ noarr::set_length<'i'>(n) ^ noarr::set_length<'j'>(n));
 	auto b = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'i'>(n));
 	auto x = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'i'>(n));
 	auto y = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'i'>(n));
@@ -192,5 +199,6 @@ int main(int argc, char *argv[]) {
 		noarr::serialize_data(std::cout, x);
 	}
 
+	std::cerr << std::fixed << std::setprecision(6);
 	std::cerr << duration.count() << std::endl;
 }

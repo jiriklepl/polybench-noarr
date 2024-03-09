@@ -19,14 +19,14 @@ constexpr auto j_vec =  noarr::vector<'j'>();
 constexpr auto k_vec =  noarr::vector<'k'>();
 
 struct tuning {
-	DEFINE_PROTO_STRUCT(block_i, noarr::neutral_proto());
-	DEFINE_PROTO_STRUCT(block_j, noarr::neutral_proto());
+	DEFINE_PROTO_STRUCT(block_i, noarr::hoist<'i'>());
+	DEFINE_PROTO_STRUCT(block_j, noarr::hoist<'j'>());
 
-	DEFINE_PROTO_STRUCT(order, block_i ^ block_j);
+	DEFINE_PROTO_STRUCT(order, block_j ^ block_i);
 
-	DEFINE_PROTO_STRUCT(c_layout, i_vec ^ j_vec);
-	DEFINE_PROTO_STRUCT(b_layout, i_vec ^ j_vec);
-	DEFINE_PROTO_STRUCT(a_layout, i_vec ^ k_vec);
+	DEFINE_PROTO_STRUCT(c_layout, j_vec ^ i_vec);
+	DEFINE_PROTO_STRUCT(b_layout, j_vec ^ i_vec);
+	DEFINE_PROTO_STRUCT(a_layout, k_vec ^ i_vec);
 } tuning;
 
 // initialization function
@@ -42,24 +42,24 @@ void init_array(num_t &alpha, num_t &beta, auto C, auto A, auto B) noexcept {
 	auto nj = C | noarr::get_length<'j'>();
 
 	noarr::traverser(C)
-		.for_each([=](auto state) constexpr noexcept {
+		.for_each([=](auto state) {
 			auto [i, j] = noarr::get_indices<'i', 'j'>(state);
 			C[state] = (num_t)((i + j) % 100) / ni;
 			B[state] = (num_t)((nj + i - j) % 100) / ni;
 		});
 
 	noarr::traverser(A)
-		.template for_dims<'i'>([=](auto inner) constexpr noexcept {
+		.template for_dims<'i'>([=](auto inner) {
 			auto state = inner.state();
 
 			inner.order(noarr::slice<'k'>(0, noarr::get_index<'i'>(state) + 1))
-				.for_each([=](auto state) constexpr noexcept {
+				.for_each([=](auto state) {
 					auto [i, k] = noarr::get_indices<'i', 'k'>(state);
 					A[state] = (num_t)((i + k) % 100) / ni;
 				});
 
 			inner.order(noarr::shift<'k'>(noarr::get_index<'i'>(state) + 1))
-				.for_each([=](auto state) constexpr noexcept {
+				.for_each([=](auto state) {
 					A[state] = -999;
 				});
 		});
@@ -78,19 +78,19 @@ void kernel_symm(num_t alpha, num_t beta, auto C, auto A, auto B, Order order = 
 
 	#pragma scop
 	noarr::planner(C, A, B)
-		.template for_sections<'i', 'j'>([=](auto inner) constexpr noexcept {
+		.template for_sections<'i', 'j'>([=](auto inner) {
 			num_t temp = 0;
 			auto state = inner.state();
 
 			inner
 				.order(noarr::slice<'k'>(0, noarr::get_index<'i'>(state)))
-				.for_each([=, &temp](auto state) constexpr noexcept {
+				.for_each([=, &temp](auto state) {
 					C_renamed[state] += alpha * B[state] * A[state];
 					temp += B_renamed[state] * A[state];
 				})
 				();
 
-			C[state] = beta * C[state] + alpha * B[state] * A[state & noarr::idx<'k'>(noarr::get_index<'i'>(state))] + alpha * temp; // TODO: A_diag
+			C[state] = beta * C[state] + alpha * B[state] * A[state & noarr::idx<'k'>(noarr::get_index<'i'>(state))] + alpha * temp;
 		})
 		.order(noarr::hoist<'j'>())
 		.order(noarr::hoist<'i'>())
@@ -136,5 +136,6 @@ int main(int argc, char *argv[]) {
 		noarr::serialize_data(std::cout, C.get_ref() ^ noarr::hoist<'i'>());
 	}
 
+	std::cerr << std::fixed << std::setprecision(6);
 	std::cerr << duration.count() << std::endl;
 }

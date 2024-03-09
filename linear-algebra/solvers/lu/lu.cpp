@@ -14,6 +14,15 @@ using num_t = DATA_TYPE;
 
 namespace {
 
+constexpr auto i_vec =  noarr::vector<'i'>();
+constexpr auto j_vec =  noarr::vector<'j'>();
+
+struct tuning {
+	DEFINE_PROTO_STRUCT(order, noarr::hoist<'j'>());
+
+	DEFINE_PROTO_STRUCT(a_layout, j_vec ^ i_vec);
+} tuning;
+
 // initialization function
 void init_array(auto A) noexcept {
 	// A: i x j
@@ -21,20 +30,20 @@ void init_array(auto A) noexcept {
 	int n = A | noarr::get_length<'i'>();
 
 	noarr::traverser(A)
-		.template for_dims<'i'>([=](auto inner) constexpr noexcept {
+		.template for_dims<'i'>([=](auto inner) {
 			auto state = inner.state();
 
 			auto i = noarr::get_index<'i'>(state);
 
 			inner
 				.order(noarr::slice<'j'>(0, i + 1))
-				.for_each([=](auto state) constexpr noexcept {
+				.for_each([=](auto state) {
 					A[state] = (num_t) (-(int)noarr::get_index<'j'>(state) % n) / n + 1;
 				});
 
 			inner
 				.order(noarr::shift<'j'>(i + 1))
-				.for_each([=](auto state) constexpr noexcept {
+				.for_each([=](auto state) {
 					A[state] = 0;
 				});
 
@@ -48,22 +57,23 @@ void init_array(auto A) noexcept {
 	auto A_ik = A ^ noarr::rename<'j', 'k'>();
 	auto A_jk = A ^ noarr::rename<'i', 'j', 'j', 'k'>();
 
-	noarr::traverser(B_ref).for_each([=](auto state) constexpr noexcept {
+	noarr::traverser(B_ref).for_each([=](auto state) {
 		B_ref[state] = 0;
 	});
 
-	noarr::traverser(B_ref, A_ik, A_jk).for_each([=](auto state) constexpr noexcept {
+	noarr::traverser(B_ref, A_ik, A_jk).for_each([=](auto state) {
 		B_ref[state] += A_ik[state] * A_jk[state];
 	});
 
-	noarr::traverser(A, B_ref).for_each([=](auto state) constexpr noexcept {
+	noarr::traverser(A, B_ref).for_each([=](auto state) {
 		A[state] = B_ref[state];
 	});
 }
 
 // computation kernel
+template<typename Order = noarr::neutral_proto>
 [[gnu::flatten, gnu::noinline]]
-void kernel_lu(auto A) noexcept {
+void kernel_lu(auto A, Order order = {}) noexcept {
 	// A: i x j
 
 	auto A_ik = A ^ noarr::rename<'j', 'k'>();
@@ -71,17 +81,17 @@ void kernel_lu(auto A) noexcept {
 
 	#pragma scop
 	noarr::traverser(A, A_ik, A_kj)
-		.template for_dims<'i'>([=](auto inner) constexpr noexcept {
+		.template for_dims<'i'>([=](auto inner) {
 			auto state = inner.state();
 
 			inner
 				.order(noarr::slice<'j'>(0, noarr::get_index<'i'>(state)))
-				.template for_dims<'j'>([=](auto inner) constexpr noexcept {
+				.template for_dims<'j'>([=](auto inner) {
 					auto state = inner.state();
 
 					inner
 						.order(noarr::slice<'k'>(0, noarr::get_index<'j'>(state)))
-						.for_each([=](auto state) constexpr noexcept {
+						.for_each([=](auto state) {
 							A[state] -= A_ik[state] * A_kj[state];
 						});
 
@@ -91,7 +101,8 @@ void kernel_lu(auto A) noexcept {
 			inner
 				.order(noarr::shift<'j'>(noarr::get_index<'i'>(state)))
 				.order(noarr::slice<'k'>(0, noarr::get_index<'i'>(state)))
-				.for_each([=](auto state) constexpr noexcept {
+				.order(order)
+				.for_each([=](auto state) {
 					A[state] -= A_ik[state] * A_kj[state];
 				});
 		});
@@ -107,7 +118,7 @@ int main(int argc, char *argv[]) {
 	std::size_t n = N;
 
 	// data
-	auto A = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'j'>(n, n));
+	auto A = noarr::make_bag(noarr::scalar<num_t>() ^ tuning.a_layout ^ noarr::set_length<'i'>(n) ^ noarr::set_length<'j'>(n));
 
 	// initialize data
 	init_array(A.get_ref());
@@ -115,7 +126,7 @@ int main(int argc, char *argv[]) {
 	auto start = std::chrono::high_resolution_clock::now();
 
 	// run kernel
-	kernel_lu(A.get_ref());
+	kernel_lu(A.get_ref(), tuning.order);
 
 	auto end = std::chrono::high_resolution_clock::now();
 
@@ -127,5 +138,6 @@ int main(int argc, char *argv[]) {
 		noarr::serialize_data(std::cout, A.get_ref() ^ noarr::hoist<'i'>());
 	}
 
+	std::cerr << std::fixed << std::setprecision(6);
 	std::cerr << duration.count() << std::endl;
 }

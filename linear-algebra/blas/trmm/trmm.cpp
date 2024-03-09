@@ -19,13 +19,13 @@ constexpr auto j_vec =  noarr::vector<'j'>();
 constexpr auto k_vec =  noarr::vector<'k'>();
 
 struct tuning {
-	DEFINE_PROTO_STRUCT(block_i, noarr::neutral_proto());
-	DEFINE_PROTO_STRUCT(block_j, noarr::neutral_proto());
+	DEFINE_PROTO_STRUCT(block_i, noarr::hoist<'i'>());
+	DEFINE_PROTO_STRUCT(block_j, noarr::hoist<'j'>());
 
-	DEFINE_PROTO_STRUCT(order, block_i ^ block_j);
+	DEFINE_PROTO_STRUCT(order, block_j ^ block_i);
 
-	DEFINE_PROTO_STRUCT(a_layout, k_vec ^ i_vec);
-	DEFINE_PROTO_STRUCT(b_layout, i_vec ^ j_vec);
+	DEFINE_PROTO_STRUCT(a_layout, i_vec ^ k_vec);
+	DEFINE_PROTO_STRUCT(b_layout, j_vec ^ i_vec);
 } tuning;
 
 // initialization function
@@ -39,13 +39,13 @@ void init_array(num_t &alpha, auto A, auto B) noexcept {
 	auto nj = B | noarr::get_length<'j'>();
 
 	noarr::traverser(A)
-		.template for_dims<'k'>([=](auto inner) constexpr noexcept {
+		.template for_dims<'k'>([=](auto inner) {
 			auto state = inner.state();
 
 			auto k = noarr::get_index<'k'>(state);
 
 			inner.order(noarr::slice<'i'>(0, k))
-				.for_each([=](auto state) constexpr noexcept {
+				.for_each([=](auto state) {
 					auto i = noarr::get_index<'i'>(state);
 					A[state] = (num_t)((k + i) % ni) / ni;
 				});
@@ -53,7 +53,7 @@ void init_array(num_t &alpha, auto A, auto B) noexcept {
 			A[state & noarr::idx<'i'>(k)] = 1.0;
 		});
 
-	noarr::traverser(B).for_each([=](auto state) constexpr noexcept {
+	noarr::traverser(B).for_each([=](auto state) {
 		auto [i, j] = noarr::get_indices<'i', 'j'>(state);
 
 		B[state] = (num_t)((nj + (i - j)) % nj) / nj;
@@ -71,10 +71,10 @@ void kernel_trmm(num_t alpha, auto A, auto B, Order order = {}) noexcept {
 
 	#pragma scop
 	noarr::planner(A, B, B_renamed)
-		.for_each_elem([](auto &&A, auto &&B, auto &&B_renamed) constexpr noexcept {
+		.for_each_elem([](auto &&A, auto &&B, auto &&B_renamed) {
 			B += A * B_renamed;
 		})
-		.template for_sections<'i', 'j'>([=](auto inner) constexpr noexcept {
+		.template for_sections<'i', 'j'>([=](auto inner) {
 			auto state = inner.state();
 
 			inner
@@ -125,5 +125,6 @@ int main(int argc, char *argv[]) {
 		noarr::serialize_data(std::cout, B.get_ref() ^ noarr::hoist<'i'>());
 	}
 
+	std::cerr << std::fixed << std::setprecision(6);
 	std::cerr << duration.count() << std::endl;
 }

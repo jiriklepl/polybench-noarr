@@ -15,6 +15,16 @@ using num_t = DATA_TYPE;
 
 namespace {
 
+constexpr auto i_vec =  noarr::vector<'i'>();
+constexpr auto j_vec =  noarr::vector<'j'>();
+constexpr auto k_vec =  noarr::vector<'k'>();
+
+struct tuning {
+	DEFINE_PROTO_STRUCT(a_layout, k_vec ^ i_vec);
+	DEFINE_PROTO_STRUCT(r_layout, j_vec ^ k_vec);
+	DEFINE_PROTO_STRUCT(q_layout, k_vec ^ i_vec);
+} tuning;
+
 // initialization function
 void init_array(auto A, auto R, auto Q) noexcept {
 	// A: i x k
@@ -24,7 +34,7 @@ void init_array(auto A, auto R, auto Q) noexcept {
 	auto ni = A | noarr::get_length<'i'>();
 
 	noarr::traverser(A, Q)
-		.for_each([=](auto state) constexpr noexcept {
+		.for_each([=](auto state) {
 			auto i = noarr::get_index<'i'>(state);
 			auto k = noarr::get_index<'k'>(state);
 
@@ -33,7 +43,7 @@ void init_array(auto A, auto R, auto Q) noexcept {
 		});
 
 	noarr::traverser(R)
-		.for_each([=](auto state) constexpr noexcept {
+		.for_each([=](auto state) {
 			R[state] = 0.0;
 		});
 }
@@ -49,11 +59,11 @@ void kernel_gramschmidt(auto A, auto R, auto Q) noexcept {
 
 	#pragma scop
 	noarr::traverser(A_ij, R, Q)
-		.template for_dims<'k'>([=](auto inner) constexpr noexcept {
+		.template for_dims<'k'>([=](auto inner) {
 			auto state = inner.state();
 			num_t norm = 0;
 
-			inner.template for_each<'i'>([=, &norm](auto state) constexpr noexcept {
+			inner.template for_each<'i'>([=, &norm](auto state) {
 				norm += A[state] * A[state];
 			});
 
@@ -61,22 +71,22 @@ void kernel_gramschmidt(auto A, auto R, auto Q) noexcept {
 
 			R_diag[state] = std::sqrt(norm);
 
-			inner.template for_each<'i'>([=](auto state) constexpr noexcept {
+			inner.template for_each<'i'>([=](auto state) {
 				Q[state] = A[state] / R_diag[state];
 			});
 
 			inner
 				.order(noarr::shift<'j'>(noarr::get_index<'k'>(state) + 1))
-				.template for_dims<'j'>([=](auto inner) constexpr noexcept {
+				.template for_dims<'j'>([=](auto inner) {
 					auto state = inner.state();
 
 					R[state] = 0;
 
-					inner.for_each([=](auto state) constexpr noexcept {
+					inner.for_each([=](auto state) {
 						R[state] = R[state] + Q[state] * A_ij[state];
 					});
 
-					inner.for_each([=](auto state) constexpr noexcept {
+					inner.for_each([=](auto state) {
 						A_ij[state] = A_ij[state] - Q[state] * R[state];
 					});
 				});
@@ -94,9 +104,9 @@ int main(int argc, char *argv[]) {
 	std::size_t nj = NJ;
 
 	// data
-	auto A = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'k'>(ni, nj));
-	auto R = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'k', 'j'>(nj, nj));
-	auto Q = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'k'>(ni, nj));
+	auto A = noarr::make_bag(noarr::scalar<num_t>() ^ tuning.a_layout ^ noarr::set_length<'i'>(ni) ^ noarr::set_length<'k'>(nj));
+	auto R = noarr::make_bag(noarr::scalar<num_t>() ^ tuning.r_layout ^ noarr::set_length<'k'>(nj) ^ noarr::set_length<'j'>(nj));
+	auto Q = noarr::make_bag(noarr::scalar<num_t>() ^ tuning.q_layout ^ noarr::set_length<'i'>(ni) ^ noarr::set_length<'k'>(nj));
 
 	// initialize data
 	init_array(A.get_ref(), R.get_ref(), Q.get_ref());
@@ -117,5 +127,6 @@ int main(int argc, char *argv[]) {
 		noarr::serialize_data(std::cout, Q.get_ref() ^ noarr::hoist<'i'>());
 	}
 
+	std::cerr << std::fixed << std::setprecision(6);
 	std::cerr << duration.count() << std::endl;
 }

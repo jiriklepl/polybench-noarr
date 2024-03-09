@@ -19,14 +19,14 @@ constexpr auto j_vec =  noarr::vector<'j'>();
 constexpr auto k_vec =  noarr::vector<'k'>();
 
 struct tuning {
-	DEFINE_PROTO_STRUCT(block_i, noarr::neutral_proto());
-	DEFINE_PROTO_STRUCT(block_j, noarr::neutral_proto());
-	DEFINE_PROTO_STRUCT(block_k, noarr::neutral_proto());
+	DEFINE_PROTO_STRUCT(block_i, noarr::hoist<'i'>());
+	DEFINE_PROTO_STRUCT(block_j, noarr::hoist<'j'>());
+	DEFINE_PROTO_STRUCT(block_k, noarr::hoist<'k'>());
 
-	DEFINE_PROTO_STRUCT(order, block_i ^ block_j ^ block_k);
+	DEFINE_PROTO_STRUCT(order, block_k ^ block_j ^ block_i);
 
-	DEFINE_PROTO_STRUCT(a_layout, i_vec ^ j_vec ^ k_vec);
-	DEFINE_PROTO_STRUCT(b_layout, i_vec ^ j_vec ^ k_vec);
+	DEFINE_PROTO_STRUCT(a_layout, k_vec ^ j_vec ^ i_vec);
+	DEFINE_PROTO_STRUCT(b_layout, k_vec ^ j_vec ^ i_vec);
 } tuning;
 
 // initialization function
@@ -37,7 +37,7 @@ void init_array(auto A, auto B) noexcept {
 	auto n = A | noarr::get_length<'i'>();
 
 	noarr::traverser(A, B)
-		.for_each([=](auto state) constexpr noexcept {
+		.for_each([=](auto state) {
 			auto [i, j, k] = noarr::get_indices<'i', 'j', 'k'>(state);
 
 			A[state] = B[state] = (num_t) (i + j + (n - k)) * 10 / n;
@@ -57,8 +57,8 @@ void kernel_heat_3d(std::size_t steps, auto A, auto B, Order order = {}) noexcep
 	traverser
 		.order(noarr::symmetric_spans<'i', 'j', 'k'>(traverser.top_struct(), 1, 1, 1))
 		.order(order)
-		.template for_dims<'t'>([=](auto inner) constexpr noexcept {
-			inner.for_each([=](auto state) constexpr noexcept {
+		.template for_dims<'t'>([=](auto inner) {
+			inner.for_each([=](auto state) {
 				B[state] =
 					(num_t).125 * (A[neighbor<'i'>(state, -1)] -
 					               2 * A[state] +
@@ -72,7 +72,7 @@ void kernel_heat_3d(std::size_t steps, auto A, auto B, Order order = {}) noexcep
 					A[state];
 			});
 
-			inner.for_each([=](auto state) constexpr noexcept {
+			inner.for_each([=](auto state) {
 				A[state] =
 					(num_t).125 * (B[neighbor<'i'>(state, -1)] -
 					               2 * B[state] +
@@ -122,5 +122,6 @@ int main(int argc, char *argv[]) {
 		noarr::serialize_data(std::cout, A.get_ref() ^ noarr::reorder<'i', 'j', 'k'>());
 	}
 
+	std::cerr << std::fixed << std::setprecision(6);
 	std::cerr << duration.count() << std::endl;
 }

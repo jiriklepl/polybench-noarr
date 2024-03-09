@@ -14,11 +14,17 @@ using num_t = DATA_TYPE;
 
 namespace {
 
+constexpr auto i_vec =  noarr::vector<'i'>();
+constexpr auto j_vec =  noarr::vector<'j'>();
+
 struct tuning {
 	DEFINE_PROTO_STRUCT(block_i, noarr::neutral_proto());
 	DEFINE_PROTO_STRUCT(block_j, noarr::neutral_proto());
 
-	DEFINE_PROTO_STRUCT(order, block_i ^ block_j);
+	DEFINE_PROTO_STRUCT(order, block_j ^ block_i);
+
+	DEFINE_PROTO_STRUCT(a_layout, j_vec ^ i_vec);
+	DEFINE_PROTO_STRUCT(b_layout, j_vec ^ i_vec);
 } tuning;
 
 
@@ -30,7 +36,7 @@ void init_array(auto A, auto B) noexcept {
 	auto n = A | noarr::get_length<'i'>();
 
 	noarr::traverser(A, B)
-		.for_each([=](auto state) constexpr noexcept {
+		.for_each([=](auto state) {
 			auto [i, j] = noarr::get_indices<'i', 'j'>(state);
 
 			A[state] = ((num_t)i * (j + 2) + 2) / n;
@@ -52,8 +58,8 @@ void kernel_jacobi_2d(std::size_t steps, auto A, auto B, Order order = {}) noexc
 	traverser
 		.order(noarr::symmetric_spans<'i', 'j'>(traverser.top_struct(), 1, 1))
 		.order(order)
-		.template for_dims<'t'>([=](auto inner) constexpr noexcept {
-			inner.for_each([=](auto state) constexpr noexcept {
+		.template for_dims<'t'>([=](auto inner) {
+			inner.for_each([=](auto state) {
 				B[state] = (num_t).2 * (
 					A[state] +
 					A[neighbor<'j'>(state, -1)] +
@@ -62,7 +68,7 @@ void kernel_jacobi_2d(std::size_t steps, auto A, auto B, Order order = {}) noexc
 					A[neighbor<'i'>(state, -1)]);
 			});
 
-			inner.for_each([=](auto state) constexpr noexcept {
+			inner.for_each([=](auto state) {
 				A[state] = (num_t).2 * (
 					B[state] +
 					B[neighbor<'j'>(state, -1)] +
@@ -84,8 +90,8 @@ int main(int argc, char *argv[]) {
 	std::size_t t = TSTEPS;
 
 	// data
-	auto A = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'j'>(n, n));
-	auto B = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'j'>(n, n));
+	auto A = noarr::make_bag(noarr::scalar<num_t>() ^ tuning.a_layout ^ noarr::set_length<'i'>(n) ^ noarr::set_length<'j'>(n));
+	auto B = noarr::make_bag(noarr::scalar<num_t>() ^ tuning.b_layout ^ noarr::set_length<'i'>(n) ^ noarr::set_length<'j'>(n));
 
 	// initialize data
 	init_array(A.get_ref(), B.get_ref());
@@ -105,5 +111,6 @@ int main(int argc, char *argv[]) {
 		noarr::serialize_data(std::cout, A.get_ref() ^ noarr::hoist<'i'>());
 	}
 
+	std::cerr << std::fixed << std::setprecision(6);
 	std::cerr << duration.count() << std::endl;
 }

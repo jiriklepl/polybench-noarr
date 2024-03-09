@@ -15,6 +15,13 @@ using num_t = DATA_TYPE;
 
 namespace {
 
+constexpr auto i_vec =  noarr::vector<'i'>();
+constexpr auto j_vec =  noarr::vector<'j'>();
+
+struct tuning {
+	DEFINE_PROTO_STRUCT(l_layout, j_vec ^ i_vec);
+} tuning;
+
 // initialization function
 void init_array(auto L, auto x, auto b) noexcept {
 	// L: i x j
@@ -24,7 +31,7 @@ void init_array(auto L, auto x, auto b) noexcept {
 	auto n = L | noarr::get_length<'i'>();
 
 	noarr::traverser(L, x, b)
-		.template for_dims<'i'>([=](auto inner) constexpr noexcept {
+		.template for_dims<'i'>([=](auto inner) {
 			auto state = inner.state();
 			auto i = noarr::get_index<'i'>(state);
 
@@ -33,7 +40,7 @@ void init_array(auto L, auto x, auto b) noexcept {
 
 			inner
 				.order(noarr::slice<'j'>(0, i + 1))
-				.template for_each<'j'>([=](auto state) constexpr noexcept {
+				.template for_each<'j'>([=](auto state) {
 					auto j = noarr::get_index<'j'>(state);
 					L[state] = (num_t)(i + n - j + 1) * 2 / n;
 				});
@@ -51,14 +58,14 @@ void kernel_trisolv(auto L, auto x, auto b) noexcept {
 
 	#pragma scop
 	noarr::traverser(L, x, b)
-		.template for_dims<'i'>([=](auto inner) constexpr noexcept {
+		.template for_dims<'i'>([=](auto inner) {
 			auto state = inner.state();
 
 			x[state] = b[state];
 
 			inner
 				.order(noarr::slice<'j'>(0, noarr::get_index<'i'>(state)))
-				.for_each([=](auto state) constexpr noexcept {
+				.for_each([=](auto state) {
 					x[state] -= L[state] * x_j[state];
 				});
 
@@ -76,7 +83,7 @@ int main(int argc, char *argv[]) {
 	std::size_t n = N;
 
 	// data
-	auto L = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'j'>(n, n));
+	auto L = noarr::make_bag(noarr::scalar<num_t>() ^ tuning.l_layout ^ noarr::set_length<'i'>(n) ^ noarr::set_length<'j'>(n));
 	auto x = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'i'>(n));
 	auto b = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'i'>(n));
 
@@ -98,5 +105,6 @@ int main(int argc, char *argv[]) {
 		noarr::serialize_data(std::cout, x);
 	}
 
+	std::cerr << std::fixed << std::setprecision(6);
 	std::cerr << duration.count() << std::endl;
 }

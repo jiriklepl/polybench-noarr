@@ -14,6 +14,16 @@ using num_t = DATA_TYPE;
 
 namespace {
 
+constexpr auto i_vec =  noarr::vector<'i'>();
+constexpr auto j_vec =  noarr::vector<'j'>();
+
+struct tuning {
+	DEFINE_PROTO_STRUCT(u_layout, j_vec ^ i_vec);
+	DEFINE_PROTO_STRUCT(v_layout, i_vec ^ j_vec);
+	DEFINE_PROTO_STRUCT(p_layout, j_vec ^ i_vec);
+	DEFINE_PROTO_STRUCT(q_layout, j_vec ^ i_vec);
+} tuning;
+
 // initialization function
 void init_array(auto u) noexcept {
 	// u: i x j
@@ -21,7 +31,7 @@ void init_array(auto u) noexcept {
 	auto n = u | noarr::get_length<'i'>();
 
 	noarr::traverser(u)
-		.for_each([=](auto state) constexpr noexcept {
+		.for_each([=](auto state) {
 			auto [i, j] = noarr::get_indices<'i', 'j'>(state);
 
 			u[state] = (num_t)(i + n - j) / n;
@@ -38,6 +48,8 @@ void kernel_adi(auto steps, auto u, auto v, auto p, auto q) noexcept {
 	auto u_trans = u ^ noarr::rename<'i', 'j', 'j', 'i'>();
 	auto v_trans = v ^ noarr::rename<'i', 'j', 'j', 'i'>();
 	auto traverser = noarr::traverser(u, v, p, q).order(noarr::bcast<'t'>(steps));
+
+	#pragma scop
 
 	num_t DX = (num_t)1.0 / (traverser.top_struct() | noarr::get_length<'i'>());
 	num_t DY = (num_t)1.0 / (traverser.top_struct() | noarr::get_length<'j'>());
@@ -57,18 +69,17 @@ void kernel_adi(auto steps, auto u, auto v, auto p, auto q) noexcept {
 	num_t e = (num_t)1.0 + mul2;
 	num_t f = d;
 
-	#pragma scop
 	traverser.order(noarr::symmetric_spans<'i', 'j'>(traverser.top_struct(), 1, 1))
-		.template for_dims<'t'>([=](auto inner) constexpr noexcept {
+		.template for_dims<'t'>([=](auto inner) {
 			// column sweep
-			inner.template for_dims<'i'>([=](auto inner) constexpr noexcept {
+			inner.template for_dims<'i'>([=](auto inner) {
 				auto state = inner.state();
 
 				v[state & noarr::idx<'j'>(0)] = (num_t)1.0;
 				p[state & noarr::idx<'j'>(0)] = (num_t)0.0;
 				q[state & noarr::idx<'j'>(0)] = v[state & noarr::idx<'j'>(0)];
 
-				inner.for_each([=](auto state) constexpr noexcept {
+				inner.for_each([=](auto state) {
 					p[state] = -c / (a * p[noarr::neighbor<'j'>(state, -1)] + b);
 					q[state] = (-d * u_trans[noarr::neighbor<'i'>(state, -1)] + (B2 + B1 * d) * u_trans[state] -
 					             f * u_trans[noarr::neighbor<'i'>(state, +1)] -
@@ -76,24 +87,24 @@ void kernel_adi(auto steps, auto u, auto v, auto p, auto q) noexcept {
 					           (a * p[noarr::neighbor<'j'>(state, -1)] + b);
 				});
 
-				v[state & noarr::idx<'j'>((traverser.top_struct() | noarr::get_length<'j'>()) - 1)] = (num_t)1.0; // TODO: think about this
+				v[state & noarr::idx<'j'>((traverser.top_struct() | noarr::get_length<'j'>()) - 1)] = (num_t)1.0;
 
 				inner
 					.order(noarr::reverse<'j'>())
-					.for_each([=](auto state) constexpr noexcept {
+					.for_each([=](auto state) {
 						v[state] = p[state] * v[noarr::neighbor<'j'>(state, 1)] + q[state];
 					});
 			});
 
 			// row sweep
-			inner.template for_dims<'i'>([=](auto inner) constexpr noexcept {
+			inner.template for_dims<'i'>([=](auto inner) {
 				auto state = inner.state();
 
 				u[state & noarr::idx<'j'>(0)] = (num_t)1.0;
 				p[state & noarr::idx<'j'>(0)] = (num_t)0.0;
 				q[state & noarr::idx<'j'>(0)] = u[state & noarr::idx<'j'>(0)];
 
-				inner.for_each([=](auto state) constexpr noexcept {
+				inner.for_each([=](auto state) {
 					p[state] = -f / (d * p[noarr::neighbor<'j'>(state, -1)] + e);
 					q[state] = (-a * v_trans[noarr::neighbor<'i'>(state, -1)] + (B2 + B1 * a) * v_trans[state] -
 					             c * v_trans[noarr::neighbor<'i'>(state, +1)] -
@@ -105,7 +116,7 @@ void kernel_adi(auto steps, auto u, auto v, auto p, auto q) noexcept {
 
 				inner
 					.order(noarr::reverse<'j'>())
-					.for_each([=](auto state) constexpr noexcept {
+					.for_each([=](auto state) {
 						u[state] = p[state] * u[noarr::neighbor<'j'>(state, 1)] + q[state];
 					});
 			});
@@ -123,10 +134,10 @@ int main(int argc, char *argv[]) {
 	std::size_t t = TSTEPS;
 
 	// data
-	auto u = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'j'>(n, n));
-	auto v = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'j', 'i'>(n, n));
-	auto p = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'j'>(n, n));
-	auto q = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vectors<'i', 'j'>(n, n));
+	auto u = noarr::make_bag(noarr::scalar<num_t>() ^ tuning.u_layout ^ noarr::set_length<'i'>(n) ^ noarr::set_length<'j'>(n)); 
+	auto v = noarr::make_bag(noarr::scalar<num_t>() ^ tuning.v_layout ^ noarr::set_length<'i'>(n) ^ noarr::set_length<'j'>(n));
+	auto p = noarr::make_bag(noarr::scalar<num_t>() ^ tuning.p_layout ^ noarr::set_length<'i'>(n) ^ noarr::set_length<'j'>(n));
+	auto q = noarr::make_bag(noarr::scalar<num_t>() ^ tuning.q_layout ^ noarr::set_length<'i'>(n) ^ noarr::set_length<'j'>(n));
 
 	// initialize data
 	init_array(u.get_ref());
@@ -146,5 +157,6 @@ int main(int argc, char *argv[]) {
 		noarr::serialize_data(std::cout, u.get_ref() ^ noarr::hoist<'i'>());
 	}
 
+	std::cerr << std::fixed << std::setprecision(6);
 	std::cerr << duration.count() << std::endl;
 }

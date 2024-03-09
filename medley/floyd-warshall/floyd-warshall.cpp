@@ -21,13 +21,13 @@ constexpr auto j_vec =  noarr::vector<'j'>();
 constexpr auto k_vec =  noarr::vector<'k'>();
 
 struct tuning {
-	DEFINE_PROTO_STRUCT(block_i, noarr::neutral_proto());
-	DEFINE_PROTO_STRUCT(block_j, noarr::neutral_proto());
-	DEFINE_PROTO_STRUCT(block_k, noarr::neutral_proto());
+	DEFINE_PROTO_STRUCT(block_i, noarr::hoist<'i'>());
+	DEFINE_PROTO_STRUCT(block_j, noarr::hoist<'j'>());
+	DEFINE_PROTO_STRUCT(block_k, noarr::hoist<'k'>());
 
-	DEFINE_PROTO_STRUCT(order, block_k ^ block_i ^ block_j);
+	DEFINE_PROTO_STRUCT(order, block_j ^ block_i ^ block_k);
 
-	DEFINE_PROTO_STRUCT(path_layout, i_vec ^ j_vec);
+	DEFINE_PROTO_STRUCT(path_layout, j_vec ^ i_vec);
 } tuning;
 
 // initialization function
@@ -35,7 +35,7 @@ void init_array(auto path) noexcept {
 	// path: i x j
 
 	noarr::traverser(path)
-		.for_each([=](auto state) constexpr noexcept {
+		.for_each([=](auto state) {
 			auto [i, j] = noarr::get_indices<'i', 'j'>(state);
 
 			path[state] = i * j % 7 + 1;
@@ -59,7 +59,7 @@ void kernel_floyd_warshall(auto path, Order order = {}) noexcept {
 	noarr::traverser(path, path_start_k, path_end_k)
 		.order(noarr::hoist<'k'>())
 		.order(order)
-		.for_each([=](auto state) constexpr noexcept {
+		.for_each([=](auto state) {
 			path[state] = std::min(path_start_k[state] + path_end_k[state], path[state]);
 		});
 	#pragma endscop
@@ -94,5 +94,6 @@ int main(int argc, char *argv[]) {
 		noarr::serialize_data(std::cout, path.get_ref() ^ noarr::hoist<'i'>());
 	}
 
+	std::cerr << std::fixed << std::setprecision(6);
 	std::cerr << duration.count() << std::endl;
 }

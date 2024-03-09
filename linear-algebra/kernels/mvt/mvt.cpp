@@ -18,15 +18,15 @@ constexpr auto i_vec =  noarr::vector<'i'>();
 constexpr auto j_vec =  noarr::vector<'j'>();
 
 struct tuning {
-	DEFINE_PROTO_STRUCT(block_i1, noarr::neutral_proto());
-	DEFINE_PROTO_STRUCT(block_j1, noarr::neutral_proto());
-	DEFINE_PROTO_STRUCT(block_i2, noarr::neutral_proto());
-	DEFINE_PROTO_STRUCT(block_j2, noarr::neutral_proto());
+	DEFINE_PROTO_STRUCT(block_i1, noarr::hoist<'i'>());
+	DEFINE_PROTO_STRUCT(block_j1, noarr::hoist<'j'>());
+	DEFINE_PROTO_STRUCT(block_i2, noarr::hoist<'i'>());
+	DEFINE_PROTO_STRUCT(block_j2, noarr::hoist<'j'>());
 
-	DEFINE_PROTO_STRUCT(order1, block_i1 ^ block_j1);
-	DEFINE_PROTO_STRUCT(order2, block_i2 ^ block_j2);
+	DEFINE_PROTO_STRUCT(order1, block_j1 ^ block_i1);
+	DEFINE_PROTO_STRUCT(order2, block_j2 ^ block_i2);
 
-	DEFINE_PROTO_STRUCT(a_layout, i_vec ^ j_vec);
+	DEFINE_PROTO_STRUCT(a_layout, j_vec ^ i_vec);
 } tuning;
 
 // initialization function
@@ -43,7 +43,7 @@ void init_array(auto x1, auto x2, auto y1, auto y2, auto A) noexcept {
 	auto y2_i = y2 ^ noarr::rename<'j', 'i'>();
 
 	noarr::traverser(x1, x2, y1_i, y2_i, A)
-		.template for_dims<'i'>([=](auto inner) constexpr noexcept {
+		.template for_dims<'i'>([=](auto inner) {
 			auto state = inner.state();
 			auto i = noarr::get_index<'i'>(state);
 
@@ -52,7 +52,7 @@ void init_array(auto x1, auto x2, auto y1, auto y2, auto A) noexcept {
 			y1_i[state] = (num_t)((i + 3) % n) / n;
 			y2_i[state] = (num_t)((i + 4) % n) / n;
 
-			inner.for_each([=](auto state) constexpr noexcept {
+			inner.for_each([=](auto state) {
 				auto j = noarr::get_index<'j'>(state);
 
 				A[state] = (num_t)(i * j % n) / n;
@@ -75,13 +75,13 @@ void kernel_mvt(auto x1, auto x2, auto y1, auto y2, auto A, Order1 order1 = {}, 
 	#pragma scop
 	noarr::traverser(x1, A, y1)
 		.order(order1)
-		.for_each([=](auto state) constexpr noexcept {
+		.for_each([=](auto state) {
 			x1[state] += A[state] * y1[state];
 		});
 
 	noarr::traverser(x2, A_ji, y2)
 		.order(order2)
-		.for_each([=](auto state) constexpr noexcept {
+		.for_each([=](auto state) {
 			x2[state] += A_ji[state] * y2[state];
 		});
 	#pragma endscop
@@ -123,5 +123,6 @@ int main(int argc, char *argv[]) {
 		noarr::serialize_data(std::cout, x2);
 	}
 
+	std::cerr << std::fixed << std::setprecision(6);
 	std::cerr << duration.count() << std::endl;
 }

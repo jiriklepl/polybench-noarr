@@ -20,13 +20,13 @@ constexpr auto p_vec =  noarr::vector<'p'>();
 constexpr auto s_vec =  noarr::vector<'s'>();
 
 struct tuning {
-	DEFINE_PROTO_STRUCT(block_r, noarr::neutral_proto());
-	DEFINE_PROTO_STRUCT(block_q, noarr::neutral_proto());
+	DEFINE_PROTO_STRUCT(block_r, noarr::hoist<'r'>());
+	DEFINE_PROTO_STRUCT(block_q, noarr::hoist<'q'>());
 
-	DEFINE_PROTO_STRUCT(order, block_r ^ block_q);
+	DEFINE_PROTO_STRUCT(order, block_q ^ block_r);
 
-	DEFINE_PROTO_STRUCT(a_layout, r_vec ^ q_vec ^ p_vec);
-	DEFINE_PROTO_STRUCT(c4_layout, s_vec ^ p_vec);
+	DEFINE_PROTO_STRUCT(a_layout, p_vec ^ q_vec ^ r_vec);
+	DEFINE_PROTO_STRUCT(c4_layout, p_vec ^ s_vec);
 } tuning;
 
 // initialization function
@@ -37,13 +37,13 @@ void init_array(auto A, auto C4) noexcept {
 	auto np = A | noarr::get_length<'p'>();
 
 	noarr::traverser(A)
-		.for_each([=](auto state) constexpr noexcept {
+		.for_each([=](auto state) {
 			auto [r, q, p] = noarr::get_indices<'r', 'q', 'p'>(state);
 			A[state] = (num_t)((r * q + p) % np) / np;
 		});
 
 	noarr::traverser(C4)
-		.for_each([=](auto state) constexpr noexcept {
+		.for_each([=](auto state) {
 			auto [s, p] = noarr::get_indices<'s', 'p'>(state);
 			C4[state] = (num_t)(s * p % np) / np;
 		});
@@ -61,13 +61,13 @@ void kernel_doitgen(auto A, auto C4, auto sum, Order order = {}) noexcept {
 
 	#pragma scop
 	noarr::planner(A, C4, sum)
-		.template for_sections<'r', 'q'>([=](auto inner) constexpr noexcept {
-			inner.template for_sections<'p'>([=](auto inner) constexpr noexcept {
+		.template for_sections<'r', 'q'>([=](auto inner) {
+			inner.template for_sections<'p'>([=](auto inner) {
 				auto state = inner.state();
 
 				sum[state] = 0;
 
-				inner.for_each([=](auto state) constexpr noexcept {
+				inner.for_each([=](auto state) {
 					sum[state] += A_rqs[state] * C4[state];
 				})
 				();
@@ -76,7 +76,7 @@ void kernel_doitgen(auto A, auto C4, auto sum, Order order = {}) noexcept {
 			();
 
 			inner
-				.template for_sections<'p'>([=](auto inner) constexpr noexcept {
+				.template for_sections<'p'>([=](auto inner) {
 					auto state = inner.state();
 					A[state] = sum[state];
 				})
@@ -125,5 +125,6 @@ int main(int argc, char *argv[]) {
 		noarr::serialize_data(std::cout, A.get_ref() ^ noarr::reorder<'r', 'q', 'p'>());
 	}
 
+	std::cerr << std::fixed << std::setprecision(6);
 	std::cerr << duration.count() << std::endl;
 }

@@ -19,22 +19,22 @@ constexpr auto i_vec =  noarr::vector<'i'>();
 constexpr auto j_vec =  noarr::vector<'j'>();
 
 struct tuning {
-	DEFINE_PROTO_STRUCT(block_i1, noarr::neutral_proto());
-	DEFINE_PROTO_STRUCT(block_j1, noarr::neutral_proto());
+	DEFINE_PROTO_STRUCT(block_i1, noarr::hoist<'i'>());
+	DEFINE_PROTO_STRUCT(block_j1, noarr::hoist<'j'>());
 
-	DEFINE_PROTO_STRUCT(order1, block_i1 ^ block_j1);
+	DEFINE_PROTO_STRUCT(order1, block_j1 ^ block_i1);
 
-	DEFINE_PROTO_STRUCT(block_i2, noarr::neutral_proto());
-	DEFINE_PROTO_STRUCT(block_j2, noarr::neutral_proto());
+	DEFINE_PROTO_STRUCT(block_i2, noarr::hoist<'i'>());
+	DEFINE_PROTO_STRUCT(block_j2, noarr::hoist<'j'>());
 
-	DEFINE_PROTO_STRUCT(order2, block_i2 ^ block_j2);
+	DEFINE_PROTO_STRUCT(order2, block_j2 ^ block_i2);
 
-	DEFINE_PROTO_STRUCT(block_i3, noarr::neutral_proto());
-	DEFINE_PROTO_STRUCT(block_j3, noarr::neutral_proto());
+	DEFINE_PROTO_STRUCT(block_i3, noarr::hoist<'i'>());
+	DEFINE_PROTO_STRUCT(block_j3, noarr::hoist<'j'>());
 
-	DEFINE_PROTO_STRUCT(order3, block_i3 ^ block_j3);
+	DEFINE_PROTO_STRUCT(order3, block_j3 ^ block_i3);
 
-	DEFINE_PROTO_STRUCT(a_layout, i_vec ^ j_vec);
+	DEFINE_PROTO_STRUCT(a_layout, j_vec ^ i_vec);
 } tuning;
 
 // initialization function
@@ -59,7 +59,7 @@ void init_array(num_t &alpha, num_t &beta, auto A, auto u1, auto v1, auto u2, au
 	num_t fn = A | noarr::get_length<'i'>();
 
 	noarr::traverser(A, u1, u2, v1_i, v2_i, y_i, z, x, w)
-		.template for_dims<'i'>([=](auto inner) constexpr noexcept {
+		.template for_dims<'i'>([=](auto inner) {
 			auto state = inner.state();
 
 
@@ -74,7 +74,7 @@ void init_array(num_t &alpha, num_t &beta, auto A, auto u1, auto v1, auto u2, au
 			x[state] = 0.0;
 			w[state] = 0.0;
 
-			inner.for_each([=](auto state) constexpr noexcept {
+			inner.for_each([=](auto state) {
 				auto j = noarr::get_index<'j'>(state);
 
 				A[state] = (num_t)(j * i % (A | noarr::get_length<'i'>())) / (A | noarr::get_length<'i'>());
@@ -106,24 +106,24 @@ void kernel_gemver(num_t alpha, num_t beta, auto A,
 	#pragma scop
 	noarr::traverser(A, u1, u2, v1, v2)
 		.order(order1)
-		.for_each([=](auto state) constexpr noexcept {
+		.for_each([=](auto state) {
 			A[state] = A[state] + u1[state] * v1[state] + u2[state] * v2[state];
 		});
 
 	noarr::traverser(x, A_ji, y)
 		.order(order2)
-		.for_each([=](auto state) constexpr noexcept {
+		.for_each([=](auto state) {
 			x[state] = x[state] + beta * A_ji[state] * y[state];
 		});
 
 	noarr::traverser(x, z)
-		.for_each([=](auto state) constexpr noexcept {
+		.for_each([=](auto state) {
 			x[state] = x[state] + z[state];
 		});
 
 	noarr::traverser(A, w, x_j)
 		.order(order3)
-		.for_each([=](auto state) constexpr noexcept {
+		.for_each([=](auto state) {
 			w[state] = w[state] + alpha * A[state] * x_j[state];
 		});
 	#pragma endscop
@@ -176,5 +176,6 @@ int main(int argc, char *argv[]) {
 		noarr::serialize_data(std::cout, w);
 	}
 
+	std::cerr << std::fixed << std::setprecision(6);
 	std::cerr << duration.count() << std::endl;
 }

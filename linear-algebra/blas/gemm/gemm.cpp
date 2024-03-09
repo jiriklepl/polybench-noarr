@@ -19,15 +19,9 @@ constexpr auto j_vec =  noarr::vector<'j'>();
 constexpr auto k_vec =  noarr::vector<'k'>();
 
 struct tuning {
-	DEFINE_PROTO_STRUCT(block_i, noarr::neutral_proto());
-	DEFINE_PROTO_STRUCT(block_j, noarr::neutral_proto());
-	DEFINE_PROTO_STRUCT(block_k, noarr::neutral_proto());
-
-	DEFINE_PROTO_STRUCT(order, block_i ^ block_j ^ block_k);
-
-	DEFINE_PROTO_STRUCT(c_layout, i_vec ^ j_vec);
-	DEFINE_PROTO_STRUCT(a_layout, i_vec ^ k_vec);
-	DEFINE_PROTO_STRUCT(b_layout, k_vec ^ j_vec);
+	DEFINE_PROTO_STRUCT(c_layout, j_vec ^ i_vec);
+	DEFINE_PROTO_STRUCT(a_layout, k_vec ^ i_vec);
+	DEFINE_PROTO_STRUCT(b_layout, j_vec ^ k_vec);
 } tuning;
 
 // initialization function
@@ -40,41 +34,41 @@ void init_array(num_t &alpha, num_t &beta, auto C, auto A, auto B) noexcept {
 	beta = (num_t)1.2;
 
 	noarr::traverser(C)
-		.for_each([=](auto state) constexpr noexcept {
+		.for_each([=](auto state) {
 			auto [i, j] = noarr::get_indices<'i', 'j'>(state);
 			C[state] = (num_t)((i * j + 1) % (C | noarr::get_length<'i'>())) / (C | noarr::get_length<'i'>());
 		});
 
 	noarr::traverser(A)
-		.for_each([=](auto state) constexpr noexcept {
+		.for_each([=](auto state) {
 			auto [i, k] = noarr::get_indices<'i', 'k'>(state);
 			A[state] = (num_t)(i * (k + 1) % (A | noarr::get_length<'k'>())) / (A | noarr::get_length<'k'>());
 		});
 
 	noarr::traverser(B)
-		.for_each([=](auto state) constexpr noexcept {
+		.for_each([=](auto state) {
 			auto [k, j] = noarr::get_indices<'k', 'j'>(state);
 			B[state] = (num_t)(k * (j + 2) % (B | noarr::get_length<'j'>())) / (B | noarr::get_length<'j'>());
 		});
 }
 
 // computation kernel
-template<class Order = noarr::neutral_proto>
 [[gnu::flatten, gnu::noinline]]
-void kernel_gemm(num_t alpha, num_t beta, auto C, auto A, auto B, Order order = {}) noexcept {
+void kernel_gemm(num_t alpha, num_t beta, auto C, auto A, auto B) noexcept {
 	// C: i x j
 	// A: i x k
 	// B: k x j
 
 	#pragma scop
-	noarr::traverser(C)
-		.for_each([=](auto state) constexpr noexcept {
-			C[state] *= beta;
-		});
+	noarr::traverser(C, A, B)
+		.template for_dims<'i'>([=](auto inner) {
+			inner.template for_each<'j'>([=](auto state) {
+				C[state] *= beta;
+			});
 
-	noarr::traverser(C, A, B).order(order)
-		.for_each([=](auto state) constexpr noexcept {
-			C[state] += alpha * A[state] * B[state];
+			inner.for_each([=](auto state) {
+				C[state] += alpha * A[state] * B[state];
+			});
 		});
 	#pragma endscop
 }
@@ -105,7 +99,7 @@ int main(int argc, char *argv[]) {
 	auto start = std::chrono::high_resolution_clock::now();
 
 	// run kernel
-	kernel_gemm(alpha, beta, C.get_ref(), A.get_ref(), B.get_ref(), tuning.order);
+	kernel_gemm(alpha, beta, C.get_ref(), A.get_ref(), B.get_ref());
 
 	auto end = std::chrono::high_resolution_clock::now();
 
@@ -117,5 +111,6 @@ int main(int argc, char *argv[]) {
 		noarr::serialize_data(std::cout, C.get_ref() ^ noarr::hoist<'i'>());
 	}
 
+	std::cerr << std::fixed << std::setprecision(6);
 	std::cerr << duration.count() << std::endl;
 }
