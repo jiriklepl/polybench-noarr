@@ -23,7 +23,7 @@ struct tuning {
 } tuning;
 
 // initialization function
-void init_array(auto A) noexcept {
+void init_array(auto A) {
 	// A: i x j
 
 	int n = A | noarr::get_length<'i'>();

@@ -23,7 +23,7 @@ struct tuning {
 } tuning;
 
 // initialization function
-void init_array(auto L, auto x, auto b) noexcept {
+void init_array(auto L, auto x, auto b) {
 	// L: i x j
 	// x: i
 	// b: i
@@ -49,7 +49,7 @@ void init_array(auto L, auto x, auto b) noexcept {
 
 // computation kernel
 [[gnu::flatten, gnu::noinline]]
-void kernel_trisolv(auto L, auto x, auto b) noexcept {
+void kernel_trisolv(auto L, auto x, auto b) {
 	// L: i x j
 	// x: i
 	// b: i

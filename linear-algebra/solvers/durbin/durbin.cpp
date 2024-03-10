@@ -15,7 +15,7 @@ using num_t = DATA_TYPE;
 namespace {
 
 // initialization function
-void init_array(auto r) noexcept {
+void init_array(auto r) {
 	// r: i
 
 	auto n = r | noarr::get_length<'i'>();
@@ -29,7 +29,7 @@ void init_array(auto r) noexcept {
 
 // computation kernel
 [[gnu::flatten, gnu::noinline]]
-void kernel_durbin(auto r, auto y) noexcept {
+void kernel_durbin(auto r, auto y) {
 	// r: i
 	// y: i
 

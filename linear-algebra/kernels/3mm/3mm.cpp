@@ -42,7 +42,7 @@ struct tuning {
 } tuning;
 
 // initialization function
-void init_array(auto A, auto B, auto C, auto D) noexcept {
+void init_array(auto A, auto B, auto C, auto D) {
 	// A: i x k
 	// B: k x j
 	// C: j x m
@@ -81,7 +81,7 @@ void init_array(auto A, auto B, auto C, auto D) noexcept {
 // computation kernel
 template<class Order1 = noarr::neutral_proto, class Order2 = noarr::neutral_proto, class Order3 = noarr::neutral_proto>
 [[gnu::flatten, gnu::noinline]]
-void kernel_3mm(auto E, auto A, auto B, auto F, auto C, auto D, auto G, Order1 order1 = {}, Order2 order2 = {}, Order3 order3 = {}) noexcept {
+void kernel_3mm(auto E, auto A, auto B, auto F, auto C, auto D, auto G, Order1 order1 = {}, Order2 order2 = {}, Order3 order3 = {}) {
 	// E: i x j
 	// A: i x k
 	// B: k x j

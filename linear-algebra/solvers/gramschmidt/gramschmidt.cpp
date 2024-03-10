@@ -26,7 +26,7 @@ struct tuning {
 } tuning;
 
 // initialization function
-void init_array(auto A, auto R, auto Q) noexcept {
+void init_array(auto A, auto R, auto Q) {
 	// A: i x k
 	// R: k x j
 	// Q: i x k
@@ -50,7 +50,7 @@ void init_array(auto A, auto R, auto Q) noexcept {
 
 // computation kernel
 [[gnu::flatten, gnu::noinline]]
-void kernel_gramschmidt(auto A, auto R, auto Q) noexcept {
+void kernel_gramschmidt(auto A, auto R, auto Q) {
 	// A: i x k
 	// R: k x j
 	// Q: i x k

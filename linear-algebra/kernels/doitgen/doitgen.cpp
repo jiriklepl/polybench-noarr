@@ -30,7 +30,7 @@ struct tuning {
 } tuning;
 
 // initialization function
-void init_array(auto A, auto C4) noexcept {
+void init_array(auto A, auto C4) {
 	// A: r x q x p
 	// C4: s x p
 
@@ -52,7 +52,7 @@ void init_array(auto A, auto C4) noexcept {
 // computation kernel
 template<class Order = noarr::neutral_proto>
 [[gnu::flatten, gnu::noinline]]
-void kernel_doitgen(auto A, auto C4, auto sum, Order order = {}) noexcept {
+void kernel_doitgen(auto A, auto C4, auto sum, Order order = {}) {
 	// A: r x q x p
 	// C4: s x p
 	// sum: p

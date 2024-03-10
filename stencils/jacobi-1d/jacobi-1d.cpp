@@ -15,7 +15,7 @@ using num_t = DATA_TYPE;
 namespace {
 
 // initialization function
-void init_array(auto A, auto B) noexcept {
+void init_array(auto A, auto B) {
 	// A: i
 	// B: i
 
@@ -33,7 +33,7 @@ void init_array(auto A, auto B) noexcept {
 
 // computation kernel
 [[gnu::flatten, gnu::noinline]]
-void kernel_jacobi_1d(std::size_t steps, auto A, auto B) noexcept {
+void kernel_jacobi_1d(std::size_t steps, auto A, auto B) {
 	// A: i
 	// B: i
 

@@ -29,7 +29,7 @@ struct tuning {
 
 
 // initialization function
-void init_array(auto A, auto B) noexcept {
+void init_array(auto A, auto B) {
 	// A: i x j
 	// B: i x j
 
@@ -48,7 +48,7 @@ void init_array(auto A, auto B) noexcept {
 // computation kernel
 template<class Order = noarr::neutral_proto>
 [[gnu::flatten, gnu::noinline]]
-void kernel_jacobi_2d(std::size_t steps, auto A, auto B, Order order = {}) noexcept {
+void kernel_jacobi_2d(std::size_t steps, auto A, auto B, Order order = {}) {
 	// A: i x j
 	// B: i x j
 

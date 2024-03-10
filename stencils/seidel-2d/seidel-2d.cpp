@@ -22,7 +22,7 @@ struct tuning {
 } tuning;
 
 // initialization function
-void init_array(auto A) noexcept {
+void init_array(auto A) {
 	// A: i x j
 
 	auto n = A | noarr::get_length<'i'>();
@@ -37,7 +37,7 @@ void init_array(auto A) noexcept {
 
 // computation kernel
 [[gnu::flatten, gnu::noinline]]
-void kernel_seidel_2d(std::size_t steps, auto A) noexcept {
+void kernel_seidel_2d(std::size_t steps, auto A) {
 	// A: i x j
 
 	auto traverser = noarr::traverser(A).order(noarr::bcast<'t'>(steps));

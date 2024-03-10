@@ -38,7 +38,7 @@ struct tuning {
 } tuning;
 
 // initialization function
-void init_array(num_t &alpha, num_t &beta, auto A, auto u1, auto v1, auto u2, auto v2, auto w, auto x, auto y, auto z) noexcept {
+void init_array(num_t &alpha, num_t &beta, auto A, auto u1, auto v1, auto u2, auto v2, auto w, auto x, auto y, auto z) {
 	// A: i x j
 	// u1: i
 	// v1: j
@@ -89,7 +89,7 @@ void kernel_gemver(num_t alpha, num_t beta, auto A,
 	auto u1, auto v1,
 	auto u2, auto v2,
 	auto w, auto x, auto y, auto z,
-	Order1 order1 = {}, Order2 order2 = {}, Order3 order3 = {}) noexcept {
+	Order1 order1 = {}, Order2 order2 = {}, Order3 order3 = {}) {
 	// A: i x j
 	// u1: i
 	// v1: j

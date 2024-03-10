@@ -27,7 +27,7 @@ struct tuning {
 } tuning;
 
 // initialization function
-void init_array(num_t &alpha, num_t &beta, auto C, auto A, auto B) noexcept {
+void init_array(num_t &alpha, num_t &beta, auto C, auto A, auto B) {
 	// C: i x j
 	// A: i x k
 	// B: i x k
@@ -55,7 +55,7 @@ void init_array(num_t &alpha, num_t &beta, auto C, auto A, auto B) noexcept {
 // computation kernel
 template<class Order = noarr::neutral_proto>
 [[gnu::flatten, gnu::noinline]]
-void kernel_syr2k(num_t alpha, num_t beta, auto C, auto A, auto B, Order order = {}) noexcept {
+void kernel_syr2k(num_t alpha, num_t beta, auto C, auto A, auto B, Order order = {}) {
 	// C: i x j
 	// A: i x k
 	// B: i x k

@@ -25,7 +25,7 @@ struct tuning {
 } tuning;
 
 // initialization function
-void init_array(num_t &alpha, num_t &beta, auto C, auto A, auto B) noexcept {
+void init_array(num_t &alpha, num_t &beta, auto C, auto A, auto B) {
 	// C: i x j
 	// A: i x k
 	// B: k x j
@@ -54,7 +54,7 @@ void init_array(num_t &alpha, num_t &beta, auto C, auto A, auto B) noexcept {
 
 // computation kernel
 [[gnu::flatten, gnu::noinline]]
-void kernel_gemm(num_t alpha, num_t beta, auto C, auto A, auto B) noexcept {
+void kernel_gemm(num_t alpha, num_t beta, auto C, auto A, auto B) {
 	// C: i x j
 	// A: i x k
 	// B: k x j

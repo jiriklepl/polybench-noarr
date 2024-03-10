@@ -30,7 +30,7 @@ struct tuning {
 } tuning;
 
 // initialization function
-void init_array(auto x1, auto x2, auto y1, auto y2, auto A) noexcept {
+void init_array(auto x1, auto x2, auto y1, auto y2, auto A) {
 	// x1: i
 	// x2: i
 	// y1: j
@@ -63,7 +63,7 @@ void init_array(auto x1, auto x2, auto y1, auto y2, auto A) noexcept {
 // computation kernel
 template<class Order1 = noarr::neutral_proto, class Order2 = noarr::neutral_proto>
 [[gnu::flatten, gnu::noinline]]
-void kernel_mvt(auto x1, auto x2, auto y1, auto y2, auto A, Order1 order1 = {}, Order2 order2 = {}) noexcept {
+void kernel_mvt(auto x1, auto x2, auto y1, auto y2, auto A, Order1 order1 = {}, Order2 order2 = {}) {
 	// x1: i
 	// x2: i
 	// y1: j

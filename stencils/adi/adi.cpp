@@ -25,7 +25,7 @@ struct tuning {
 } tuning;
 
 // initialization function
-void init_array(auto u) noexcept {
+void init_array(auto u) {
 	// u: i x j
 
 	auto n = u | noarr::get_length<'i'>();
@@ -40,7 +40,7 @@ void init_array(auto u) noexcept {
 
 // computation kernel
 [[gnu::flatten, gnu::noinline]]
-void kernel_adi(auto steps, auto u, auto v, auto p, auto q) noexcept {
+void kernel_adi(auto steps, auto u, auto v, auto p, auto q) {
 	// u: i x j
 	// v: j x i
 	// p: i x j

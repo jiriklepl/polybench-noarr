@@ -25,7 +25,7 @@ struct tuning {
 } tuning;
 
 // initialization function
-void init_array(num_t &float_n, auto data) noexcept {
+void init_array(num_t &float_n, auto data) {
 	// data: k x j
 
 	float_n = data | noarr::get_length<'k'>();
@@ -38,7 +38,7 @@ void init_array(num_t &float_n, auto data) noexcept {
 
 // computation kernel
 [[gnu::flatten, gnu::noinline]]
-void kernel_correlation(num_t float_n, auto data, auto corr, auto mean, auto stddev) noexcept {
+void kernel_correlation(num_t float_n, auto data, auto corr, auto mean, auto stddev) {
 	// data: k x j
 	// corr: i x j
 	// mean: j

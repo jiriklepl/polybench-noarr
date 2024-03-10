@@ -27,7 +27,7 @@ struct tuning {
 } tuning;
 
 // initialization function
-void init_array(num_t &alpha, auto imgIn, auto) noexcept {
+void init_array(num_t &alpha, auto imgIn, auto) {
 	// imgIn: w x h
 	// imgOut: w x h
 
@@ -43,7 +43,7 @@ void init_array(num_t &alpha, auto imgIn, auto) noexcept {
 
 // computation kernel
 [[gnu::flatten, gnu::noinline]]
-void kernel_deriche(num_t alpha, auto imgIn, auto imgOut, auto y1, auto y2) noexcept {
+void kernel_deriche(num_t alpha, auto imgIn, auto imgOut, auto y1, auto y2) {
 	// imgIn: w x h
 	// imgOut: w x h
 	// y1: w x h

@@ -29,7 +29,7 @@ struct tuning {
 } tuning;
 
 // initialization function
-void init_array(num_t &alpha, auto A, auto B) noexcept {
+void init_array(num_t &alpha, auto A, auto B) {
 	// A: k x i
 	// B: i x j
 
@@ -63,7 +63,7 @@ void init_array(num_t &alpha, auto A, auto B) noexcept {
 // computation kernel
 template<class Order = noarr::neutral_proto>
 [[gnu::flatten, gnu::noinline]]
-void kernel_trmm(num_t alpha, auto A, auto B, Order order = {}) noexcept {
+void kernel_trmm(num_t alpha, auto A, auto B, Order order = {}) {
 	// A: k x i
 	// B: i x j
 

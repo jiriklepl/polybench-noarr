@@ -24,7 +24,7 @@ struct tuning {
 } tuning;
 
 // initialization function
-void init_array(auto ex, auto ey, auto hz, auto _fict_) noexcept {
+void init_array(auto ex, auto ey, auto hz, auto _fict_) {
 	// ex: i x j
 	// ey: i x j
 	// hz: i x j
@@ -50,7 +50,7 @@ void init_array(auto ex, auto ey, auto hz, auto _fict_) noexcept {
 
 // computation kernel
 [[gnu::flatten, gnu::noinline]]
-void kernel_fdtd_2d(auto ex, auto ey, auto hz, auto _fict_) noexcept {
+void kernel_fdtd_2d(auto ex, auto ey, auto hz, auto _fict_) {
 	// ex: i x j
 	// ey: i x j
 	// hz: i x j

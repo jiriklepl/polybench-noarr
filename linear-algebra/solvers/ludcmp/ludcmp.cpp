@@ -22,7 +22,7 @@ struct tuning {
 } tuning;
 
 // initialization function
-void init_array(auto A, auto b, auto x, auto y) noexcept {
+void init_array(auto A, auto b, auto x, auto y) {
 	// A: i x j
 	// b: i
 	// x: i
@@ -87,7 +87,7 @@ void init_array(auto A, auto b, auto x, auto y) noexcept {
 
 // computation kernel
 [[gnu::flatten, gnu::noinline]]
-void kernel_ludcmp(auto A, auto b, auto x, auto y) noexcept {
+void kernel_ludcmp(auto A, auto b, auto x, auto y) {
 	// A: i x j
 	// b: i
 	// x: i

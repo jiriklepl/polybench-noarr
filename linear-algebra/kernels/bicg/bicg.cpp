@@ -22,7 +22,7 @@ struct tuning {
 } tuning;
 
 // initialization function
-void init_array(auto A, auto r, auto p) noexcept {
+void init_array(auto A, auto r, auto p) {
 	// A: i x j
 	// r: i
 	// p: j
@@ -54,7 +54,7 @@ void init_array(auto A, auto r, auto p) noexcept {
 // computation kernel
 template<class Order = noarr::neutral_proto>
 [[gnu::flatten, gnu::noinline]]
-void kernel_bicg(auto A, auto s, auto q, auto p, auto r, Order order = {}) noexcept {
+void kernel_bicg(auto A, auto s, auto q, auto p, auto r, Order order = {}) {
 	// A: i x j
 	// s: j
 	// q: i

@@ -27,7 +27,7 @@ struct tuning {
 } tuning;
 
 // initialization function
-void init_array(auto seq, auto table) noexcept {
+void init_array(auto seq, auto table) {
 	// seq: i
 	// table: i x j
 
@@ -46,7 +46,7 @@ void init_array(auto seq, auto table) noexcept {
 
 // computation kernel
 [[gnu::flatten, gnu::noinline]]
-void kernel_nussinov(auto seq, auto table) noexcept {
+void kernel_nussinov(auto seq, auto table) {
 	// seq: i
 	// table: i x j
 

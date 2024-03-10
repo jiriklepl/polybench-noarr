@@ -30,7 +30,7 @@ struct tuning {
 } tuning;
 
 // initialization function
-void init_array(auto A, auto B) noexcept {
+void init_array(auto A, auto B) {
 	// A: i x j x k
 	// B: i x j x k
 
@@ -47,7 +47,7 @@ void init_array(auto A, auto B) noexcept {
 // computation kernel
 template<class Order = noarr::neutral_proto>
 [[gnu::flatten, gnu::noinline]]
-void kernel_heat_3d(std::size_t steps, auto A, auto B, Order order = {}) noexcept {
+void kernel_heat_3d(std::size_t steps, auto A, auto B, Order order = {}) {
 	// A: i x j x k
 	// B: i x j x k
 

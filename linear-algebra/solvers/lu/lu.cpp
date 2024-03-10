@@ -24,7 +24,7 @@ struct tuning {
 } tuning;
 
 // initialization function
-void init_array(auto A) noexcept {
+void init_array(auto A) {
 	// A: i x j
 
 	int n = A | noarr::get_length<'i'>();
@@ -73,7 +73,7 @@ void init_array(auto A) noexcept {
 // computation kernel
 template<typename Order = noarr::neutral_proto>
 [[gnu::flatten, gnu::noinline]]
-void kernel_lu(auto A, Order order = {}) noexcept {
+void kernel_lu(auto A, Order order = {}) {
 	// A: i x j
 
 	auto A_ik = A ^ noarr::rename<'j', 'k'>();
