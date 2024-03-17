@@ -41,42 +41,39 @@ void kernel_covariance(num_t float_n, auto data, auto cov, auto mean) {
 	// data: k x j
 	// cov: i x j
 	// mean: j
+	using namespace noarr;
 
-	auto cov_ji = cov ^ noarr::rename<'i', 'j', 'j', 'i'>();
-	auto data_ki = data ^ noarr::rename<'j', 'i'>();
+	auto cov_ji = cov ^ rename<'i', 'j', 'j', 'i'>();
+	auto data_ki = data ^ rename<'j', 'i'>();
 
 	#pragma scop
-	noarr::traverser(mean).for_each([=](auto state) {
+	traverser(mean) | [=](auto state) {
 		mean[state] = 0;
-	});
+	};
 
-	noarr::traverser(data, mean).for_each([=](auto state) {
+	traverser(data, mean) | [=](auto state) {
 		mean[state] += data[state];
-	});
+	};
 
-	noarr::traverser(mean).for_each([=](auto state) {
+	traverser(mean) | [=](auto state) {
 		mean[state] /= float_n;
-	});
+	};
 
-	noarr::traverser(data, mean).for_each([=](auto state) {
+	traverser(data, mean) | [=](auto state) {
 		data[state] -= mean[state];
-	});
+	};
 
-	noarr::traverser(data, cov, data_ki, cov_ji).template for_dims<'i'>([=](auto inner) {
-		inner
-			.order(noarr::shift<'j'>(noarr::get_index<'i'>(inner.state())))
-			.template for_dims<'j'>([=](auto inner) {
-				auto state = inner.state();
+	traverser(data, cov, data_ki, cov_ji) | for_dims<'i'>([=](auto inner) {
+		inner ^ shift<'j'>(get_index<'i'>(inner)) | for_dims<'j'>([=](auto inner) {
+			cov[inner] = 0;
 
-				cov[state] = 0;
+			inner | [=](auto state) {
+				cov[state] += data[state] * data_ki[state];
+			};
 
-				inner.for_each([=](auto state) {
-					cov[state] += data[state] * data_ki[state];
-				});
-
-				cov[state] /= float_n - (num_t)1;
-				cov_ji[state] = cov[state];
-			});
+			cov[inner] /= float_n - (num_t)1;
+			cov_ji[inner] = cov[inner];
+		});
 	});
 	#pragma endscop
 }

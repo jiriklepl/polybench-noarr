@@ -59,28 +59,23 @@ void kernel_syr2k(num_t alpha, num_t beta, auto C, auto A, auto B, Order order =
 	// C: i x j
 	// A: i x k
 	// B: i x k
+	using namespace noarr;
 
-	auto A_renamed = A ^ noarr::rename<'i', 'j'>();
-	auto B_renamed = B ^ noarr::rename<'i', 'j'>();
+	auto A_renamed = A ^ rename<'i', 'j'>();
+	auto B_renamed = B ^ rename<'i', 'j'>();
 
 	#pragma scop
-	noarr::traverser(C, A, B, A_renamed, B_renamed)
-		.template for_dims<'i'>([=](auto inner) {
-			auto state = inner.state();
+	traverser(C, A, B, A_renamed, B_renamed) | for_dims<'i'>([=](auto inner) {
+		auto i = get_index<'i'>(inner);
 
-			inner
-				.order(noarr::slice<'j'>(0, noarr::get_index<'i'>(state) + 1))
-				.template for_dims<'j'>([=](auto inner) {
-					C[inner.state()] *= beta;
-				});
-
-			inner
-				.order(noarr::slice<'j'>(0, noarr::get_index<'i'>(state) + 1))
-				.order(order)
-				.for_each([=](auto state) {
-					C[state] += A_renamed[state] * alpha * B[state] + B_renamed[state] * alpha * A[state];
-				});
+		inner ^ span<'j'>(i + 1) | for_dims<'j'>([=](auto inner) {
+			C[inner] *= beta;
 		});
+
+		inner ^ span<'j'>(i + 1) ^ order | [=](auto state) {
+			C[state] += A_renamed[state] * alpha * B[state] + B_renamed[state] * alpha * A[state];
+		};
+	});
 	#pragma endscop
 }
 

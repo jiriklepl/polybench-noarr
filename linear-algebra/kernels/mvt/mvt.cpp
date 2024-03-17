@@ -44,13 +44,12 @@ void init_array(auto x1, auto x2, auto y1, auto y2, auto A) {
 
 	noarr::traverser(x1, x2, y1_i, y2_i, A)
 		.template for_dims<'i'>([=](auto inner) {
-			auto state = inner.state();
-			auto i = noarr::get_index<'i'>(state);
+			auto i = noarr::get_index<'i'>(inner);
 
-			x1[state] = (num_t)(i % n) / n;
-			x2[state] = (num_t)((i + 1) % n) / n;
-			y1_i[state] = (num_t)((i + 3) % n) / n;
-			y2_i[state] = (num_t)((i + 4) % n) / n;
+			x1[inner] = (num_t)(i % n) / n;
+			x2[inner] = (num_t)((i + 1) % n) / n;
+			y1_i[inner] = (num_t)((i + 3) % n) / n;
+			y2_i[inner] = (num_t)((i + 4) % n) / n;
 
 			inner.for_each([=](auto state) {
 				auto j = noarr::get_index<'j'>(state);
@@ -69,21 +68,20 @@ void kernel_mvt(auto x1, auto x2, auto y1, auto y2, auto A, Order1 order1 = {}, 
 	// y1: j
 	// y2: j
 	// A: i x j
+	using namespace noarr;
 
-	auto A_ji = A ^ noarr::rename<'i', 'j', 'j', 'i'>();
+	auto A_ji = A ^ rename<'i', 'j', 'j', 'i'>();
 
 	#pragma scop
-	noarr::traverser(x1, A, y1)
-		.order(order1)
-		.for_each([=](auto state) {
+	traverser(x1, A, y1) ^ order1 |
+		[=](auto state) {
 			x1[state] += A[state] * y1[state];
-		});
+		};
 
-	noarr::traverser(x2, A_ji, y2)
-		.order(order2)
-		.for_each([=](auto state) {
+	traverser(x2, A_ji, y2) ^ order2 |
+		[=](auto state) {
 			x2[state] += A_ji[state] * y2[state];
-		});
+		};
 	#pragma endscop
 }
 

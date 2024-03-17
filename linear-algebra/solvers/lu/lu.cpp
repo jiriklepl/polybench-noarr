@@ -31,12 +31,10 @@ void init_array(auto A) {
 
 	noarr::traverser(A)
 		.template for_dims<'i'>([=](auto inner) {
-			auto state = inner.state();
-
-			auto i = noarr::get_index<'i'>(state);
+			auto i = noarr::get_index<'i'>(inner);
 
 			inner
-				.order(noarr::slice<'j'>(0, i + 1))
+				.order(noarr::span<'j'>(i + 1))
 				.for_each([=](auto state) {
 					A[state] = (num_t) (-(int)noarr::get_index<'j'>(state) % n) / n + 1;
 				});
@@ -47,7 +45,7 @@ void init_array(auto A) {
 					A[state] = 0;
 				});
 
-			A[state & noarr::idx<'j'>(i)] = 1;
+			A[inner.state() & noarr::idx<'j'>(i)] = 1;
 		});
 
 	// make A positive semi-definite
@@ -75,37 +73,29 @@ template<typename Order = noarr::neutral_proto>
 [[gnu::flatten, gnu::noinline]]
 void kernel_lu(auto A, Order order = {}) {
 	// A: i x j
+	using namespace noarr;
 
-	auto A_ik = A ^ noarr::rename<'j', 'k'>();
-	auto A_kj = A ^ noarr::rename<'i', 'k'>();
+	auto A_ik = A ^ rename<'j', 'k'>();
+	auto A_kj = A ^ rename<'i', 'k'>();
 
 	#pragma scop
-	noarr::traverser(A, A_ik, A_kj)
-		.template for_dims<'i'>([=](auto inner) {
-			auto state = inner.state();
+	traverser(A, A_ik, A_kj) | for_dims<'i'>([=](auto inner) {
+		auto i = get_index<'i'>(inner);
 
-			inner
-				.order(noarr::slice<'j'>(0, noarr::get_index<'i'>(state)))
-				.template for_dims<'j'>([=](auto inner) {
-					auto state = inner.state();
+		inner ^ span<'j'>(i) | for_dims<'j'>([=](auto inner) {
+			auto j = get_index<'j'>(inner);
 
-					inner
-						.order(noarr::slice<'k'>(0, noarr::get_index<'j'>(state)))
-						.for_each([=](auto state) {
-							A[state] -= A_ik[state] * A_kj[state];
-						});
+			inner ^ span<'k'>(j) | [=](auto state) {
+				A[state] -= A_ik[state] * A_kj[state];
+			};
 
-					A[state] /= (A ^ noarr::fix<'i'>(noarr::get_index<'j'>(state)))[state];
-				});
-
-			inner
-				.order(noarr::shift<'j'>(noarr::get_index<'i'>(state)))
-				.order(noarr::slice<'k'>(0, noarr::get_index<'i'>(state)))
-				.order(order)
-				.for_each([=](auto state) {
-					A[state] -= A_ik[state] * A_kj[state];
-				});
+			A[inner] /= (A ^ fix<'i'>(j))[inner];
 		});
+
+		inner ^ shift<'j'>(i) ^ span<'k'>(i) ^  order | [=](auto state) {
+			A[state] -= A_ik[state] * A_kj[state];
+		};
+	});
 	#pragma endscop
 }
 

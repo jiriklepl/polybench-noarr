@@ -58,18 +58,18 @@ void kernel_gemm(num_t alpha, num_t beta, auto C, auto A, auto B) {
 	// C: i x j
 	// A: i x k
 	// B: k x j
+	using namespace noarr;
 
 	#pragma scop
-	noarr::traverser(C, A, B)
-		.template for_dims<'i'>([=](auto inner) {
-			inner.template for_each<'j'>([=](auto state) {
-				C[state] *= beta;
-			});
-
-			inner.for_each([=](auto state) {
-				C[state] += alpha * A[state] * B[state];
-			});
+	traverser(C, A, B) | for_dims<'i'>([=](auto inner) {
+		inner | for_each<'j'>([=](auto state) {
+			C[state] *= beta;
 		});
+
+		inner | [=](auto state) {
+			C[state] += alpha * A[state] * B[state];
+		};
+	});
 	#pragma endscop
 }
 

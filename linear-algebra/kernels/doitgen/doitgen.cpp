@@ -56,37 +56,24 @@ void kernel_doitgen(auto A, auto C4, auto sum, Order order = {}) {
 	// A: r x q x p
 	// C4: s x p
 	// sum: p
+	using namespace noarr;
 
-	auto A_rqs = A ^ noarr::rename<'p', 's'>();
+	auto A_rqs = A ^ rename<'p', 's'>();
 
 	#pragma scop
-	noarr::planner(A, C4, sum)
-		.template for_sections<'r', 'q'>([=](auto inner) {
-			inner.template for_sections<'p'>([=](auto inner) {
-				auto state = inner.state();
+	planner(A, C4, sum) ^ for_dims<'r', 'q'>([=](auto inner) {
+		inner ^ for_dims<'p'>([=](auto inner) {
+			sum[inner] = 0;
 
-				sum[state] = 0;
+			inner ^ for_each([=](auto state) {
+				sum[state] += A_rqs[state] * C4[state];
+			}) | planner_execute();
+		}) | planner_execute();
 
-				inner.for_each([=](auto state) {
-					sum[state] += A_rqs[state] * C4[state];
-				})
-				();
-			})
-			.order(noarr::hoist<'p'>())
-			();
-
-			inner
-				.template for_sections<'p'>([=](auto inner) {
-					auto state = inner.state();
-					A[state] = sum[state];
-				})
-				.order(noarr::hoist<'p'>())
-				();
-		})
-		.order(noarr::hoist<'q'>())
-		.order(noarr::hoist<'r'>())
-		.order(order)
-		();
+		inner ^ for_dims<'p'>([=](auto inner) {
+			A[inner] = sum[inner];
+		}) | planner_execute();
+	}) ^ order | planner_execute();
 	#pragma endscop
 }
 

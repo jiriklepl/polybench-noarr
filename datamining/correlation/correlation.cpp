@@ -43,73 +43,61 @@ void kernel_correlation(num_t float_n, auto data, auto corr, auto mean, auto std
 	// corr: i x j
 	// mean: j
 	// stddev: j
+	using namespace noarr;
 
 	num_t eps = (num_t).1;
 
-	auto corr_ji = corr ^ noarr::rename<'i', 'j', 'j', 'i'>();
-	auto data_ki = data ^ noarr::rename<'j', 'i'>();
+	auto corr_ji = corr ^ rename<'i', 'j', 'j', 'i'>();
+	auto data_ki = data ^ rename<'j', 'i'>();
 
-	auto ni = corr | noarr::get_length<'i'>();
+	auto ni = corr | get_length<'i'>();
 
 	#pragma scop
-	noarr::traverser(data, mean)
-		.template for_dims<'j'>([=](auto inner) {
-			auto state = inner.state();
+	traverser(data, mean) | for_dims<'j'>([=](auto inner) {
+		mean[inner] = 0;
 
-			mean[state] = 0;
+		inner | [=](auto state) {
+			mean[state] += data[state];
+		};
 
-			inner.for_each([=](auto state) {
-				mean[state] += data[state];
-			});
-
-			mean[state] /= float_n;
-		});
-
-	noarr::traverser(data, mean, stddev)
-		.template for_dims<'j'>([=](auto inner) {
-			auto state = inner.state();
-
-			stddev[state] = 0;
-
-			inner.for_each([=](auto state) {
-				stddev[state] += (data[state] - mean[state]) * (data[state] - mean[state]);
-			});
-
-			stddev[state] /= float_n;
-			stddev[state] = std::sqrt(stddev[state]);
-			stddev[state] = stddev[state] <= eps ? (num_t)1.0 : stddev[state];
-		});
-
-	noarr::traverser(data, mean, stddev).for_each([=](auto state) {
-		data[state] -= mean[state];
-		data[state] /= std::sqrt(float_n) * stddev[state];
+		mean[inner] /= float_n;
 	});
 
-	auto traverser = noarr::traverser(data, corr, data_ki, corr_ji);
-	traverser
-		.order(noarr::span<'i'>(0, ni - 1))
-		.template for_dims<'i'>([=](auto inner) {
-			auto state = inner.state();
-			auto i = noarr::get_index<'i'>(state);
+	traverser(data, mean, stddev) | for_dims<'j'>([=](auto inner) {
+		stddev[inner] = 0;
 
-			corr[state & noarr::idx<'j'>(i)] = 1;
+		inner | [=](auto state) {
+			stddev[state] += (data[state] - mean[state]) * (data[state] - mean[state]);
+		};
 
-			inner
-				.order(noarr::shift<'j'>(i + 1))
-				.template for_dims<'j'>([=](auto inner) {
-					auto state = inner.state();
+		stddev[inner] /= float_n;
+		stddev[inner] = std::sqrt(stddev[inner]);
+		stddev[inner] = stddev[inner] <= eps ? (num_t)1.0 : stddev[inner];
+	});
 
-					corr[state] = 0;
+	traverser(data, mean, stddev) | [=](auto state) {
+		data[state] -= mean[state];
+		data[state] /= std::sqrt(float_n) * stddev[state];
+	};
 
-					inner.for_each([=](auto state) {
-						corr[state] += data_ki[state] * data[state];
-					});
+	traverser(data, corr, data_ki, corr_ji) ^ span<'i'>(0, ni - 1) |
+		for_dims<'i'>([=](auto inner) {
+			auto i = get_index<'i'>(inner);
 
-					corr_ji[state] = corr[state];
-				});
+			corr[inner.state() & idx<'j'>(i)] = 1;
+
+			inner ^ shift<'j'>(i + 1) | for_dims<'j'>([=](auto inner) {
+				corr[inner] = 0;
+
+				inner | [=](auto state) {
+					corr[state] += data_ki[state] * data[state];
+				};
+
+				corr_ji[inner] = corr[inner];
+			});
 		});
 
-	corr[noarr::idx<'i'>(ni - 1) & noarr::idx<'j'>(ni - 1)] = 1;
+	corr[idx<'i'>(ni - 1) & idx<'j'>(ni - 1)] = 1;
 	#pragma endscop
 }
 

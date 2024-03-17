@@ -37,11 +37,9 @@ void init_array(auto A, auto r, auto p) {
 
 	noarr::traverser(A, r)
 		.template for_dims<'i'>([=](auto inner) {
-			auto state = inner.state();
+			auto i = noarr::get_index<'i'>(inner);
 
-			auto i = noarr::get_index<'i'>(state);
-
-			r[state] = (num_t)(i % ni) / ni;
+			r[inner] = (num_t)(i % ni) / ni;
 
 			inner.for_each([=](auto state) {
 				auto j = noarr::get_index<'j'>(state);
@@ -60,28 +58,20 @@ void kernel_bicg(auto A, auto s, auto q, auto p, auto r, Order order = {}) {
 	// q: i
 	// p: j
 	// r: i
+	using namespace noarr;
 
 	#pragma scop
-	noarr::traverser(s)
-		.for_each([=](auto state) {
-			s[state] = 0;
-		});
+	traverser(s) | [=](auto state) {
+		s[state] = 0;
+	};
 
-	noarr::planner(A, s, q, p, r)
-		.for_each_elem([](auto &&A, auto &&s, auto &&q, auto &&p, auto &&r) {
-			s += A * r;
-			q += A * p;
-		})
-		.template for_sections<'i'>([=](auto inner) {
-			auto state = inner.state();
-
-			q[state] = 0;
-
-			inner();
-		})
-		.order(noarr::hoist<'i'>())
-		.order(order)
-		();
+	planner(A, s, q, p, r) ^ for_each_elem([](auto &&A, auto &&s, auto &&q, auto &&p, auto &&r) {
+		s += A * r;
+		q += A * p;
+	}) ^ for_dims<'i'>([=](auto inner) {
+		q[inner] = 0;
+		inner();
+	}) ^ order | planner_execute();
 	#pragma endscop
 }
 

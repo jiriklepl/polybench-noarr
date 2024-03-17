@@ -51,32 +51,30 @@ template<class Order = noarr::neutral_proto>
 void kernel_jacobi_2d(std::size_t steps, auto A, auto B, Order order = {}) {
 	// A: i x j
 	// B: i x j
+	using namespace noarr;
 
-	auto traverser = noarr::traverser(A, B).order(noarr::bcast<'t'>(steps));
+	auto trav = traverser(A, B) ^ bcast<'t'>(steps);
 
 	#pragma scop
-	traverser
-		.order(noarr::symmetric_spans<'i', 'j'>(traverser.top_struct(), 1, 1))
-		.order(order)
-		.template for_dims<'t'>([=](auto inner) {
-			inner.for_each([=](auto state) {
-				B[state] = (num_t).2 * (
-					A[state] +
-					A[state - noarr::idx<'j'>(1)] +
-					A[state + noarr::idx<'j'>(1)] +
-					A[state + noarr::idx<'i'>(1)] +
-					A[state - noarr::idx<'i'>(1)]);
-			});
+	trav ^ symmetric_spans<'i', 'j'>(A, 1, 1) ^ order | for_dims<'t'>([=](auto inner) {
+		inner | [=](auto state) {
+			B[state] = (num_t).2 * (
+				A[state] +
+				A[state - idx<'j'>(1)] +
+				A[state + idx<'j'>(1)] +
+				A[state + idx<'i'>(1)] +
+				A[state - idx<'i'>(1)]);
+		};
 
-			inner.for_each([=](auto state) {
-				A[state] = (num_t).2 * (
-					B[state] +
-					B[state - noarr::idx<'j'>(1)] +
-					B[state + noarr::idx<'j'>(1)] +
-					B[state + noarr::idx<'i'>(1)] +
-					B[state - noarr::idx<'i'>(1)]);
-			});
-		});
+		inner | [=](auto state) {
+			A[state] = (num_t).2 * (
+				B[state] +
+				B[state - idx<'j'>(1)] +
+				B[state + idx<'j'>(1)] +
+				B[state + idx<'i'>(1)] +
+				B[state - idx<'i'>(1)]);
+		};
+	});
 	#pragma endscop
 }
 

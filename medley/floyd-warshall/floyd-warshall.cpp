@@ -51,17 +51,16 @@ template<class Order = noarr::neutral_proto>
 [[gnu::flatten, gnu::noinline]]
 void kernel_floyd_warshall(auto path, Order order = {}) {
 	// path: i x j
+	using namespace noarr;
 
 	auto path_start_k = path ^ noarr::rename<'i', 'k'>();
 	auto path_end_k = path ^ noarr::rename<'j', 'k'>();
 
 	#pragma scop
-	noarr::traverser(path, path_start_k, path_end_k)
-		.order(noarr::hoist<'k'>())
-		.order(order)
-		.for_each([=](auto state) {
+	traverser(path, path_start_k, path_end_k) ^ hoist<'k'>() ^ order |
+		[=](auto state) {
 			path[state] = std::min(path_start_k[state] + path_end_k[state], path[state]);
-		});
+		};
 	#pragma endscop
 }
 

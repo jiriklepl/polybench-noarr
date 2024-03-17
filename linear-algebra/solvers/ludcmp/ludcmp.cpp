@@ -42,12 +42,10 @@ void init_array(auto A, auto b, auto x, auto y) {
 
 	noarr::traverser(A)
 		.template for_dims<'i'>([=](auto inner) {
-			auto state = inner.state();
-
-			auto i = noarr::get_index<'i'>(state);
+			auto i = noarr::get_index<'i'>(inner);
 
 			inner
-				.order(noarr::slice<'j'>(0, i + 1))
+				.order(noarr::span<'j'>(i + 1))
 				.for_each([=](auto state) {
 					int j = noarr::get_index<'j'>(state);
 
@@ -60,7 +58,7 @@ void init_array(auto A, auto b, auto x, auto y) {
 					A[state] = 0;
 				});
 
-			A[state & noarr::idx<'j'>(i)] = 1;
+			A[inner.state() & noarr::idx<'j'>(i)] = 1;
 		});
 
 	// make A positive semi-definite
@@ -92,78 +90,60 @@ void kernel_ludcmp(auto A, auto b, auto x, auto y) {
 	// b: i
 	// x: i
 	// y: i
+	using namespace noarr;
 
-	auto A_ik = A ^ noarr::rename<'j', 'k'>();
-	auto A_kj = A ^ noarr::rename<'i', 'k'>();
+	auto A_ik = A ^ rename<'j', 'k'>();
+	auto A_kj = A ^ rename<'i', 'k'>();
 
 	#pragma scop
-	noarr::traverser(A, b, x, y, A_ik, A_kj)
-		.template for_dims<'i'>([=](auto inner) {
-			auto state = inner.state();
+	traverser(A, b, x, y, A_ik, A_kj) | for_dims<'i'>([=](auto inner) {
+		auto i = get_index<'i'>(inner);
 
-			inner
-				.order(noarr::slice<'j'>(0, noarr::get_index<'i'>(state)))
-				.template for_dims<'j'>([=](auto inner) {
-					auto state = inner.state();
+		inner ^ span<'j'>(i) | for_dims<'j'>([=](auto inner) {
+			auto j = get_index<'j'>(inner);
 
-					num_t w = A[state];
+			num_t w = A[inner];
 
-					inner
-						.order(noarr::slice<'k'>(0, noarr::get_index<'j'>(state)))
-						.template for_each<'k'>([=, &w](auto state) {
-							w -= A_ik[state] * A_kj[state];
-						});
+			inner ^ span<'k'>(j) | [=, &w](auto state) {
+				w -= A_ik[state] * A_kj[state];
+			};
 
-					A[state] = w / (A ^ noarr::fix<'i'>(noarr::get_index<'j'>(state)))[state];
-				});
-
-			inner
-				.order(noarr::shift<'j'>(noarr::get_index<'i'>(state)))
-				.template for_dims<'j'>([=](auto inner) {
-					auto state = inner.state();
-
-					num_t w = A[state];
-
-					inner
-						.order(noarr::slice<'k'>(0, noarr::get_index<'i'>(state)))
-						.template for_each<'k'>([=, &w](auto state) {
-							w -= A_ik[state] * A_kj[state];
-						});
-
-					A[state] = w;
-				});
+			A[inner] = w / (A ^ fix<'i'>(j))[inner];
 		});
 
-		noarr::traverser(A, b, y)
-			.template for_dims<'i'>([=](auto inner) {
-				auto state = inner.state();
+		inner ^ shift<'j'>(i) | for_dims<'j'>([=](auto inner) {
+			num_t w = A[inner];
 
-				num_t w = b[state];
+			inner ^ span<'k'>(i) | [=, &w](auto state) {
+				w -= A_ik[state] * A_kj[state];
+			};
 
-				inner
-					.order(noarr::slice<'j'>(0, noarr::get_index<'i'>(state)))
-					.template for_each<'j'>([=, &w](auto state) {
-						w -= A[state] * y[noarr::idx<'i'>(noarr::get_index<'j'>(state))];
-					});
+			A[inner] = w;
+		});
+	});
 
-				y[state] = w;
+	traverser(A, b, y) | for_dims<'i'>([=](auto inner) {
+		num_t w = b[inner];
+
+		inner ^ span<'j'>(get_index<'i'>(inner)) |
+			for_each<'j'>([=, &w](auto state) {
+				w -= A[state] * y[idx<'i'>(get_index<'j'>(state))];
 			});
 
-		noarr::traverser(A, x)
-			.order(noarr::reverse<'i'>())
-			.template for_dims<'i'>([=](auto inner) {
-				auto state = inner.state();
+		y[inner] = w;
+	});
 
-				num_t w = y[state];
+	traverser(A, x) ^ reverse<'i'>() | for_dims<'i'>([=](auto inner) {
+		auto i = get_index<'i'>(inner);
 
-				inner
-					.order(noarr::shift<'j'>(noarr::get_index<'i'>(state) + 1))
-					.template for_each<'j'>([=, &w](auto state) {
-						w -= A[state] * x[noarr::idx<'i'>(noarr::get_index<'j'>(state))];
-					});
+		num_t w = y[inner];
 
-				x[state] = w / A[state & noarr::idx<'j'>(noarr::get_index<'i'>(state))];
-			});
+		inner ^ shift<'j'>(i + 1) | for_each<'j'>([=, &w](auto state) {
+			w -= A[state] * x[idx<'i'>(get_index<'j'>(state))];
+		});
+
+		x[inner] = w / A[inner.state() & idx<'j'>(i)];
+	});
 	#pragma endscop
 }
 

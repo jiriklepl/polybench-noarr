@@ -89,47 +89,27 @@ void kernel_3mm(auto E, auto A, auto B, auto F, auto C, auto D, auto G, Order1 o
 	// C: j x m
 	// D: m x l
 	// G: i x l
+	using namespace noarr;
 
-	constexpr auto madd = [](auto &&m, auto &&l, auto &&r) {
+	constexpr auto madd = for_each_elem([](auto &&m, auto &&l, auto &&r) {
 		m += l * r;
-	};
+	});
 
 	#pragma scop
-	noarr::planner(E, A, B)
-		.for_each_elem(madd)
-		.template for_sections<'i', 'j'>([=](auto inner) {
-			E[inner.state()] = 0;
-			inner();
-		})
-		.order(noarr::hoist<'k'>())
-		.order(noarr::hoist<'j'>())
-		.order(noarr::hoist<'i'>())
-		.order(order1)
-		();
+	planner(E, A, B) ^ madd ^ for_dims<'i', 'j'>([=](auto inner) {
+		E[inner] = 0;
+		inner();
+	}) ^ order1 | planner_execute();
 
-	noarr::planner(F, C, D)
-		.for_each_elem(madd)
-		.template for_sections<'j', 'l'>([=](auto inner) {
-			F[inner.state()] = 0;
-			inner();
-		})
-		.order(noarr::hoist<'m'>())
-		.order(noarr::hoist<'l'>())
-		.order(noarr::hoist<'j'>())
-		.order(order2)
-		();
+	planner(F, C, D) ^ madd ^ for_dims<'j', 'l'>([=](auto inner) {
+		F[inner] = 0;
+		inner();
+	}) ^ order2 | planner_execute();
 
-	noarr::planner(G, E, F)
-		.for_each_elem(madd)
-		.template for_sections<'i', 'l'>([=](auto inner) {
-			G[inner.state()] = 0;
-			inner();
-		})
-		.order(noarr::hoist<'j'>())
-		.order(noarr::hoist<'l'>())
-		.order(noarr::hoist<'i'>())
-		.order(order3)
-		();
+	planner(G, E, F) ^ madd ^ for_dims<'i', 'l'>([=](auto inner) {
+		G[inner] = 0;
+		inner();
+	}) ^ order3 | planner_execute();
 	#pragma endscop
 }
 

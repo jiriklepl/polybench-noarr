@@ -54,43 +54,42 @@ void kernel_gramschmidt(auto A, auto R, auto Q) {
 	// A: i x k
 	// R: k x j
 	// Q: i x k
+	using namespace noarr;
 
-	auto A_ij = A ^ noarr::rename<'k', 'j'>();
+	auto A_ij = A ^ rename<'k', 'j'>();
 
 	#pragma scop
-	noarr::traverser(A_ij, R, Q)
-		.template for_dims<'k'>([=](auto inner) {
-			auto state = inner.state();
-			num_t norm = 0;
+	traverser(A_ij, R, Q) | for_dims<'k'>([=](auto inner) {
+		auto state = inner.state();
+		auto k = get_index<'k'>(state);
 
-			inner.template for_each<'i'>([=, &norm](auto state) {
-				norm += A[state] * A[state];
-			});
+		num_t norm = 0;
 
-			auto R_diag = R ^ noarr::fix<'j'>(noarr::get_index<'k'>(state));
-
-			R_diag[state] = std::sqrt(norm);
-
-			inner.template for_each<'i'>([=](auto state) {
-				Q[state] = A[state] / R_diag[state];
-			});
-
-			inner
-				.order(noarr::shift<'j'>(noarr::get_index<'k'>(state) + 1))
-				.template for_dims<'j'>([=](auto inner) {
-					auto state = inner.state();
-
-					R[state] = 0;
-
-					inner.for_each([=](auto state) {
-						R[state] = R[state] + Q[state] * A_ij[state];
-					});
-
-					inner.for_each([=](auto state) {
-						A_ij[state] = A_ij[state] - Q[state] * R[state];
-					});
-				});
+		inner | for_each<'i'>([=, &norm](auto state) {
+			norm += A[state] * A[state];
 		});
+
+		auto R_diag = R ^ fix<'j'>(k);
+
+		R_diag[state] = std::sqrt(norm);
+
+		inner | for_each<'i'>([=](auto state) {
+			Q[state] = A[state] / R_diag[state];
+		});
+
+		inner ^ shift<'j'>(k + 1) |
+			for_dims<'j'>([=](auto inner) {
+				R[inner] = 0;
+
+				inner | [=](auto state) {
+					R[state] = R[state] + Q[state] * A_ij[state];
+				};
+
+				inner | [=](auto state) {
+					A_ij[state] = A_ij[state] - Q[state] * R[state];
+				};
+			});
+	});
 	#pragma endscop
 }
 

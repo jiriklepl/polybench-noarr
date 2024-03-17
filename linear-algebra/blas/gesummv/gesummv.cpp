@@ -35,9 +35,7 @@ void init_array(num_t &alpha, num_t &beta, auto A, auto B, auto x) {
 
 	noarr::traverser(A, B, x)
 		.template for_dims<'i'>([=](auto inner) {
-			auto state = inner.state();
-
-			auto i = noarr::get_index<'i'>(state);
+			auto i = noarr::get_index<'i'>(inner);
 
 			x[noarr::idx<'j'>(i)] = (num_t)(i % n) / n;
 
@@ -58,20 +56,19 @@ void kernel_gesummv(num_t alpha, num_t beta, auto A, auto B, auto tmp, auto x, a
 	// tmp: i
 	// x: j
 	// y: i
+	using namespace noarr;
 
 	#pragma scop
-	noarr::traverser(A, B, tmp, x, y).template for_dims<'i'>([=](auto inner) {
-		auto state = inner.state();
+	traverser(A, B, tmp, x, y) | for_dims<'i'>([=](auto inner) {
+		tmp[inner] = 0;
+		y[inner] = 0;
 
-		tmp[state] = 0;
-		y[state] = 0;
-
-		inner.for_each([=](auto state) {
+		inner | [=](auto state) {
 			tmp[state] += A[state] * x[state];
 			y[state] += B[state] * x[state];
-		});
+		};
 
-		y[state] = alpha * tmp[state] + beta * y[state];
+		y[inner] = alpha * tmp[inner] + beta * y[inner];
 	});
 	#pragma endscop
 }

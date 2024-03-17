@@ -32,51 +32,46 @@ void init_array(auto r) {
 void kernel_durbin(auto r, auto y) {
 	// r: i
 	// y: i
+	using namespace noarr;
 
-	auto z = noarr::make_bag(r.structure());
+	auto z = make_bag(r.structure());
 
-	auto r_k = r ^ noarr::rename<'i', 'k'>();
-	auto y_k = y ^ noarr::rename<'i', 'k'>();
+	auto r_k = r ^ rename<'i', 'k'>();
+	auto y_k = y ^ rename<'i', 'k'>();
 
 	num_t alpha;
 	num_t beta;
 	num_t sum;
 
 	#pragma scop
-	y[noarr::idx<'i'>(0)] = -r[noarr::idx<'i'>(0)];
+	y[idx<'i'>(0)] = -r[idx<'i'>(0)];
 	beta = 1;
-	alpha = -r[noarr::idx<'i'>(0)];
+	alpha = -r[idx<'i'>(0)];
 
-	noarr::traverser(r, y, r_k, y_k)
-		.order(noarr::shift<'k'>(1))
-		.template for_dims<'k'>([=, &alpha, &beta, &sum, z = z.get_ref()](auto inner) {
-			auto state = inner.state();
-
+	traverser(r, y, r_k, y_k) ^ shift<'k'>(1) |
+		for_dims<'k'>([=, &alpha, &beta, &sum, z = z.get_ref()](auto inner) {
 			beta = (1 - alpha * alpha) * beta;
 			sum = 0;
 
-			auto traverser = inner
-				.order(noarr::slice<'i'>(0, noarr::get_index<'k'>(state)));
+			auto traverser = inner ^ span<'i'>(get_index<'k'>(inner));
 
-			traverser.for_each([=, &sum](auto state) {
-				auto [i, k] = noarr::get_indices<'i', 'k'>(state);
-				// sum += r_k[noarr::neighbor<'k'>(state, -i - 1)] * y[state];
-				sum += r[noarr::idx<'i'>(k - i - 1)] * y[state];
-			});
+			traverser | [=, &sum](auto state) {
+				auto [i, k] = get_indices<'i', 'k'>(state);
+				sum += r[idx<'i'>(k - i - 1)] * y[state];
+			};
 
-			alpha = -(r_k[state] + sum) / beta;
+			alpha = -(r_k[inner] + sum) / beta;
 
-			traverser.for_each([=, &alpha](auto state) {
-				auto [i, k] = noarr::get_indices<'i', 'k'>(state);
-				// z[state] = y[state] + alpha * y_k[noarr::neighbor<'k'>(state, -i - 1)];
-				z[state] = y[state] + alpha * y[noarr::idx<'i'>(k - i - 1)];
-			});
+			traverser | [=, &alpha](auto state) {
+				auto [i, k] = get_indices<'i', 'k'>(state);
+				z[state] = y[state] + alpha * y[idx<'i'>(k - i - 1)];
+			};
 
-			traverser.for_each([=](auto state) {
+			traverser | [=](auto state) {
 				y[state] = z[state];
-			});
+			};
 
-			y_k[state] = alpha;
+			y_k[inner] = alpha;
 		});
 	#pragma endscop
 }

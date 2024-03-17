@@ -50,15 +50,14 @@ void init_array(num_t &alpha, num_t &beta, auto C, auto A, auto B) {
 
 	noarr::traverser(A)
 		.template for_dims<'i'>([=](auto inner) {
-			auto state = inner.state();
-
-			inner.order(noarr::slice<'k'>(0, noarr::get_index<'i'>(state) + 1))
+			auto i = noarr::get_index<'i'>(inner);
+			inner.order(noarr::span<'k'>(i + 1))
 				.for_each([=](auto state) {
-					auto [i, k] = noarr::get_indices<'i', 'k'>(state);
+					auto k = noarr::get_index<'k'>(state);
 					A[state] = (num_t)((i + k) % 100) / ni;
 				});
 
-			inner.order(noarr::shift<'k'>(noarr::get_index<'i'>(state) + 1))
+			inner.order(noarr::shift<'k'>(i + 1))
 				.for_each([=](auto state) {
 					A[state] = -999;
 				});
@@ -72,30 +71,24 @@ void kernel_symm(num_t alpha, num_t beta, auto C, auto A, auto B, Order order = 
 	// C: i x j
 	// A: i x k
 	// B: i x j
+	using namespace noarr;
 
-	auto C_renamed = C ^ noarr::rename<'i', 'k'>();
-	auto B_renamed = B ^ noarr::rename<'i', 'k'>();
+	auto C_renamed = C ^ rename<'i', 'k'>();
+	auto B_renamed = B ^ rename<'i', 'k'>();
 
 	#pragma scop
-	noarr::planner(C, A, B)
-		.template for_sections<'i', 'j'>([=](auto inner) {
-			num_t temp = 0;
-			auto state = inner.state();
+	planner(C, A, B) ^ for_dims<'i', 'j'>([=](auto inner) {
+		const auto i = get_index<'i'>(inner);
 
-			inner
-				.order(noarr::slice<'k'>(0, noarr::get_index<'i'>(state)))
-				.for_each([=, &temp](auto state) {
-					C_renamed[state] += alpha * B[state] * A[state];
-					temp += B_renamed[state] * A[state];
-				})
-				();
+		num_t temp = 0;
 
-			C[state] = beta * C[state] + alpha * B[state] * A[state & noarr::idx<'k'>(noarr::get_index<'i'>(state))] + alpha * temp;
-		})
-		.order(noarr::hoist<'j'>())
-		.order(noarr::hoist<'i'>())
-		.order(order)
-		();
+		inner ^ span<'k'>(i) ^ for_each([=, &temp](auto state) {
+			C_renamed[state] += alpha * B[state] * A[state];
+			temp += B_renamed[state] * A[state];
+		}) | planner_execute();
+
+		C[inner] = beta * C[inner] + alpha * B[inner] * A[inner.state() & idx<'k'>(i)] + alpha * temp;
+	}) ^ order | planner_execute();
 	#pragma endscop
 }
 

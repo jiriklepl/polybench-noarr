@@ -47,22 +47,23 @@ void kernel_atax(auto A, auto x, auto y, auto tmp) {
 	// x: j
 	// y: j
 	// tmp: i
+	using namespace noarr;
 
 	#pragma scop
-	noarr::traverser(y).for_each([=](auto state) {
+	traverser(y) | [=](auto state) {
 		y[state] = 0;
-	});
+	};
 
-	noarr::traverser(tmp, A, x, y).template for_dims<'i'>([=](auto inner) {
-		tmp[inner.state()] = 0;
+	traverser(tmp, A, x, y) | for_dims<'i'>([=](auto inner) {
+		tmp[inner] = 0;
 
-		inner.for_each([=](auto state) {
+		inner | [=](auto state) {
 			tmp[state] += A[state] * x[state];
-		});
+		};
 
-		inner.for_each([=](auto state) {
+		inner | [=](auto state) {
 			y[state] += A[state] * tmp[state];
-		});
+		};
 	});
 	#pragma endscop
 }

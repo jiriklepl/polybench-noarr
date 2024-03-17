@@ -30,14 +30,12 @@ void init_array(auto A) {
 
 	noarr::traverser(A)
 		.template for_dims<'i'>([=](auto inner) {
-			auto state = inner.state();
-
-			auto i = noarr::get_index<'i'>(state);
+			auto i = noarr::get_index<'i'>(inner);
 
 			auto A_ii = A ^ noarr::fix<'j'>(i);
 
 			inner
-				.order(noarr::slice<'j'>(0, i + 1))
+				.order(noarr::span<'j'>(i + 1))
 				.for_each([=](auto state) {
 					A[state] = (num_t) (-(int)noarr::get_index<'j'>(state) % n) / n + 1;
 				});
@@ -48,7 +46,7 @@ void init_array(auto A) {
 					A[state] = 0;
 				});
 
-			A_ii[state] = 1;
+			A_ii[inner] = 1;
 		});
 
 	// make A positive semi-definite
@@ -75,39 +73,33 @@ void init_array(auto A) {
 [[gnu::flatten, gnu::noinline]]
 void kernel_cholesky(auto A) {
 	// A: i x j
+	using namespace noarr;
 
-	auto A_ik = A ^ noarr::rename<'j', 'k'>();
-	auto A_jk = A ^ noarr::rename<'i', 'j', 'j', 'k'>();
+	auto A_ik = A ^ rename<'j', 'k'>();
+	auto A_jk = A ^ rename<'i', 'j', 'j', 'k'>();
 
 	#pragma scop
-	noarr::traverser(A, A_ik, A_jk)
-		.template for_dims<'i'>([=](auto inner) {
-			auto state = inner.state();
+	traverser(A, A_ik, A_jk) | for_dims<'i'>([=](auto inner) {
+		auto i = get_index<'i'>(inner);
 
-			inner
-				.order(noarr::slice<'j'>(0, noarr::get_index<'i'>(state)))
-				.template for_dims<'j'>([=](auto inner) {
-					auto state = inner.state();
+		inner ^ span<'j'>(i) | for_dims<'j'>([=](auto inner) {
+			auto j = get_index<'j'>(inner);
 
-					inner
-						.order(noarr::slice<'k'>(0, noarr::get_index<'j'>(state)))
-						.for_each([=](auto state) {
-							A[state] -= A_ik[state] * A_jk[state];
-						});
+			inner ^ span<'k'>(j) | [=](auto state) {
+				A[state] -= A_ik[state] * A_jk[state];
+			};
 
-					A[state] /= (A ^ noarr::fix<'i'>(noarr::get_index<'j'>(state)))[state];
-				});
-
-			auto A_ii = A ^ noarr::fix<'j'>(noarr::get_index<'i'>(state));
-
-			inner
-				.order(noarr::slice<'k'>(0, noarr::get_index<'i'>(state)))
-				.template for_each<'k'>([=](auto state) {
-					A_ii[state] -= A_ik[state] * A_ik[state];
-				});
-
-			A_ii[state] = std::sqrt(A_ii[state]);
+			A[inner] /= (A ^ fix<'i'>(j))[inner];
 		});
+
+		auto A_ii = A ^ fix<'j'>(i);
+
+		inner ^ span<'k'>(i) | for_each<'k'>([=](auto state) {
+			A_ii[state] -= A_ik[state] * A_ik[state];
+		});
+
+		A_ii[inner] = std::sqrt(A_ii[inner]);
+	});
 	#pragma endscop
 }
 
@@ -139,10 +131,8 @@ int main(int argc, char *argv[]) {
 		std::cout << std::fixed << std::setprecision(2);
 		noarr::traverser(A)
 			.template for_dims<'i'>([=](auto inner) {
-				auto state = inner.state();
-
 				inner
-					.order(noarr::slice<'j'>(0, noarr::get_index<'i'>(state) + 1))
+					.order(noarr::span<'j'>(noarr::get_index<'i'>(inner) + 1))
 					.for_each([=](auto state) {
 						std::cout << A[state] << " ";
 					});

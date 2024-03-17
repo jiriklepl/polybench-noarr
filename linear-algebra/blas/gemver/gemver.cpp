@@ -60,19 +60,16 @@ void init_array(num_t &alpha, num_t &beta, auto A, auto u1, auto v1, auto u2, au
 
 	noarr::traverser(A, u1, u2, v1_i, v2_i, y_i, z, x, w)
 		.template for_dims<'i'>([=](auto inner) {
-			auto state = inner.state();
+			auto i = noarr::get_index<'i'>(inner);
 
-
-			auto i = noarr::get_index<'i'>(state);
-
-			u1[state] = i;
-			u2[state] = ((i + 1) / fn) / 2.0;
-			v1_i[state] = ((i + 1) / fn) / 4.0;
-			v2_i[state] = ((i + 1) / fn) / 6.0;
-			y_i[state] = ((i + 1) / fn) / 8.0;
-			z[state] = ((i + 1) / fn) / 9.0;
-			x[state] = 0.0;
-			w[state] = 0.0;
+			u1[inner] = i;
+			u2[inner] = ((i + 1) / fn) / 2.0;
+			v1_i[inner] = ((i + 1) / fn) / 4.0;
+			v2_i[inner] = ((i + 1) / fn) / 6.0;
+			y_i[inner] = ((i + 1) / fn) / 8.0;
+			z[inner] = ((i + 1) / fn) / 9.0;
+			x[inner] = 0.0;
+			w[inner] = 0.0;
 
 			inner.for_each([=](auto state) {
 				auto j = noarr::get_index<'j'>(state);
@@ -99,33 +96,27 @@ void kernel_gemver(num_t alpha, num_t beta, auto A,
 	// x: i
 	// y: j
 	// z: i
+	using namespace noarr;
 
-	auto A_ji = A ^ noarr::rename<'i', 'j', 'j', 'i'>();
-	auto x_j = x ^ noarr::rename<'i', 'j'>();
+	auto A_ji = A ^ rename<'i', 'j', 'j', 'i'>();
+	auto x_j = x ^ rename<'i', 'j'>();
 
 	#pragma scop
-	noarr::traverser(A, u1, u2, v1, v2)
-		.order(order1)
-		.for_each([=](auto state) {
-			A[state] = A[state] + u1[state] * v1[state] + u2[state] * v2[state];
-		});
+	traverser(A, u1, u2, v1, v2) ^ order1 | [=](auto state) {
+		A[state] = A[state] + u1[state] * v1[state] + u2[state] * v2[state];
+	};
 
-	noarr::traverser(x, A_ji, y)
-		.order(order2)
-		.for_each([=](auto state) {
-			x[state] = x[state] + beta * A_ji[state] * y[state];
-		});
+	traverser(x, A_ji, y) ^ order2 | [=](auto state) {
+		x[state] = x[state] + beta * A_ji[state] * y[state];
+	};
 
-	noarr::traverser(x, z)
-		.for_each([=](auto state) {
-			x[state] = x[state] + z[state];
-		});
+	traverser(x, z) | [=](auto state) {
+		x[state] = x[state] + z[state];
+	};
 
-	noarr::traverser(A, w, x_j)
-		.order(order3)
-		.for_each([=](auto state) {
-			w[state] = w[state] + alpha * A[state] * x_j[state];
-		});
+	traverser(A, w, x_j) ^ order3 | [=](auto state) {
+		w[state] = w[state] + alpha * A[state] * x_j[state];
+	};
 	#pragma endscop
 }
 

@@ -42,38 +42,35 @@ void init_array(num_t &alpha, num_t &beta, auto A, auto B, auto C, auto D) {
 	// B: k x j
 	// C: j x l
 	// D: i x l
+	using namespace noarr;
 
 	alpha = (num_t)1.5;
 	beta = (num_t)1.2;
 
-	auto ni = A | noarr::get_length<'i'>();
-	auto nj = B | noarr::get_length<'j'>();
-	auto nk = A | noarr::get_length<'k'>();
-	auto nl = C | noarr::get_length<'l'>();
+	auto ni = A | get_length<'i'>();
+	auto nj = B | get_length<'j'>();
+	auto nk = A | get_length<'k'>();
+	auto nl = C | get_length<'l'>();
 
-	noarr::traverser(A)
-		.for_each([=](auto state) {
-			auto [i, k] = noarr::get_indices<'i', 'k'>(state);
-			A[state] = (num_t)((i * k + 1) % ni) / ni;
-		});
+	traverser(A) | [=](auto state) {
+		auto [i, k] = get_indices<'i', 'k'>(state);
+		A[state] = (num_t)((i * k + 1) % ni) / ni;
+	};
 
-	noarr::traverser(B)
-		.for_each([=](auto state) {
-			auto [k, j] = noarr::get_indices<'k', 'j'>(state);
-			B[state] = (num_t)(k * (j + 1) % nj) / nj;
-		});
+	traverser(B) | [=](auto state) {
+		auto [k, j] = get_indices<'k', 'j'>(state);
+		B[state] = (num_t)(k * (j + 1) % nj) / nj;
+	};
 
-	noarr::traverser(C)
-		.for_each([=](auto state) {
-			auto [j, l] = noarr::get_indices<'j', 'l'>(state);
-			C[state] = (num_t)((j * (l + 3) + 1) % nl) / nl;
-		});
+	traverser(C) | [=](auto state) {
+		auto [j, l] = get_indices<'j', 'l'>(state);
+		C[state] = (num_t)((j * (l + 3) + 1) % nl) / nl;
+	};
 
-	noarr::traverser(D)
-		.for_each([=](auto state) {
-			auto [i, l] = noarr::get_indices<'i', 'l'>(state);
-			D[state] = (num_t)(i * (l + 2) % nk) / nk;
-		});
+	traverser(D) | [=](auto state) {
+		auto [i, l] = get_indices<'i', 'l'>(state);
+		D[state] = (num_t)(i * (l + 2) % nk) / nk;
+	};
 }
 
 // computation kernel
@@ -85,39 +82,22 @@ void kernel_2mm(num_t alpha, num_t beta, auto tmp, auto A, auto B, auto C, auto 
 	// B: k x j
 	// C: j x l
 	// D: i x l
+	using namespace noarr;
 
 	#pragma scop
-	noarr::planner(tmp, A, B)
-		.for_each_elem([alpha](auto &&tmp, auto &&A, auto &&B) {
-			tmp += alpha * A * B;
-		})
-		.template for_sections<'i', 'j'>([tmp](auto inner) {
-			auto state = inner.state();
+	planner(tmp, A, B) ^ for_each_elem([=](auto &&tmp, auto &&A, auto &&B) {
+		tmp += alpha * A * B;
+	}) ^ for_dims<'i', 'j'>([=](auto inner) {
+		tmp[inner] = 0;
+		inner();
+	}) ^ order1 | planner_execute();
 
-			tmp[state] = 0;
-
-			inner();
-		})
-		.order(noarr::hoist<'j'>())
-		.order(noarr::hoist<'i'>())
-		.order(order1)
-		();
-
-	noarr::planner(D, tmp, C)
-		.for_each_elem([](auto &&D, auto &&tmp, auto &&C) {
-			D += tmp * C;
-		})
-		.template for_sections<'i', 'l'>([D, beta](auto inner) {
-			auto state = inner.state();
-
-			D[state] *= beta;
-
-			inner();
-		})
-		.order(noarr::hoist<'l'>())
-		.order(noarr::hoist<'i'>())
-		.order(order2)
-		();
+	planner(D, tmp, C) ^ for_each_elem([](auto &&D, auto &&tmp, auto &&C) {
+		D += tmp * C;
+	}) ^ for_dims<'i', 'l'>([=](auto inner) {
+		D[inner] *= beta;
+		inner();
+	}) ^ order2 | planner_execute();
 	#pragma endscop
 }
 

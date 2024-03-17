@@ -40,17 +40,15 @@ void init_array(num_t &alpha, auto A, auto B) {
 
 	noarr::traverser(A)
 		.template for_dims<'k'>([=](auto inner) {
-			auto state = inner.state();
+			auto k = noarr::get_index<'k'>(inner);
 
-			auto k = noarr::get_index<'k'>(state);
-
-			inner.order(noarr::slice<'i'>(0, k))
+			inner.order(noarr::span<'i'>(k))
 				.for_each([=](auto state) {
 					auto i = noarr::get_index<'i'>(state);
 					A[state] = (num_t)((k + i) % ni) / ni;
 				});
 
-			A[state & noarr::idx<'i'>(k)] = 1.0;
+			A[inner.state() & noarr::idx<'i'>(k)] = 1.0;
 		});
 
 	noarr::traverser(B).for_each([=](auto state) {
@@ -66,27 +64,20 @@ template<class Order = noarr::neutral_proto>
 void kernel_trmm(num_t alpha, auto A, auto B, Order order = {}) {
 	// A: k x i
 	// B: i x j
+	using namespace noarr;
 
-	auto B_renamed = B ^ noarr::rename<'i', 'k'>();
+	auto B_renamed = B ^ rename<'i', 'k'>();
 
 	#pragma scop
-	noarr::planner(A, B, B_renamed)
-		.for_each_elem([](auto &&A, auto &&B, auto &&B_renamed) {
+	planner(A, B, B_renamed) ^
+		for_each_elem([](auto &&A, auto &&B, auto &&B_renamed) {
 			B += A * B_renamed;
-		})
-		.template for_sections<'i', 'j'>([=](auto inner) {
-			auto state = inner.state();
+		}) ^
+		for_dims<'i', 'j'>([=](auto inner) {
+			inner ^ shift<'k'>(get_index<'i'>(inner) + 1) | planner_execute();
 
-			inner
-				.order(noarr::shift<'k'>(noarr::get_index<'i'>(state) + 1))
-				();
-
-			B[state] *= alpha;
-		})
-		.order(noarr::hoist<'j'>())
-		.order(noarr::hoist<'i'>())
-		.order(order)
-		();
+			B[inner] *= alpha;
+		}) ^ order | planner_execute();
 	#pragma endscop
 }
 

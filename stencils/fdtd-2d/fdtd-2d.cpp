@@ -55,39 +55,33 @@ void kernel_fdtd_2d(auto ex, auto ey, auto hz, auto _fict_) {
 	// ey: i x j
 	// hz: i x j
 	// _fict_: t
+	using namespace noarr;
 
 	#pragma scop
-	noarr::traverser(ex, ey, hz, _fict_)
-		.template for_dims<'t'>([=](auto inner) {
-			inner
-				.order(noarr::shift<'i'>(1))
-				.template for_each<'j'>([=](auto state) {
-					ey[state & noarr::idx<'i'>(0)] = _fict_[state];
-				});
-
-			inner
-				.order(noarr::shift<'i'>(1))
-				.for_each([=](auto state) {
-					ey[state] = ey[state] - (num_t).5 * (hz[state] - hz[state - noarr::idx<'i'>(1)]);
-				});
-
-			inner
-				.order(noarr::shift<'j'>(1))
-				.for_each([=](auto state) {
-					ex[state] = ex[state] - (num_t).5 * (hz[state] - hz[state - noarr::idx<'j'>(1)]);
-				});
-
-			inner
-				.order(noarr::span<'i'>(0, (inner.top_struct() | noarr::get_length<'i'>()) - 1)
-					 ^ noarr::span<'j'>(0, (inner.top_struct() | noarr::get_length<'j'>()) - 1))
-				.for_each([=](auto state) {
-					hz[state] = hz[state] - (num_t).7 * (
-						ex[state + noarr::idx<'j'>(1)] -
-						ex[state] +
-						ey[state + noarr::idx<'i'>(1)] -
-						ey[state]);
-				});
+	traverser(ex, ey, hz, _fict_) | for_dims<'t'>([=](auto inner) {
+		inner ^ shift<'i'>(1) | for_each<'j'>([=](auto state) {
+			ey[state & idx<'i'>(0)] = _fict_[state];
 		});
+
+		inner ^ shift<'i'>(1) | [=](auto state) {
+			ey[state] = ey[state] - (num_t).5 * (hz[state] - hz[state - idx<'i'>(1)]);
+		};
+
+		inner ^ shift<'j'>(1) | [=](auto state) {
+			ex[state] = ex[state] - (num_t).5 * (hz[state] - hz[state - idx<'j'>(1)]);
+		};
+
+		inner ^
+			span<'i'>(0, (ex | get_length<'i'>()) - 1) ^
+			span<'j'>(0, (ex | get_length<'j'>()) - 1) |
+			[=](auto state) {
+				hz[state] = hz[state] - (num_t).7 * (
+					ex[state + idx<'j'>(1)] -
+					ex[state] +
+					ey[state + idx<'i'>(1)] -
+					ey[state]);
+			};
+	});
 	#pragma endscop
 }
 

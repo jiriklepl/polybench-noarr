@@ -32,14 +32,13 @@ void init_array(auto L, auto x, auto b) {
 
 	noarr::traverser(L, x, b)
 		.template for_dims<'i'>([=](auto inner) {
-			auto state = inner.state();
-			auto i = noarr::get_index<'i'>(state);
+			auto i = noarr::get_index<'i'>(inner);
 
-			x[state] = -999;
-			b[state] = i;
+			x[inner] = -999;
+			b[inner] = i;
 
 			inner
-				.order(noarr::slice<'j'>(0, i + 1))
+				.order(noarr::span<'j'>(i + 1))
 				.template for_each<'j'>([=](auto state) {
 					auto j = noarr::get_index<'j'>(state);
 					L[state] = (num_t)(i + n - j + 1) * 2 / n;
@@ -53,24 +52,22 @@ void kernel_trisolv(auto L, auto x, auto b) {
 	// L: i x j
 	// x: i
 	// b: i
+	using namespace noarr;
 
-	auto x_j = x ^ noarr::rename<'i', 'j'>();
+	auto x_j = x ^ rename<'i', 'j'>();
 
 	#pragma scop
-	noarr::traverser(L, x, b)
-		.template for_dims<'i'>([=](auto inner) {
-			auto state = inner.state();
+	traverser(L, x, b) | for_dims<'i'>([=](auto inner) {
+		auto i = get_index<'i'>(inner);
 
-			x[state] = b[state];
+		x[inner] = b[inner];
 
-			inner
-				.order(noarr::slice<'j'>(0, noarr::get_index<'i'>(state)))
-				.for_each([=](auto state) {
-					x[state] -= L[state] * x_j[state];
-				});
+		inner ^ span<'j'>(i) | [=](auto state) {
+			x[state] -= L[state] * x_j[state];
+		};
 
-			x[state] = x[state] / L[state & noarr::idx<'j'>(noarr::get_index<'i'>(state))];
-		});
+		x[inner] = x[inner] / L[inner.state() & idx<'j'>(i)];
+	});
 	#pragma endscop
 }
 

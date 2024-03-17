@@ -39,25 +39,23 @@ void init_array(auto A) {
 [[gnu::flatten, gnu::noinline]]
 void kernel_seidel_2d(std::size_t steps, auto A) {
 	// A: i x j
+	using namespace noarr;
 
-	auto traverser = noarr::traverser(A).order(noarr::bcast<'t'>(steps));
+	auto trav = traverser(A) ^ bcast<'t'>(steps);
 
 	#pragma scop
-	traverser
-		.order(noarr::symmetric_spans<'i', 'j'>(traverser.top_struct(), 1, 1))
-		.order(noarr::reorder<'t', 'i', 'j'>())
-		.for_each([=](auto state) {
-			A[state] = (
-				A[state - noarr::idx<'i'>(1) - noarr::idx<'j'>(1)] + // corner
-				A[state - noarr::idx<'i'>(1)] +          // edge
-				A[state - noarr::idx<'i'>(1) + noarr::idx<'j'>(1)] + // corner
-				A[state - noarr::idx<'j'>(1)] +          // edge
-				A[state] +                             // center
-				A[state + noarr::idx<'j'>(1)] +          // edge
-				A[state + noarr::idx<'i'>(1) - noarr::idx<'j'>(1)] + // corner
-				A[state + noarr::idx<'i'>(1)] +          // edge
-				A[state + noarr::idx<'i'>(1) + noarr::idx<'j'>(1)]) / (num_t)9.0; // corner
-		});
+	trav ^ symmetric_spans<'i', 'j'>(A, 1, 1) ^ reorder<'t', 'i', 'j'>() | [=](auto state) {
+		A[state] = (
+			A[state - idx<'i'>(1) - idx<'j'>(1)] + // corner
+			A[state - idx<'i'>(1)] +          // edge
+			A[state - idx<'i'>(1) + idx<'j'>(1)] + // corner
+			A[state - idx<'j'>(1)] +          // edge
+			A[state] +                             // center
+			A[state + idx<'j'>(1)] +          // edge
+			A[state + idx<'i'>(1) - idx<'j'>(1)] + // corner
+			A[state + idx<'i'>(1)] +          // edge
+			A[state + idx<'i'>(1) + idx<'j'>(1)]) / (num_t)9.0; // corner
+	};
 	#pragma endscop
 }
 
