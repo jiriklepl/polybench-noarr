@@ -33,12 +33,12 @@ void init_array(auto A, auto B) {
 
 // computation kernel
 [[gnu::flatten, gnu::noinline]]
-void kernel_jacobi_1d(std::size_t steps, auto A, auto B) {
+void kernel_jacobi_1d(std::size_t tsteps, auto A, auto B) {
 	// A: i
 	// B: i
 	using namespace noarr;
 
-	auto trav = traverser(A, B) ^ bcast<'t'>(steps);
+	auto trav = traverser(A, B) ^ bcast<'t'>(tsteps);
 
 	#pragma scop
 	trav | for_dims<'t'>([=](auto inner) {

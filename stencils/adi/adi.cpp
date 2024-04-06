@@ -39,7 +39,7 @@ void init_array(auto u) {
 
 // computation kernel
 [[gnu::flatten, gnu::noinline]]
-void kernel_adi(auto steps, auto u, auto v, auto p, auto q) {
+void kernel_adi(auto tsteps, auto u, auto v, auto p, auto q) {
 	// u: i x j
 	// v: j x i
 	// p: i x j
@@ -48,13 +48,13 @@ void kernel_adi(auto steps, auto u, auto v, auto p, auto q) {
 
 	auto u_trans = u ^ rename<'i', 'j', 'j', 'i'>();
 	auto v_trans = v ^ rename<'i', 'j', 'j', 'i'>();
-	auto trav = traverser(u, v, p, q).order(bcast<'t'>(steps));
+	auto trav = traverser(u, v, p, q).order(bcast<'t'>(tsteps));
 
 	#pragma scop
 
 	num_t DX = (num_t)1.0 / (u | get_length<'i'>());
 	num_t DY = (num_t)1.0 / (u | get_length<'j'>());
-	num_t DT = (num_t)1.0 / steps;
+	num_t DT = (num_t)1.0 / tsteps;
 
 	num_t B1 = 2.0;
 	num_t B2 = 1.0;

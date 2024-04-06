@@ -47,12 +47,12 @@ void init_array(auto A, auto B) {
 // computation kernel
 template<class Order = noarr::neutral_proto>
 [[gnu::flatten, gnu::noinline]]
-void kernel_heat_3d(std::size_t steps, auto A, auto B, Order order = {}) {
+void kernel_heat_3d(std::size_t tsteps, auto A, auto B, Order order = {}) {
 	// A: i x j x k
 	// B: i x j x k
 	using namespace noarr;
 
-	auto trav = traverser(A, B) ^ bcast<'t'>(steps);
+	auto trav = traverser(A, B) ^ bcast<'t'>(tsteps);
 
 	#pragma scop
 	trav ^ symmetric_spans<'i', 'j', 'k'>(A, 1, 1, 1) ^ order | for_dims<'t'>([=](auto inner) {

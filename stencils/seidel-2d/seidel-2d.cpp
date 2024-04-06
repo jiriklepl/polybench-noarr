@@ -37,11 +37,11 @@ void init_array(auto A) {
 
 // computation kernel
 [[gnu::flatten, gnu::noinline]]
-void kernel_seidel_2d(std::size_t steps, auto A) {
+void kernel_seidel_2d(std::size_t tsteps, auto A) {
 	// A: i x j
 	using namespace noarr;
 
-	auto trav = traverser(A) ^ bcast<'t'>(steps);
+	auto trav = traverser(A) ^ bcast<'t'>(tsteps);
 
 	#pragma scop
 	trav ^ symmetric_spans<'i', 'j'>(A, 1, 1) ^ reorder<'t', 'i', 'j'>() | [=](auto state) {
