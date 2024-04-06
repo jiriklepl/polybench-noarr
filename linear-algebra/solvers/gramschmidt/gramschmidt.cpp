@@ -60,8 +60,7 @@ void kernel_gramschmidt(auto A, auto R, auto Q) {
 
 	#pragma scop
 	traverser(A_ij, R, Q) | for_dims<'k'>([=](auto inner) {
-		auto state = inner.state();
-		auto k = get_index<'k'>(state);
+		auto k = get_index<'k'>(inner);
 
 		num_t norm = 0;
 
@@ -71,7 +70,7 @@ void kernel_gramschmidt(auto A, auto R, auto Q) {
 
 		auto R_diag = R ^ fix<'j'>(k);
 
-		R_diag[state] = std::sqrt(norm);
+		R_diag[inner] = std::sqrt(norm);
 
 		inner | for_each<'i'>([=](auto state) {
 			Q[state] = A[state] / R_diag[state];
