@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -eo pipefail
+
 # This script compares the output of the C and C++/Noarr implementations of the Polybench benchmarks
 # It assumes that the C++/Noarr implementations are built in the build directory and that the C implementations are built in the $POLYBENCH_C_DIR/build directory
 
@@ -13,10 +15,15 @@ fi
 
 dirname=$(mktemp -d)
 
-trap "echo deleting $dirname; rm -rf $dirname" EXIT
+cleanup() {
+	echo "deleting $dirname" >&2
+	rm -rf "$dirname"
+}
 
-( cd "$POLYBENCH_C_DIR" && ./build.sh ) || exit 1
-( cd . && ./build.sh ) || exit 1
+trap cleanup EXIT
+
+( cd "$POLYBENCH_C_DIR" && ./build.sh )
+( cd . && ./build.sh )
 
 find "$BUILD_DIR" -maxdepth 1 -executable -type f |
 while read -r file; do
@@ -25,10 +32,10 @@ while read -r file; do
 	echo "Comparing $filename"
 
 	printf "\tNoarr:             "
-	"$BUILD_DIR/$filename" 2>&1 1> "$dirname/cpp" || exit 1
+	"$BUILD_DIR/$filename" 2>&1 1> "$dirname/cpp"
 
 	printf "\tBaseline:          "
-	"$POLYBENCH_C_DIR/$BUILD_DIR/$filename" 2> "$dirname/c" || exit 1
+	"$POLYBENCH_C_DIR/$BUILD_DIR/$filename" 2> "$dirname/c"
 
 	if [ "$SKIP_DIFF" -eq 1 ]; then
 		continue
@@ -63,5 +70,5 @@ while read -r file; do
 			printf \"Different output on %s \n\", \"$filename\"
 			exit 1
 		}
-	}" 1>&2 || exit 1
-done || exit 1
+	}" 1>&2
+done
