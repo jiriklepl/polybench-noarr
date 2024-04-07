@@ -26,27 +26,27 @@ void init_array(auto A, auto r, auto p) {
 	// A: i x j
 	// r: i
 	// p: j
+	using namespace noarr;
 
-	auto ni = A | noarr::get_length<'i'>();
-	auto nj = A | noarr::get_length<'j'>();
+	auto ni = A | get_length<'i'>();
+	auto nj = A | get_length<'j'>();
 
-	noarr::traverser(p).for_each([=](auto state) {
-		auto j = noarr::get_index<'j'>(state);
+	traverser(p) | [=](auto state) {
+		auto j = get_index<'j'>(state);
 		p[state] = (num_t)(j % nj) / nj;
+	};
+
+	traverser(A, r) | for_dims<'i'>([=](auto inner) {
+		auto i = get_index<'i'>(inner);
+
+		r[inner] = (num_t)(i % ni) / ni;
+
+		inner | [=](auto state) {
+			auto j = get_index<'j'>(state);
+
+			A[state] = (num_t)(i * (j + 1) % ni) / ni;
+		};
 	});
-
-	noarr::traverser(A, r)
-		.template for_dims<'i'>([=](auto inner) {
-			auto i = noarr::get_index<'i'>(inner);
-
-			r[inner] = (num_t)(i % ni) / ni;
-
-			inner.for_each([=](auto state) {
-				auto j = noarr::get_index<'j'>(state);
-
-				A[state] = (num_t)(i * (j + 1) % ni) / ni;
-			});
-		});
 }
 
 // computation kernel

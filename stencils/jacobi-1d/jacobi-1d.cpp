@@ -18,16 +18,16 @@ namespace {
 void init_array(auto A, auto B) {
 	// A: i
 	// B: i
+	using namespace noarr;
 
-	auto n = A | noarr::get_length<'i'>();
+	auto n = A | get_length<'i'>();
 
-	noarr::traverser(A, B)
-		.for_each([=](auto state) {
-			auto i = noarr::get_index<'i'>(state);
+	traverser(A, B) | [=](auto state) {
+		auto i = get_index<'i'>(state);
 
-			A[state] = ((num_t) i + 2) / n;
-			B[state] = ((num_t) i + 3) / n;
-		});
+		A[state] = ((num_t) i + 2) / n;
+		B[state] = ((num_t) i + 3) / n;
+	};
 }
 
 

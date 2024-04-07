@@ -27,60 +27,53 @@ void init_array(auto A, auto b, auto x, auto y) {
 	// b: i
 	// x: i
 	// y: i
+	using namespace noarr;
 
-	int n = A | noarr::get_length<'i'>();
+	int n = A | get_length<'i'>();
 	num_t fn = (num_t)n;
 
-	noarr::traverser(b, x, y)
-		.for_each([=](auto state) {
-			auto i = noarr::get_index<'i'>(state);
+	traverser(b, x, y) | [=](auto state) {
+		auto i = get_index<'i'>(state);
 
-			x[state] = 0;
-			y[state] = 0;
-			b[state] = (i + 1) / fn / 2.0 + 4;
-		});
+		x[state] = 0;
+		y[state] = 0;
+		b[state] = (i + 1) / fn / 2.0 + 4;
+	};
 
-	noarr::traverser(A)
-		.template for_dims<'i'>([=](auto inner) {
-			auto i = noarr::get_index<'i'>(inner);
+	traverser(A) | for_dims<'i'>([=](auto inner) {
+		auto i = get_index<'i'>(inner);
 
-			inner
-				.order(noarr::span<'j'>(i + 1))
-				.for_each([=](auto state) {
-					int j = noarr::get_index<'j'>(state);
+		inner ^ span<'j'>(i + 1) | [=](auto state) {
+			int j = get_index<'j'>(state);
 
-					A[state] = (num_t)(-j % n) / n + 1;
-				});
+			A[state] = (num_t)(-j % n) / n + 1;
+		};
 
-			inner
-				.order(noarr::shift<'j'>(i + 1))
-				.for_each([=](auto state) {
-					A[state] = 0;
-				});
+		inner ^ shift<'j'>(i + 1) | [=](auto state) {
+			A[state] = 0;
+		};
 
-			A[inner.state() & noarr::idx<'j'>(i)] = 1;
-		});
+		A[inner.state() & idx<'j'>(i)] = 1;
+	});
 
 	// make A positive semi-definite
-	auto B = noarr::make_bag(A.structure());
+	auto B = make_bag(A.structure());
 	auto B_ref = B.get_ref();
 
-	auto A_ik = A ^ noarr::rename<'j', 'k'>();
-	auto A_jk = A ^ noarr::rename<'i', 'j', 'j', 'k'>();
+	auto A_ik = A ^ rename<'j', 'k'>();
+	auto A_jk = A ^ rename<'i', 'j', 'j', 'k'>();
 
-	noarr::traverser(B_ref)
-		.for_each([=](auto state) {
-			B_ref[state] = 0;
-		});
+	traverser(B_ref) | [=](auto state) {
+		B_ref[state] = 0;
+	};
 
-	noarr::traverser(B_ref, A_ik, A_jk)
-		.for_each([=](auto state) {
-			B_ref[state] += A_ik[state] * A_jk[state];
-		});
+	traverser(B_ref, A_ik, A_jk) | [=](auto state) {
+		B_ref[state] += A_ik[state] * A_jk[state];
+	};
 
-	noarr::traverser(A, B_ref).for_each([=](auto state) {
+	traverser(A, B_ref) | [=](auto state) {
 		A[state] = B_ref[state];
-	});
+	};
 }
 
 // computation kernel
@@ -125,10 +118,9 @@ void kernel_ludcmp(auto A, auto b, auto x, auto y) {
 	traverser(A, b, y) | for_dims<'i'>([=](auto inner) {
 		num_t w = b[inner];
 
-		inner ^ span<'j'>(get_index<'i'>(inner)) |
-			for_each<'j'>([=, &w](auto state) {
-				w -= A[state] * y[idx<'i'>(get_index<'j'>(state))];
-			});
+		inner ^ span<'j'>(get_index<'i'>(inner)) | for_each<'j'>([=, &w](auto state) {
+			w -= A[state] * y[idx<'i'>(get_index<'j'>(state))];
+		});
 
 		y[inner] = w;
 	});

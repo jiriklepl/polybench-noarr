@@ -48,35 +48,34 @@ void init_array(num_t &alpha, num_t &beta, auto A, auto u1, auto v1, auto u2, au
 	// x: i
 	// y: j
 	// z: i
+	using namespace noarr;
 
 	alpha = (num_t)1.5;
 	beta = (num_t)1.2;
 
-	auto v1_i = v1 ^ noarr::rename<'j', 'i'>();
-	auto v2_i = v2 ^ noarr::rename<'j', 'i'>();
-	auto y_i = y ^ noarr::rename<'j', 'i'>();
+	auto v1_i = v1 ^ rename<'j', 'i'>();
+	auto v2_i = v2 ^ rename<'j', 'i'>();
+	auto y_i = y ^ rename<'j', 'i'>();
 
-	num_t fn = A | noarr::get_length<'i'>();
+	num_t fn = A | get_length<'i'>();
 
-	noarr::traverser(A, u1, u2, v1_i, v2_i, y_i, z, x, w)
-		.template for_dims<'i'>([=](auto inner) {
-			auto i = noarr::get_index<'i'>(inner);
+	traverser(A) | for_dims<'i'>([=](auto inner) {
+		auto i = get_index<'i'>(inner);
 
-			u1[inner] = i;
-			u2[inner] = ((i + 1) / fn) / 2.0;
-			v1_i[inner] = ((i + 1) / fn) / 4.0;
-			v2_i[inner] = ((i + 1) / fn) / 6.0;
-			y_i[inner] = ((i + 1) / fn) / 8.0;
-			z[inner] = ((i + 1) / fn) / 9.0;
-			x[inner] = 0.0;
-			w[inner] = 0.0;
+		u1[inner] = i;
+		u2[inner] = ((i + 1) / fn) / 2.0;
+		v1_i[inner] = ((i + 1) / fn) / 4.0;
+		v2_i[inner] = ((i + 1) / fn) / 6.0;
+		y_i[inner] = ((i + 1) / fn) / 8.0;
+		z[inner] = ((i + 1) / fn) / 9.0;
+		x[inner] = 0.0;
+		w[inner] = 0.0;
 
-			inner.for_each([=](auto state) {
-				auto j = noarr::get_index<'j'>(state);
-
-				A[state] = (num_t)(j * i % (A | noarr::get_length<'i'>())) / (A | noarr::get_length<'i'>());
-			});
-		});
+		inner | [=](auto state) {
+			auto j = get_index<'j'>(state);
+			A[state] = (num_t)(j * i % (A | get_length<'i'>())) / (A | get_length<'i'>());
+		};
+	});
 }
 
 // computation kernel

@@ -27,11 +27,12 @@ struct tuning {
 // initialization function
 void init_array(auto u) {
 	// u: i x j
+	using namespace noarr;
 
-	auto n = u | noarr::get_length<'i'>();
+	auto n = u | get_length<'i'>();
 
-	noarr::traverser(u) | [=](auto state) {
-		auto [i, j] = noarr::get_indices<'i', 'j'>(state);
+	traverser(u) | [=](auto state) {
+		auto [i, j] = get_indices<'i', 'j'>(state);
 
 		u[state] = (num_t)(i + n - j) / n;
 	};
@@ -48,7 +49,7 @@ void kernel_adi(auto tsteps, auto u, auto v, auto p, auto q) {
 
 	auto u_trans = u ^ rename<'i', 'j', 'j', 'i'>();
 	auto v_trans = v ^ rename<'i', 'j', 'j', 'i'>();
-	auto trav = traverser(u, v, p, q).order(bcast<'t'>(tsteps));
+	auto trav = traverser(u, v, p, q) ^ bcast<'t'>(tsteps);
 
 	#pragma scop
 
@@ -70,54 +71,53 @@ void kernel_adi(auto tsteps, auto u, auto v, auto p, auto q) {
 	num_t e = (num_t)1.0 + mul2;
 	num_t f = d;
 
-	trav ^ symmetric_spans<'i', 'j'>(u, 1, 1) |
-		for_dims<'t'>([=](auto inner) {
-			// column sweep
-			inner | for_dims<'i'>([=](auto inner) {
-				auto state = inner.state();
+	trav ^ symmetric_spans<'i', 'j'>(u, 1, 1) | for_dims<'t'>([=](auto inner) {
+		// column sweep
+		inner | for_dims<'i'>([=](auto inner) {
+			auto state = inner.state();
 
-				v[state & idx<'j'>(0)] = (num_t)1.0;
-				p[state & idx<'j'>(0)] = (num_t)0.0;
-				q[state & idx<'j'>(0)] = v[state & idx<'j'>(0)];
+			v[state & idx<'j'>(0)] = (num_t)1.0;
+			p[state & idx<'j'>(0)] = (num_t)0.0;
+			q[state & idx<'j'>(0)] = v[state & idx<'j'>(0)];
 
-				inner | [=](auto state) {
-					p[state] = -c / (a * p[state - idx<'j'>(1)] + b);
-					q[state] = (-d * u_trans[state - idx<'i'>(1)] + (B2 + B1 * d) * u_trans[state] -
-					             f * u_trans[state + idx<'i'>(1)] -
-					             a * q[state - idx<'j'>(1)]) /
-					           (a * p[state - idx<'j'>(1)] + b);
-				};
+			inner | [=](auto state) {
+				p[state] = -c / (a * p[state - idx<'j'>(1)] + b);
+				q[state] = (-d * u_trans[state - idx<'i'>(1)] + (B2 + B1 * d) * u_trans[state] -
+								f * u_trans[state + idx<'i'>(1)] -
+								a * q[state - idx<'j'>(1)]) /
+							(a * p[state - idx<'j'>(1)] + b);
+			};
 
-				v[state & idx<'j'>((v | get_length<'j'>()) - 1)] = (num_t)1.0;
+			v[state & idx<'j'>((v | get_length<'j'>()) - 1)] = (num_t)1.0;
 
-				inner ^ reverse<'j'>() | [=](auto state) {
-					v[state] = p[state] * v[state + idx<'j'>(1)] + q[state];
-				};
-			});
-
-			// row sweep
-			inner | for_dims<'i'>([=](auto inner) {
-				auto state = inner.state();
-
-				u[state & idx<'j'>(0)] = (num_t)1.0;
-				p[state & idx<'j'>(0)] = (num_t)0.0;
-				q[state & idx<'j'>(0)] = u[state & idx<'j'>(0)];
-
-				inner | [=](auto state) {
-					p[state] = -f / (d * p[state - idx<'j'>(1)] + e);
-					q[state] = (-a * v_trans[state - idx<'i'>(1)] + (B2 + B1 * a) * v_trans[state] -
-					             c * v_trans[state + idx<'i'>(1)] -
-					             d * q[state - idx<'j'>(1)]) /
-					           (d * p[state - idx<'j'>(1)] + e);
-				};
-
-				u[state & idx<'j'>((u | get_length<'j'>()) - 1)] = (num_t)1.0;
-
-				inner ^ reverse<'j'>() | [=](auto state) {
-					u[state] = p[state] * u[state + idx<'j'>(1)] + q[state];
-				};
-			});
+			inner ^ reverse<'j'>() | [=](auto state) {
+				v[state] = p[state] * v[state + idx<'j'>(1)] + q[state];
+			};
 		});
+
+		// row sweep
+		inner | for_dims<'i'>([=](auto inner) {
+			auto state = inner.state();
+
+			u[state & idx<'j'>(0)] = (num_t)1.0;
+			p[state & idx<'j'>(0)] = (num_t)0.0;
+			q[state & idx<'j'>(0)] = u[state & idx<'j'>(0)];
+
+			inner | [=](auto state) {
+				p[state] = -f / (d * p[state - idx<'j'>(1)] + e);
+				q[state] = (-a * v_trans[state - idx<'i'>(1)] + (B2 + B1 * a) * v_trans[state] -
+								c * v_trans[state + idx<'i'>(1)] -
+								d * q[state - idx<'j'>(1)]) /
+							(d * p[state - idx<'j'>(1)] + e);
+			};
+
+			u[state & idx<'j'>((u | get_length<'j'>()) - 1)] = (num_t)1.0;
+
+			inner ^ reverse<'j'>() | [=](auto state) {
+				u[state] = p[state] * u[state + idx<'j'>(1)] + q[state];
+			};
+		});
+	});
 	#pragma endscop
 }
 

@@ -26,46 +26,46 @@ struct tuning {
 // initialization function
 void init_array(auto A) {
 	// A: i x j
+	using namespace noarr;
 
-	int n = A | noarr::get_length<'i'>();
+	int n = A | get_length<'i'>();
 
-	noarr::traverser(A)
-		.template for_dims<'i'>([=](auto inner) {
-			auto i = noarr::get_index<'i'>(inner);
+	traverser(A) | for_dims<'i'>([=](auto inner) {
+		auto i = get_index<'i'>(inner);
 
-			inner
-				.order(noarr::span<'j'>(i + 1))
-				.for_each([=](auto state) {
-					A[state] = (num_t) (-(int)noarr::get_index<'j'>(state) % n) / n + 1;
-				});
+		inner ^
+			span<'j'>(i + 1) |
+			[=](auto state) {
+				A[state] = (num_t) (-(int)get_index<'j'>(state) % n) / n + 1;
+			};
 
-			inner
-				.order(noarr::shift<'j'>(i + 1))
-				.for_each([=](auto state) {
-					A[state] = 0;
-				});
+		inner ^
+			shift<'j'>(i + 1) |
+			[=](auto state) {
+				A[state] = 0;
+			};
 
-			A[inner.state() & noarr::idx<'j'>(i)] = 1;
-		});
+		A[inner.state() & idx<'j'>(i)] = 1;
+	});
 
 	// make A positive semi-definite
-	auto B = noarr::make_bag(A.structure());
+	auto B = make_bag(A.structure());
 	auto B_ref = B.get_ref();
 
-	auto A_ik = A ^ noarr::rename<'j', 'k'>();
-	auto A_jk = A ^ noarr::rename<'i', 'j', 'j', 'k'>();
+	auto A_ik = A ^ rename<'j', 'k'>();
+	auto A_jk = A ^ rename<'i', 'j', 'j', 'k'>();
 
-	noarr::traverser(B_ref).for_each([=](auto state) {
+	traverser(B_ref) | [=](auto state) {
 		B_ref[state] = 0;
-	});
+	};
 
-	noarr::traverser(B_ref, A_ik, A_jk).for_each([=](auto state) {
+	traverser(B_ref, A_ik, A_jk) | [=](auto state) {
 		B_ref[state] += A_ik[state] * A_jk[state];
-	});
+	};
 
-	noarr::traverser(A, B_ref).for_each([=](auto state) {
+	traverser(A, B_ref) | [=](auto state) {
 		A[state] = B_ref[state];
-	});
+	};
 }
 
 // computation kernel

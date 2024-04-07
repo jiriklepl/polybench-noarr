@@ -25,48 +25,44 @@ struct tuning {
 // initialization function
 void init_array(auto A) {
 	// A: i x j
+	using namespace noarr;
 
-	int n = A | noarr::get_length<'i'>();
+	int n = A | get_length<'i'>();
 
-	noarr::traverser(A)
-		.template for_dims<'i'>([=](auto inner) {
-			auto i = noarr::get_index<'i'>(inner);
+	traverser(A) | for_dims<'i'>([=](auto inner) {
+		auto i = get_index<'i'>(inner);
 
-			auto A_ii = A ^ noarr::fix<'j'>(i);
+		auto A_ii = A ^ fix<'j'>(i);
 
-			inner
-				.order(noarr::span<'j'>(i + 1))
-				.for_each([=](auto state) {
-					A[state] = (num_t) (-(int)noarr::get_index<'j'>(state) % n) / n + 1;
-				});
+		inner ^ span<'j'>(i + 1) | [=](auto state) {
+			A[state] = (num_t) (-(int)get_index<'j'>(state) % n) / n + 1;
+		};
 
-			inner
-				.order(noarr::shift<'j'>(i + 1))
-				.for_each([=](auto state) {
-					A[state] = 0;
-				});
+		inner ^ shift<'j'>(i + 1) | [=](auto state) {
+			A[state] = 0;
+		};
 
-			A_ii[inner] = 1;
-		});
+		A_ii[inner] = 1;
+	});
 
 	// make A positive semi-definite
-	auto B = noarr::make_bag(A.structure());
+	auto B = make_bag(A.structure());
 	auto B_ref = B.get_ref();
 
-	auto A_ik = A ^ noarr::rename<'j', 'k'>();
-	auto A_jk = A ^ noarr::rename<'i', 'j', 'j', 'k'>();
+	auto A_ik = A ^ rename<'j', 'k'>();
+	auto A_jk = A ^ rename<'i', 'j', 'j', 'k'>();
 
-	noarr::traverser(B_ref).for_each([=](auto state) {
+	traverser(B_ref) | [=](auto state) {
 		B_ref[state] = 0;
-	});
+	};
 
-	noarr::traverser(B_ref, A_ik, A_jk).for_each([=](auto state) {
+	traverser(B_ref, A_ik, A_jk) | [=](auto state) {
 		B_ref[state] += A_ik[state] * A_jk[state];
-	});
+	};
 
-	noarr::traverser(A, B_ref).for_each([=](auto state) {
+	traverser(A, B_ref) | [=](auto state) {
 		A[state] = B_ref[state];
-	});
+	};
 }
 
 // computation kernel
@@ -129,16 +125,14 @@ int main(int argc, char *argv[]) {
 	// print results
 	if (argc > 0 && argv[0] != ""s) [A = A.get_ref()] {
 		std::cout << std::fixed << std::setprecision(2);
-		noarr::traverser(A)
-			.template for_dims<'i'>([=](auto inner) {
-				inner
-					.order(noarr::span<'j'>(noarr::get_index<'i'>(inner) + 1))
-					.for_each([=](auto state) {
-						std::cout << A[state] << " ";
-					});
+		noarr::traverser(A) | noarr::for_dims<'i'>([=](auto inner) {
+			inner ^ noarr::span<'j'>(noarr::get_index<'i'>(inner) + 1) |
+				[=](auto state) {
+					std::cout << A[state] << " ";
+				};
 
-				std::cout << std::endl;
-			});
+			std::cout << std::endl;
+		});
 	}();
 
 	std::cerr << std::fixed << std::setprecision(6);

@@ -47,35 +47,32 @@ void init_array(auto A, auto B, auto C, auto D) {
 	// B: k x j
 	// C: j x m
 	// D: m x l
+	using namespace noarr;
 
-	auto ni = A | noarr::get_length<'i'>();
-	auto nj = B | noarr::get_length<'j'>();
-	auto nk = A | noarr::get_length<'k'>();
-	auto nl = D | noarr::get_length<'l'>();
+	auto ni = A | get_length<'i'>();
+	auto nj = B | get_length<'j'>();
+	auto nk = A | get_length<'k'>();
+	auto nl = D | get_length<'l'>();
 
-	noarr::traverser(A)
-		.for_each([=](auto state) {
-			auto [i, k] = noarr::get_indices<'i', 'k'>(state);
-			A[state] = (num_t)((i * k + 1) % ni) / (5 * ni);
-		});
+	traverser(A) | [=](auto state) {
+		auto [i, k] = get_indices<'i', 'k'>(state);
+		A[state] = (num_t)((i * k + 1) % ni) / (5 * ni);
+	};
 
-	noarr::traverser(B)
-		.for_each([=](auto state) {
-			auto [k, j] = noarr::get_indices<'k', 'j'>(state);
-			B[state] = (num_t)((k * (j + 1) + 2) % nj) / (5 * nj);
-		});
+	traverser(B) | [=](auto state) {
+		auto [k, j] = get_indices<'k', 'j'>(state);
+		B[state] = (num_t)((k * (j + 1) + 2) % nj) / (5 * nj);
+	};
 
-	noarr::traverser(C)
-		.for_each([=](auto state) {
-			auto [j, m] = noarr::get_indices<'j', 'm'>(state);
-			C[state] = (num_t)(j * (m + 3) % nl) / (5 * nl);
-		});
+	traverser(C) | [=](auto state) {
+		auto [j, m] = get_indices<'j', 'm'>(state);
+		C[state] = (num_t)(j * (m + 3) % nl) / (5 * nl);
+	};
 
-	noarr::traverser(D)
-		.for_each([=](auto state) {
-			auto [m, l] = noarr::get_indices<'m', 'l'>(state);
-			D[state] = (num_t)((m * (l + 2) + 2) % nk) / (5 * nk);
-		});
+	traverser(D) | [=](auto state) {
+		auto [m, l] = get_indices<'m', 'l'>(state);
+		D[state] = (num_t)((m * (l + 2) + 2) % nk) / (5 * nk);
+	};
 }
 
 // computation kernel

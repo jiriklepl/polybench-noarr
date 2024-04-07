@@ -32,30 +32,28 @@ struct tuning {
 void init_array(num_t &alpha, auto A, auto B) {
 	// A: k x i
 	// B: i x j
+	using namespace noarr;
 
 	alpha = (num_t)1.5;
 
-	auto ni = A | noarr::get_length<'i'>();
-	auto nj = B | noarr::get_length<'j'>();
+	auto ni = A | get_length<'i'>();
+	auto nj = B | get_length<'j'>();
 
-	noarr::traverser(A)
-		.template for_dims<'k'>([=](auto inner) {
-			auto k = noarr::get_index<'k'>(inner);
+	traverser(A) | for_dims<'k'>([=](auto inner) {
+		auto k = get_index<'k'>(inner);
 
-			inner.order(noarr::span<'i'>(k))
-				.for_each([=](auto state) {
-					auto i = noarr::get_index<'i'>(state);
-					A[state] = (num_t)((k + i) % ni) / ni;
-				});
+		inner ^ span<'i'>(k) | [=](auto state) {
+			auto i = get_index<'i'>(state);
+			A[state] = (num_t)((k + i) % ni) / ni;
+		};
 
-			A[inner.state() & noarr::idx<'i'>(k)] = 1.0;
-		});
-
-	noarr::traverser(B).for_each([=](auto state) {
-		auto [i, j] = noarr::get_indices<'i', 'j'>(state);
-
-		B[state] = (num_t)((nj + (i - j)) % nj) / nj;
+		A[inner.state() & idx<'i'>(k)] = 1.0;
 	});
+
+	traverser(B) | [=](auto state) {
+		auto [i, j] = get_indices<'i', 'j'>(state);
+		B[state] = (num_t)((nj + (i - j)) % nj) / nj;
+	};
 }
 
 // computation kernel
@@ -69,15 +67,13 @@ void kernel_trmm(num_t alpha, auto A, auto B, Order order = {}) {
 	auto B_renamed = B ^ rename<'i', 'k'>();
 
 	#pragma scop
-	planner(A, B, B_renamed) ^
-		for_each_elem([](auto &&A, auto &&B, auto &&B_renamed) {
-			B += A * B_renamed;
-		}) ^
-		for_dims<'i', 'j'>([=](auto inner) {
-			inner ^ shift<'k'>(get_index<'i'>(inner) + 1) | planner_execute();
+	planner(A, B, B_renamed) ^ for_each_elem([](auto &&A, auto &&B, auto &&B_renamed) {
+		B += A * B_renamed;
+	}) ^ for_dims<'i', 'j'>([=](auto inner) {
+		inner ^ shift<'k'>(get_index<'i'>(inner) + 1) | planner_execute();
 
-			B[inner] *= alpha;
-		}) ^ order | planner_execute();
+		B[inner] *= alpha;
+	}) ^ order | planner_execute();
 	#pragma endscop
 }
 

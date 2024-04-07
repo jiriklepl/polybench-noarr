@@ -25,19 +25,20 @@ struct tuning {
 void init_array(auto A, auto x) {
 	// A: i x j
 	// x: j
+	using namespace noarr;
 
-	auto ni = A | noarr::get_length<'i'>();
-	auto nj = A | noarr::get_length<'j'>();
+	auto ni = A | get_length<'i'>();
+	auto nj = A | get_length<'j'>();
 
-	noarr::traverser(x).for_each([=](auto state) {
-		auto j = noarr::get_index<'j'>(state);
+	traverser(x) | [=](auto state) {
+		auto j = get_index<'j'>(state);
 		x[state] = 1 + j / (num_t)nj;
-	});
+	};
 
-	noarr::traverser(A).for_each([=](auto state) {
-		auto [i, j] = noarr::get_indices<'i', 'j'>(state);
+	traverser(A) | [=](auto state) {
+		auto [i, j] = get_indices<'i', 'j'>(state);
 		A[state] = (num_t)((i + j) % nj) / (5 * ni);
-	});
+	};
 }
 
 // computation kernel

@@ -33,20 +33,19 @@ struct tuning {
 void init_array(auto A, auto C4) {
 	// A: r x q x p
 	// C4: s x p
+	using namespace noarr;
 
-	auto np = A | noarr::get_length<'p'>();
+	auto np = A | get_length<'p'>();
 
-	noarr::traverser(A)
-		.for_each([=](auto state) {
-			auto [r, q, p] = noarr::get_indices<'r', 'q', 'p'>(state);
-			A[state] = (num_t)((r * q + p) % np) / np;
-		});
+	traverser(A) | [=](auto state) {
+		auto [r, q, p] = get_indices<'r', 'q', 'p'>(state);
+		A[state] = (num_t)((r * q + p) % np) / np;
+	};
 
-	noarr::traverser(C4)
-		.for_each([=](auto state) {
-			auto [s, p] = noarr::get_indices<'s', 'p'>(state);
-			C4[state] = (num_t)(s * p % np) / np;
-		});
+	traverser(C4) | [=](auto state) {
+		auto [s, p] = get_indices<'s', 'p'>(state);
+		C4[state] = (num_t)(s * p % np) / np;
+	};
 }
 
 // computation kernel

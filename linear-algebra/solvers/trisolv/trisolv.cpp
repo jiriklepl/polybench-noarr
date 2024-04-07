@@ -27,23 +27,21 @@ void init_array(auto L, auto x, auto b) {
 	// L: i x j
 	// x: i
 	// b: i
+	using namespace noarr;
 
-	auto n = L | noarr::get_length<'i'>();
+	auto n = L | get_length<'i'>();
 
-	noarr::traverser(L, x, b)
-		.template for_dims<'i'>([=](auto inner) {
-			auto i = noarr::get_index<'i'>(inner);
+	traverser(L, x, b) | for_dims<'i'>([=](auto inner) {
+		auto i = get_index<'i'>(inner);
 
-			x[inner] = -999;
-			b[inner] = i;
+		x[inner] = -999;
+		b[inner] = i;
 
-			inner
-				.order(noarr::span<'j'>(i + 1))
-				.template for_each<'j'>([=](auto state) {
-					auto j = noarr::get_index<'j'>(state);
-					L[state] = (num_t)(i + n - j + 1) * 2 / n;
-				});
+		inner ^ span<'j'>(i + 1) | for_each<'j'>([=](auto state) {
+			auto j = get_index<'j'>(state);
+			L[state] = (num_t)(i + n - j + 1) * 2 / n;
 		});
+	});
 }
 
 // computation kernel

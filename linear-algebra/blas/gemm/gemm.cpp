@@ -29,27 +29,25 @@ void init_array(num_t &alpha, num_t &beta, auto C, auto A, auto B) {
 	// C: i x j
 	// A: i x k
 	// B: k x j
+	using namespace noarr;
 
 	alpha = (num_t)1.5;
 	beta = (num_t)1.2;
 
-	noarr::traverser(C)
-		.for_each([=](auto state) {
-			auto [i, j] = noarr::get_indices<'i', 'j'>(state);
-			C[state] = (num_t)((i * j + 1) % (C | noarr::get_length<'i'>())) / (C | noarr::get_length<'i'>());
-		});
+	traverser(C) | [=](auto state) {
+		auto [i, j] = get_indices<'i', 'j'>(state);
+		C[state] = (num_t)((i * j + 1) % (C | get_length<'i'>())) / (C | get_length<'i'>());
+	};
 
-	noarr::traverser(A)
-		.for_each([=](auto state) {
-			auto [i, k] = noarr::get_indices<'i', 'k'>(state);
-			A[state] = (num_t)(i * (k + 1) % (A | noarr::get_length<'k'>())) / (A | noarr::get_length<'k'>());
-		});
+	traverser(A) | [=](auto state) {
+		auto [i, k] = get_indices<'i', 'k'>(state);
+		A[state] = (num_t)(i * (k + 1) % (A | get_length<'k'>())) / (A | get_length<'k'>());
+	};
 
-	noarr::traverser(B)
-		.for_each([=](auto state) {
-			auto [k, j] = noarr::get_indices<'k', 'j'>(state);
-			B[state] = (num_t)(k * (j + 2) % (B | noarr::get_length<'j'>())) / (B | noarr::get_length<'j'>());
-		});
+	traverser(B) | [=](auto state) {
+		auto [k, j] = get_indices<'k', 'j'>(state);
+		B[state] = (num_t)(k * (j + 2) % (B | get_length<'j'>())) / (B | get_length<'j'>());
+	};
 }
 
 // computation kernel

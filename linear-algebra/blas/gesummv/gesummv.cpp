@@ -27,25 +27,25 @@ void init_array(num_t &alpha, num_t &beta, auto A, auto B, auto x) {
 	// A: i x j
 	// B: i x j
 	// x: j
+	using namespace noarr;
 
 	alpha = (num_t)1.5;
 	beta = (num_t)1.2;
 
-	auto n = A | noarr::get_length<'i'>();
+	auto n = A | get_length<'i'>();
 
-	noarr::traverser(A, B, x)
-		.template for_dims<'i'>([=](auto inner) {
-			auto i = noarr::get_index<'i'>(inner);
+	traverser(A, B, x) | for_dims<'i'>([=](auto inner) {
+		auto i = get_index<'i'>(inner);
 
-			x[noarr::idx<'j'>(i)] = (num_t)(i % n) / n;
+		x[idx<'j'>(i)] = (num_t)(i % n) / n;
 
-			inner.for_each([=](auto state) {
-				auto j = noarr::get_index<'j'>(state);
+		inner | [=](auto state) {
+			auto j = get_index<'j'>(state);
 
-				A[state] = (num_t)((i * j + 1) % n) / n;
-				B[state] = (num_t)((i * j + 2) % n) / n;
-			});
-		});
+			A[state] = (num_t)((i * j + 1) % n) / n;
+			B[state] = (num_t)((i * j + 2) % n) / n;
+		};
+	});
 }
 
 // computation kernel

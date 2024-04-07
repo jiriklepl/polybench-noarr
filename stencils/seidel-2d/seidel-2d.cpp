@@ -24,15 +24,15 @@ struct tuning {
 // initialization function
 void init_array(auto A) {
 	// A: i x j
+	using namespace noarr;
 
-	auto n = A | noarr::get_length<'i'>();
+	auto n = A | get_length<'i'>();
 
-	noarr::traverser(A)
-		.for_each([=](auto state) {
-			auto [i, j] = noarr::get_indices<'i', 'j'>(state);
+	traverser(A) | [=](auto state) {
+		auto [i, j] = get_indices<'i', 'j'>(state);
 
-			A[state] = ((num_t)i * (j + 2) + 2) / n;
-		});
+		A[state] = ((num_t)i * (j + 2) + 2) / n;
+	};
 }
 
 // computation kernel

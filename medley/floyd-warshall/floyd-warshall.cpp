@@ -33,16 +33,16 @@ struct tuning {
 // initialization function
 void init_array(auto path) {
 	// path: i x j
+	using namespace noarr;
 
-	noarr::traverser(path)
-		.for_each([=](auto state) {
-			auto [i, j] = noarr::get_indices<'i', 'j'>(state);
+	traverser(path) | [=](auto state) {
+		auto [i, j] = get_indices<'i', 'j'>(state);
 
-			path[state] = i * j % 7 + 1;
+		path[state] = i * j % 7 + 1;
 
-			if ((i + j) % 13 == 0 || (i + j) % 7 == 0 || (i + j) % 11 == 0)
-				path[state] = 999;
-		});
+		if ((i + j) % 13 == 0 || (i + j) % 7 == 0 || (i + j) % 11 == 0)
+			path[state] = 999;
+	};
 }
 
 

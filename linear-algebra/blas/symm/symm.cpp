@@ -34,34 +34,31 @@ void init_array(num_t &alpha, num_t &beta, auto C, auto A, auto B) {
 	// C: i x j
 	// A: i x k
 	// B: i x j
+	using namespace noarr;
 
 	alpha = (num_t)1.5;
 	beta = (num_t)1.2;
 
-	auto ni = C | noarr::get_length<'i'>();
-	auto nj = C | noarr::get_length<'j'>();
+	auto ni = C | get_length<'i'>();
+	auto nj = C | get_length<'j'>();
 
-	noarr::traverser(C)
-		.for_each([=](auto state) {
-			auto [i, j] = noarr::get_indices<'i', 'j'>(state);
-			C[state] = (num_t)((i + j) % 100) / ni;
-			B[state] = (num_t)((nj + i - j) % 100) / ni;
-		});
+	traverser(C) | [=](auto state) {
+		auto [i, j] = get_indices<'i', 'j'>(state);
+		C[state] = (num_t)((i + j) % 100) / ni;
+		B[state] = (num_t)((nj + i - j) % 100) / ni;
+	};
 
-	noarr::traverser(A)
-		.template for_dims<'i'>([=](auto inner) {
-			auto i = noarr::get_index<'i'>(inner);
-			inner.order(noarr::span<'k'>(i + 1))
-				.for_each([=](auto state) {
-					auto k = noarr::get_index<'k'>(state);
-					A[state] = (num_t)((i + k) % 100) / ni;
-				});
+	traverser(A) | for_dims<'i'>([=](auto inner) {
+		auto i = get_index<'i'>(inner);
+		inner ^ span<'k'>(i + 1) | [=](auto state) {
+			auto k = get_index<'k'>(state);
+			A[state] = (num_t)((i + k) % 100) / ni;
+		};
 
-			inner.order(noarr::shift<'k'>(i + 1))
-				.for_each([=](auto state) {
-					A[state] = -999;
-				});
-		});
+		inner ^ shift<'k'>(i + 1) | [=](auto state) {
+			A[state] = -999;
+		};
+	});
 }
 
 // computation kernel

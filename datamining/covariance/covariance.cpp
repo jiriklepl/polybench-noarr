@@ -26,13 +26,14 @@ struct tuning {
 // initialization function
 void init_array(num_t &float_n, auto data) {
 	// data: k x j
+	using namespace noarr;
 
-	float_n = data | noarr::get_length<'k'>();
+	float_n = data | get_length<'k'>();
 
-	noarr::traverser(data).for_each([=](auto state) {
-		auto [k, j] = noarr::get_indices<'k', 'j'>(state);
-		data[state] = (num_t)(k * j) / (data | noarr::get_length<'j'>());
-	});
+	traverser(data) | [=](auto state) {
+		auto [k, j] = get_indices<'k', 'j'>(state);
+		data[state] = (num_t)(k * j) / (data | get_length<'j'>());
+	};
 }
 
 // computation kernel

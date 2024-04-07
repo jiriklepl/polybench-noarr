@@ -17,14 +17,14 @@ namespace {
 // initialization function
 void init_array(auto r) {
 	// r: i
+	using namespace noarr;
 
-	auto n = r | noarr::get_length<'i'>();
+	auto n = r | get_length<'i'>();
 
-	noarr::traverser(r)
-		.for_each([=](auto state) {
-			auto i = noarr::get_index<'i'>(state);
-			r[state] = n + 1 - i;
-		});
+	traverser(r) | [=](auto state) {
+		auto i = get_index<'i'>(state);
+		r[state] = n + 1 - i;
+	};
 }
 
 // computation kernel
@@ -48,31 +48,30 @@ void kernel_durbin(auto r, auto y) {
 	beta = 1;
 	alpha = -r[idx<'i'>(0)];
 
-	traverser(r, y, r_k, y_k) ^ shift<'k'>(1) |
-		for_dims<'k'>([=, &alpha, &beta, &sum, z = z.get_ref()](auto inner) {
-			beta = (1 - alpha * alpha) * beta;
-			sum = 0;
+	traverser(r, y, r_k, y_k) ^ shift<'k'>(1) | for_dims<'k'>([=, &alpha, &beta, &sum, z = z.get_ref()](auto inner) {
+		beta = (1 - alpha * alpha) * beta;
+		sum = 0;
 
-			auto traverser = inner ^ span<'i'>(get_index<'k'>(inner));
+		auto traverser = inner ^ span<'i'>(get_index<'k'>(inner));
 
-			traverser | [=, &sum](auto state) {
-				auto [i, k] = get_indices<'i', 'k'>(state);
-				sum += r[idx<'i'>(k - i - 1)] * y[state];
-			};
+		traverser | [=, &sum](auto state) {
+			auto [i, k] = get_indices<'i', 'k'>(state);
+			sum += r[idx<'i'>(k - i - 1)] * y[state];
+		};
 
-			alpha = -(r_k[inner] + sum) / beta;
+		alpha = -(r_k[inner] + sum) / beta;
 
-			traverser | [=, &alpha](auto state) {
-				auto [i, k] = get_indices<'i', 'k'>(state);
-				z[state] = y[state] + alpha * y[idx<'i'>(k - i - 1)];
-			};
+		traverser | [=, &alpha](auto state) {
+			auto [i, k] = get_indices<'i', 'k'>(state);
+			z[state] = y[state] + alpha * y[idx<'i'>(k - i - 1)];
+		};
 
-			traverser | [=](auto state) {
-				y[state] = z[state];
-			};
+		traverser | [=](auto state) {
+			y[state] = z[state];
+		};
 
-			y_k[inner] = alpha;
-		});
+		y_k[inner] = alpha;
+	});
 	#pragma endscop
 }
 

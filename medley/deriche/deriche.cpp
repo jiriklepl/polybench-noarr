@@ -30,12 +30,12 @@ struct tuning {
 void init_array(num_t &alpha, auto imgIn, auto) {
 	// imgIn: w x h
 	// imgOut: w x h
+	using namespace noarr;
 
 	alpha = (num_t)0.25;
 
-	noarr::traverser(imgIn) | [=](auto state) {
-		auto [w, h] = noarr::get_indices<'w', 'h'>(state);
-
+	traverser(imgIn) | [=](auto state) {
+		auto [w, h] = get_indices<'w', 'h'>(state);
 		imgIn[state] = (num_t)((313 * w + 991 * h) % 65536) / 65535.0f;
 	};
 }

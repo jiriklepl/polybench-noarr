@@ -29,22 +29,23 @@ void init_array(auto ex, auto ey, auto hz, auto _fict_) {
 	// ey: i x j
 	// hz: i x j
 	// _fict_: t
+	using namespace noarr;
 
-	auto ni = ex | noarr::get_length<'i'>();
-	auto nj = ex | noarr::get_length<'j'>();
+	auto ni = ex | get_length<'i'>();
+	auto nj = ex | get_length<'j'>();
 
-	noarr::traverser(_fict_).for_each([=](auto state) {
-		auto t = noarr::get_index<'t'>(state);
+	traverser(_fict_) | [=](auto state) {
+		auto t = get_index<'t'>(state);
 		_fict_[state] = t;
-	});
+	};
 
-	noarr::traverser(ex, ey, hz).for_each([=](auto state) {
-		auto [i, j] = noarr::get_indices<'i', 'j'>(state);
+	traverser(ex, ey, hz) | [=](auto state) {
+		auto [i, j] = get_indices<'i', 'j'>(state);
 
 		ex[state] = ((num_t) i * (j + 1)) / ni;
 		ey[state] = ((num_t) i * (j + 2)) / nj;
 		hz[state] = ((num_t) i * (j + 3)) / ni;
-	});
+	};
 }
 
 
