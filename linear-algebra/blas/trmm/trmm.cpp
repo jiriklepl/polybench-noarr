@@ -67,13 +67,14 @@ void kernel_trmm(num_t alpha, auto A, auto B, Order order = {}) {
 	auto B_renamed = B ^ rename<'i', 'k'>();
 
 	#pragma scop
-	planner(A, B, B_renamed) ^ for_each_elem([](auto &&A, auto &&B, auto &&B_renamed) {
-		B += A * B_renamed;
-	}) ^ for_dims<'i', 'j'>([=](auto inner) {
-		inner ^ shift<'k'>(get_index<'i'>(inner) + 1) | planner_execute();
-
-		B[inner] *= alpha;
-	}) ^ order | planner_execute();
+	planner(A, B, B_renamed) ^
+		for_each_elem([](auto &&A, auto &&B, auto &&B_renamed) {
+			B += A * B_renamed;
+		}) ^
+		for_dims<'i', 'j'>([=](auto inner) {
+			inner ^ shift<'k'>(get_index<'i'>(inner) + 1) | planner_execute();
+			B[inner] *= alpha;
+		}) ^ order | planner_execute();
 	#pragma endscop
 }
 

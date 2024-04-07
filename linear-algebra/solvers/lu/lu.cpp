@@ -33,17 +33,13 @@ void init_array(auto A) {
 	traverser(A) | for_dims<'i'>([=](auto inner) {
 		auto i = get_index<'i'>(inner);
 
-		inner ^
-			span<'j'>(i + 1) |
-			[=](auto state) {
-				A[state] = (num_t) (-(int)get_index<'j'>(state) % n) / n + 1;
-			};
+		inner ^ span<'j'>(i + 1) | [=](auto state) {
+			A[state] = (num_t) (-(int)get_index<'j'>(state) % n) / n + 1;
+		};
 
-		inner ^
-			shift<'j'>(i + 1) |
-			[=](auto state) {
-				A[state] = 0;
-			};
+		inner ^ shift<'j'>(i + 1) | [=](auto state) {
+			A[state] = 0;
+		};
 
 		A[inner.state() & idx<'j'>(i)] = 1;
 	});
