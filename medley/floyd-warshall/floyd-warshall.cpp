@@ -10,15 +10,14 @@
 
 #include "defines.hpp"
 #include "floyd-warshall.hpp"
-#include "noarr/structures/structs/blocks.hpp"
 
 using num_t = DATA_TYPE;
 
 namespace {
 
-constexpr auto i_vec =  noarr::vector<'i'>();
-constexpr auto j_vec =  noarr::vector<'j'>();
-constexpr auto k_vec =  noarr::vector<'k'>();
+constexpr auto i_vec = noarr::vector<'i'>();
+constexpr auto j_vec = noarr::vector<'j'>();
+constexpr auto k_vec = noarr::vector<'k'>();
 
 struct tuning {
 	DEFINE_PROTO_STRUCT(block_i, noarr::hoist<'i'>());
@@ -53,8 +52,8 @@ void kernel_floyd_warshall(auto path, Order order = {}) {
 	// path: i x j
 	using namespace noarr;
 
-	auto path_start_k = path ^ noarr::rename<'i', 'k'>();
-	auto path_end_k = path ^ noarr::rename<'j', 'k'>();
+	auto path_start_k = path ^ rename<'i', 'k'>();
+	auto path_end_k = path ^ rename<'j', 'k'>();
 
 	#pragma scop
 	traverser(path, path_start_k, path_end_k) ^ hoist<'k'>() ^ order |

@@ -15,8 +15,8 @@ using num_t = DATA_TYPE;
 
 namespace {
 
-constexpr auto i_vec =  noarr::vector<'i'>();
-constexpr auto j_vec =  noarr::vector<'j'>();
+constexpr auto i_vec = noarr::vector<'i'>();
+constexpr auto j_vec = noarr::vector<'j'>();
 
 struct tuning {
 	DEFINE_PROTO_STRUCT(l_layout, j_vec ^ i_vec);

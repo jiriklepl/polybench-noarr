@@ -14,10 +14,10 @@ using num_t = DATA_TYPE;
 
 namespace {
 
-constexpr auto i_vec =  noarr::vector<'i'>();
-constexpr auto j_vec =  noarr::vector<'j'>();
-constexpr auto k_vec =  noarr::vector<'k'>();
-constexpr auto l_vec =  noarr::vector<'l'>();
+constexpr auto i_vec = noarr::vector<'i'>();
+constexpr auto j_vec = noarr::vector<'j'>();
+constexpr auto k_vec = noarr::vector<'k'>();
+constexpr auto l_vec = noarr::vector<'l'>();
 
 struct tuning {
 	DEFINE_PROTO_STRUCT(block_i1, noarr::hoist<'i'>());

@@ -5,8 +5,9 @@ set -eo pipefail
 # This script compares the output of the C and C++/Noarr implementations of the Polybench benchmarks
 # It assumes that the C++/Noarr implementations are built in the build directory and that the C implementations are built in the $POLYBENCH_C_DIR/build directory
 
-BUILD_DIR=${BUILD_DIR:-build}
-SKIP_DIFF=${SKIP_DIFF:-0}
+export BUILD_DIR=${BUILD_DIR:-build}
+export SKIP_DIFF=${SKIP_DIFF:-0}
+export ALGORITHM=${ALGORITHM:-}
 
 if [ -z "$POLYBENCH_C_DIR" ]; then
 	echo "POLYBENCH_C_DIR is not set" >&2
@@ -28,6 +29,16 @@ trap cleanup EXIT
 find "$BUILD_DIR" -maxdepth 1 -executable -type f |
 while read -r file; do
 	filename=$(basename "$file")
+
+	if [ -n "$ALGORITHM" ]; then
+		case "$filename" in
+			"$ALGORITHM")
+				;;
+			*)
+				continue
+				;;
+		esac
+	fi
 
 	echo "Comparing $filename"
 
@@ -59,7 +70,6 @@ while read -r file; do
 
 		if (changes >= 10)
 			nextfile
-
 		next
 	}
 

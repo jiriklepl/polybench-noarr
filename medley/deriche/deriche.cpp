@@ -15,8 +15,8 @@ using num_t = DATA_TYPE;
 
 namespace {
 
-constexpr auto w_vec =  noarr::vector<'w'>();
-constexpr auto h_vec =  noarr::vector<'h'>();
+constexpr auto w_vec = noarr::vector<'w'>();
+constexpr auto h_vec = noarr::vector<'h'>();
 
 struct tuning {
 	DEFINE_PROTO_STRUCT(img_in_layout, h_vec ^ w_vec);

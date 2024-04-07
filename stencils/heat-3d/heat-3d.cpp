@@ -14,9 +14,9 @@ using num_t = DATA_TYPE;
 
 namespace {
 
-constexpr auto i_vec =  noarr::vector<'i'>();
-constexpr auto j_vec =  noarr::vector<'j'>();
-constexpr auto k_vec =  noarr::vector<'k'>();
+constexpr auto i_vec = noarr::vector<'i'>();
+constexpr auto j_vec = noarr::vector<'j'>();
+constexpr auto k_vec = noarr::vector<'k'>();
 
 struct tuning {
 	DEFINE_PROTO_STRUCT(block_i, noarr::hoist<'i'>());
@@ -58,28 +58,28 @@ void kernel_heat_3d(std::size_t tsteps, auto A, auto B, Order order = {}) {
 		inner | [=](auto state) {
 			B[state] =
 				(num_t).125 * (A[state - idx<'i'>(1)] -
-								2 * A[state] +
-								A[state + idx<'i'>(1)]) +
+				               2 * A[state] +
+				               A[state + idx<'i'>(1)]) +
 				(num_t).125 * (A[state - idx<'j'>(1)] -
-								2 * A[state] +
-								A[state + idx<'j'>(1)]) +
+				               2 * A[state] +
+				               A[state + idx<'j'>(1)]) +
 				(num_t).125 * (A[state - idx<'k'>(1)] -
-								2 * A[state] +
-								A[state + idx<'k'>(1)]) +
+				               2 * A[state] +
+				               A[state + idx<'k'>(1)]) +
 				A[state];
 		};
 
 		inner | [=](auto state) {
 			A[state] =
 				(num_t).125 * (B[state - idx<'i'>(1)] -
-								2 * B[state] +
-								B[state + idx<'i'>(1)]) +
+				               2 * B[state] +
+				               B[state + idx<'i'>(1)]) +
 				(num_t).125 * (B[state - idx<'j'>(1)] -
-								2 * B[state] +
-								B[state + idx<'j'>(1)]) +
+				               2 * B[state] +
+				               B[state + idx<'j'>(1)]) +
 				(num_t).125 * (B[state - idx<'k'>(1)] -
-								2 * B[state] +
-								B[state + idx<'k'>(1)]) +
+				               2 * B[state] +
+				               B[state + idx<'k'>(1)]) +
 				B[state];
 		};
 	});

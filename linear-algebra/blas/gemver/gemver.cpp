@@ -1,7 +1,6 @@
 #include <chrono>
 #include <iomanip>
 #include <iostream>
-#include <string>
 
 #include <noarr/structures_extended.hpp>
 #include <noarr/structures/extra/traverser.hpp>
@@ -15,8 +14,8 @@ using num_t = DATA_TYPE;
 
 namespace {
 
-constexpr auto i_vec =  noarr::vector<'i'>();
-constexpr auto j_vec =  noarr::vector<'j'>();
+constexpr auto i_vec = noarr::vector<'i'>();
+constexpr auto j_vec = noarr::vector<'j'>();
 
 struct tuning {
 	DEFINE_PROTO_STRUCT(block_i1, noarr::hoist<'i'>());

@@ -19,8 +19,8 @@ using base_t = char;
 
 namespace {
 
-constexpr auto i_vec =  noarr::vector<'i'>();
-constexpr auto j_vec =  noarr::vector<'j'>();
+constexpr auto i_vec = noarr::vector<'i'>();
+constexpr auto j_vec = noarr::vector<'j'>();
 
 struct tuning {
 	DEFINE_PROTO_STRUCT(table_layout, j_vec ^ i_vec);
