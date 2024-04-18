@@ -52,7 +52,15 @@ while read -r file; do
 		continue
 	fi
 
-	paste <(grep -oE '[0-9]+\.[0-9]+' "$dirname/c") <(grep -oE '[0-9]+(\.[0-9]+)?' "$dirname/cpp") |
+	grep -woE '[0-9\.]+|nan' "$dirname/c" > "$dirname/c.tmp" && mv "$dirname/c.tmp" "$dirname/c"
+	grep -woE '[0-9\.]+|nan' "$dirname/cpp" > "$dirname/cpp.tmp" && mv "$dirname/cpp.tmp" "$dirname/cpp"
+
+	# skip files that are exactly the same
+	if cmp -s "$dirname/c" "$dirname/cpp"; then
+		continue
+	fi
+
+	paste "$dirname/c" "$dirname/cpp" |
 	awk "BEGIN {
 		different = 0
 		n = 0

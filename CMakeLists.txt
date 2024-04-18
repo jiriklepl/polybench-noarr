@@ -3,7 +3,7 @@ Include(FetchContent)
 
 # set the project name and version
 project(
-  NoarrPolybench VERSION 0.0.1
+  NoarrPolybench VERSION 4.2.1
   DESCRIPTION "Polybench kernels implemented using Noarr Structures"
   LANGUAGES CXX
 )
@@ -16,7 +16,7 @@ if(NOT DEFINED NOARR_STRUCTURES_BRANCH)
   set(NOARR_STRUCTURES_BRANCH main)
 endif()
 
-# download Noarr
+# download Noarr Structures
 FetchContent_Declare(
   Noarr
   GIT_REPOSITORY https://github.com/jiriklepl/noarr-structures.git

@@ -4,10 +4,10 @@
 #define STRINGIFY_DETAIL(x) #x
 #define STRINGIFY(x) STRINGIFY_DETAIL(x)
 
-#define AUTO_FIELD(name, ...) decltype(__VA_ARGS__) name = __VA_ARGS__;
+#define AUTO_FIELD(name, ...) decltype(__VA_ARGS__) name = __VA_ARGS__
 
-#define DEFINE_PROTO_STRUCT(name, ...) AUTO_FIELD(name, __VA_ARGS__) \
-    static_assert(noarr::IsProtoStruct<decltype(name)>);
+#define DEFINE_PROTO_STRUCT(name, ...) AUTO_FIELD(name, __VA_ARGS__); \
+    static_assert(noarr::IsProtoStruct<decltype(name)>)
 
 #if !defined(MINI_DATASET) && !defined(SMALL_DATASET) && !defined(MEDIUM_DATASET) && !defined(LARGE_DATASET) && !defined(EXTRALARGE_DATASET)
 # error "Please define one of MINI_DATASET, SMALL_DATASET, MEDIUM_DATASET, LARGE_DATASET, EXTRALARGE_DATASET"

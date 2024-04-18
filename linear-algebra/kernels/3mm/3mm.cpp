@@ -2,10 +2,7 @@
 #include <iomanip>
 #include <iostream>
 
-#include <noarr/structures_extended.hpp>
-#include <noarr/structures/extra/planner.hpp>
-#include <noarr/structures/interop/bag.hpp>
-#include <noarr/structures/interop/serialize_data.hpp>
+#include <noarr/traversers.hpp>
 
 #include "defines.hpp"
 #include "3mm.hpp"
