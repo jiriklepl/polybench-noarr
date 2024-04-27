@@ -87,7 +87,7 @@ int main(int argc, char *argv[]) {
 
 	// data
 	auto A = noarr::make_bag(noarr::scalar<num_t>() ^ tuning.a_layout ^ set_lengths);
-	auto sum = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'p'>(np));
+	auto sum = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::vector<'p'>(np));
 	auto C4 = noarr::make_bag(noarr::scalar<num_t>() ^ tuning.c4_layout ^ set_lengths);
 
 	// initialize data

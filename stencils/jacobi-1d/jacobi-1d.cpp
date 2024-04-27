@@ -60,8 +60,8 @@ int main(int argc, char *argv[]) {
 	std::size_t t = TSTEPS;
 
 	// data
-	auto A = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'i'>(n));
-	auto B = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'i'>(n));
+	auto A = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::vector<'i'>(n));
+	auto B = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::vector<'i'>(n));
 
 	// initialize data
 	init_array(A.get_ref(), B.get_ref());

@@ -128,14 +128,14 @@ int main(int argc, char *argv[]) {
 	num_t beta;
 
 	auto A = noarr::make_bag(noarr::scalar<num_t>() ^ tuning.a_layout ^ noarr::set_length<'i'>(n) ^ noarr::set_length<'j'>(n));
-	auto u1 = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'i'>(n));
-	auto v1 = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'j'>(n));
-	auto u2 = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'i'>(n));
-	auto v2 = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'j'>(n));
-	auto w = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'i'>(n));
-	auto x = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'i'>(n));
-	auto y = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'j'>(n));
-	auto z = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'i'>(n));
+	auto u1 = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::vector<'i'>(n));
+	auto v1 = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::vector<'j'>(n));
+	auto u2 = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::vector<'i'>(n));
+	auto v2 = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::vector<'j'>(n));
+	auto w = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::vector<'i'>(n));
+	auto x = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::vector<'i'>(n));
+	auto y = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::vector<'j'>(n));
+	auto z = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::vector<'i'>(n));
 
 	// initialize data
 	init_array(alpha, beta, A.get_ref(),

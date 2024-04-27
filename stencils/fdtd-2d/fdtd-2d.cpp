@@ -97,7 +97,7 @@ int main(int argc, char *argv[]) {
 	auto ex = noarr::make_bag(noarr::scalar<num_t>() ^ tuning.ex_layout ^ noarr::set_length<'i'>(ni) ^ noarr::set_length<'j'>(nj));
 	auto ey = noarr::make_bag(noarr::scalar<num_t>() ^ tuning.ey_layout ^ noarr::set_length<'i'>(ni) ^ noarr::set_length<'j'>(nj));
 	auto hz = noarr::make_bag(noarr::scalar<num_t>() ^ tuning.hz_layout ^ noarr::set_length<'i'>(ni) ^ noarr::set_length<'j'>(nj));
-	auto _fict_ = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'t'>(t));
+	auto _fict_ = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::vector<'t'>(t));
 
 	// initialize data
 	init_array(ex.get_ref(), ey.get_ref(), hz.get_ref(), _fict_.get_ref());

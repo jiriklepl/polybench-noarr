@@ -111,8 +111,8 @@ int main(int argc, char *argv[]) {
 	num_t float_n;
 	auto data = noarr::make_bag(noarr::scalar<num_t>() ^ tuning.data_layout ^ noarr::set_length<'k'>(nk) ^ noarr::set_length<'j'>(nj));
 	auto corr = noarr::make_bag(noarr::scalar<num_t>() ^ tuning.corr_layout ^ noarr::set_length<'i'>(nj) ^ noarr::set_length<'j'>(nj));
-	auto mean = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'j'>(nj));
-	auto stddev = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'j'>(nj));
+	auto mean = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::vector<'j'>(nj));
+	auto stddev = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::vector<'j'>(nj));
 
 	// initialize data
 	init_array(float_n, data.get_ref());

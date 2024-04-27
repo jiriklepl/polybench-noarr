@@ -91,7 +91,7 @@ int main(int argc, char *argv[]) {
 	num_t float_n;
 	auto data = noarr::make_bag(noarr::scalar<num_t>() ^ tuning.data_layout ^ set_lengths);
 	auto cov = noarr::make_bag(noarr::scalar<num_t>() ^ tuning.cov_layout ^ set_lengths);
-	auto mean = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'j'>(nj));
+	auto mean = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::vector<'j'>(nj));
 
 	// initialize data
 	init_array(float_n, data.get_ref());

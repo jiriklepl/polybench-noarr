@@ -81,8 +81,8 @@ int main(int argc, char *argv[]) {
 	std::size_t n = N;
 
 	// data
-	auto r = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'i'>(n));
-	auto y = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'i'>(n));
+	auto r = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::vector<'i'>(n));
+	auto y = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::vector<'i'>(n));
 
 	// initialize data
 	init_array(r.get_ref());

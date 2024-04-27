@@ -84,11 +84,11 @@ int main(int argc, char *argv[]) {
 	// data
 	auto A = noarr::make_bag(noarr::scalar<num_t>() ^ tuning.a_layout ^ noarr::set_length<'i'>(ni) ^ noarr::set_length<'j'>(nj));
 
-	auto s = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'j'>(nj));
-	auto q = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'i'>(ni));
+	auto s = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::vector<'j'>(nj));
+	auto q = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::vector<'i'>(ni));
 
-	auto p = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'j'>(nj));
-	auto r = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::sized_vector<'i'>(ni));
+	auto p = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::vector<'j'>(nj));
+	auto r = noarr::make_bag(noarr::scalar<num_t>() ^ noarr::vector<'i'>(ni));
 
 	// initialize data
 	init_array(A.get_ref(), r.get_ref(), p.get_ref());

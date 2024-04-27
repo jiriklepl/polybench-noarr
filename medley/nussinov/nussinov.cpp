@@ -100,7 +100,7 @@ int main(int argc, char *argv[]) {
 	std::size_t n = N;
 
 	// data
-	auto seq = noarr::make_bag(noarr::scalar<base_t>() ^ noarr::sized_vector<'i'>(n));
+	auto seq = noarr::make_bag(noarr::scalar<base_t>() ^ noarr::vector<'i'>(n));
 	auto table = noarr::make_bag(noarr::scalar<num_t>() ^ tuning.table_layout ^ noarr::set_length<'i'>(n) ^ noarr::set_length<'j'>(n));
 
 	// initialize data
